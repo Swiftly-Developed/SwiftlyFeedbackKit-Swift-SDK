@@ -499,6 +499,34 @@ actor AdminAPIClient {
         }
     }
 
+    // MARK: - Home Dashboard API
+
+    func getHomeDashboard() async throws -> HomeDashboard {
+        let path = "dashboard/home"
+        logger.info("🔵 GET \(path) (home dashboard)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            logger.debug("📊 Home Dashboard - attempting to decode \(data.count) bytes")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.debug("📊 Home Dashboard - raw JSON: \(rawJSON)")
+            }
+            let decoded = try decoder.decode(HomeDashboard.self, from: data)
+            logger.info("✅ GET \(path) - decoded home dashboard: totalProjects=\(decoded.totalProjects), totalFeedback=\(decoded.totalFeedback)")
+            return decoded
+        } catch let decodingError as DecodingError {
+            logger.error("❌ GET \(path) - DecodingError: \(self.describeDecodingError(decodingError))")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.error("❌ Raw JSON that failed to decode: \(rawJSON)")
+            }
+            throw APIError.decodingError(decodingError)
+        } catch {
+            logger.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - Helpers
 
     private func describeDecodingError(_ error: DecodingError) -> String {

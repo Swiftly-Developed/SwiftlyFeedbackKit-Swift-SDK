@@ -3,16 +3,24 @@ import SwiftUI
 struct MainTabView: View {
     @Bindable var authViewModel: AuthViewModel
     @State private var projectViewModel = ProjectViewModel()
+    @State private var homeDashboardViewModel = HomeDashboardViewModel()
     @State private var hasLoadedProjects = false
 
     var body: some View {
         #if os(macOS)
-        MacNavigationView(authViewModel: authViewModel, projectViewModel: projectViewModel)
+        MacNavigationView(authViewModel: authViewModel, projectViewModel: projectViewModel, homeDashboardViewModel: homeDashboardViewModel)
             .task {
                 await loadProjectsOnce()
             }
         #else
         TabView {
+            NavigationStack {
+                HomeDashboardView(viewModel: homeDashboardViewModel)
+            }
+            .tabItem {
+                Label("Home", systemImage: "house")
+            }
+
             NavigationStack {
                 ProjectListView(viewModel: projectViewModel)
             }
@@ -67,9 +75,11 @@ struct MainTabView: View {
 struct MacNavigationView: View {
     @Bindable var authViewModel: AuthViewModel
     @Bindable var projectViewModel: ProjectViewModel
-    @State private var selectedSection: SidebarSection? = .projects
+    @Bindable var homeDashboardViewModel: HomeDashboardViewModel
+    @State private var selectedSection: SidebarSection? = .home
 
     enum SidebarSection: String, CaseIterable, Identifiable {
+        case home = "Home"
         case projects = "Projects"
         case feedback = "Feedback"
         case users = "Users"
@@ -80,6 +90,7 @@ struct MacNavigationView: View {
 
         var icon: String {
             switch self {
+            case .home: return "house"
             case .projects: return "folder"
             case .feedback: return "bubble.left.and.bubble.right"
             case .users: return "person.2"
@@ -100,6 +111,10 @@ struct MacNavigationView: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 250)
         } detail: {
             switch selectedSection {
+            case .home:
+                NavigationStack {
+                    HomeDashboardView(viewModel: homeDashboardViewModel)
+                }
             case .projects:
                 NavigationStack {
                     ProjectListView(viewModel: projectViewModel)

@@ -94,6 +94,25 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
 - Tracks first seen, last seen, and MRR (Monthly Recurring Revenue)
 - User IDs: iCloud-based (`icloud_`), local UUID (`local_`), or custom
 
+### Home Dashboard (KPIs)
+The Admin app includes a Home dashboard with key performance indicators (KPIs) across all projects.
+
+**Features:**
+- Global KPIs: Projects count, total feedback, users, comments, and votes
+- Feedback breakdown by status: Pending, Approved, In Progress, Completed, Rejected
+- Per-project statistics with mini status badges
+- Toolbar project filter to view stats for all projects or a specific project
+
+**Server Endpoints:**
+- `GET /dashboard/home` - Aggregated statistics across all user's projects (bearer auth)
+- `GET /dashboard/project/:id` - Statistics for a specific project (bearer auth)
+
+**Admin Dashboard:**
+- Home tab (first tab) displays overview KPIs with stat cards
+- Status breakdown section shows feedback counts by status
+- Projects section lists all projects with feedback/user/comment/vote counts
+- Project picker in toolbar filters all stats by selected project
+
 ## Code Conventions
 
 - Use `@main` attribute for app entry points

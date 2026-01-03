@@ -28,4 +28,7 @@ func routes(_ app: Application) throws {
 
     // View event tracking routes
     try api.register(collection: ViewEventController())
+
+    // Dashboard routes (home KPIs)
+    try api.register(collection: DashboardController())
 }

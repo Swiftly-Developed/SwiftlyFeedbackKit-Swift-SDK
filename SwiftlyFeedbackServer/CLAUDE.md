@@ -46,7 +46,8 @@ Sources/App/
 │   ├── VoteController.swift
 │   ├── CommentController.swift
 │   ├── SDKUserController.swift
-│   └── ViewEventController.swift
+│   ├── ViewEventController.swift
+│   └── DashboardController.swift
 ├── Models/               # Fluent database models
 │   ├── User.swift
 │   ├── UserToken.swift
@@ -128,6 +129,9 @@ All routes prefixed with `/api/v1`.
 - `POST /events/track` - Track view event (X-API-Key required)
 - `GET /events/project/:projectId` - List recent events (Bearer token required)
 - `GET /events/project/:projectId/stats` - Get event statistics with 30-day daily breakdown (Bearer token required)
+
+### Dashboard (Bearer token required)
+- `GET /dashboard/home` - Aggregated KPIs across all user's projects (projects, feedback by status/category, users, comments, votes)
 
 ## Code Patterns
 

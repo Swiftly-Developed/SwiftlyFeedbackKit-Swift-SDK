@@ -22,16 +22,20 @@ SwiftlyFeedbackAdmin/
 │   ├── ProjectModels.swift         # Project, member models
 │   ├── FeedbackModels.swift        # Feedback, Comment models, DTOs
 │   ├── SDKUserModels.swift         # SDK user and stats models
-│   └── ViewEventModels.swift       # View event and stats models
+│   ├── ViewEventModels.swift       # View event and stats models
+│   └── HomeDashboardModels.swift   # Home dashboard KPI models
 ├── ViewModels/
 │   ├── AuthViewModel.swift         # Authentication state
 │   ├── ProjectViewModel.swift      # Project management state
 │   ├── FeedbackViewModel.swift     # Feedback management state
 │   ├── SDKUserViewModel.swift      # SDK user management state
-│   └── ViewEventViewModel.swift    # View event management state
+│   ├── ViewEventViewModel.swift    # View event management state
+│   └── HomeDashboardViewModel.swift # Home dashboard state
 ├── Views/
 │   ├── RootView.swift              # Root navigation
 │   ├── MainTabView.swift           # Tab bar navigation
+│   ├── Home/
+│   │   └── HomeDashboardView.swift   # Home dashboard with KPIs
 │   ├── Auth/
 │   │   ├── AuthContainerView.swift    # Auth flow container
 │   │   ├── LoginView.swift            # Login form
@@ -164,6 +168,20 @@ Uses `Logger.swift` for centralized OSLog logging with categories:
 - **Delete All My Projects**: Remove all projects owned by the user
 
 Controlled by `AppEnvironment.isDeveloperMode` which checks for DEBUG builds or TestFlight sandbox receipt.
+
+## Home Dashboard (KPIs)
+
+The `HomeDashboardView` is the first tab displaying key performance indicators across all projects:
+
+### Features
+- **Global KPIs**: Projects count, total feedback, users, comments, and votes
+- **Feedback by Status**: Breakdown showing Pending, Approved, In Progress, Completed, Rejected counts
+- **Project List**: All projects with their individual feedback/user/comment/vote counts
+- **Project Filter**: Toolbar picker to view stats for all projects or a specific project
+- Mini status badges (P/IP/C) showing quick feedback status overview per project
+
+### Server Endpoint
+- `GET /dashboard/home` - Aggregated statistics across all user's projects (Bearer auth)
 
 ## Events Dashboard
 
