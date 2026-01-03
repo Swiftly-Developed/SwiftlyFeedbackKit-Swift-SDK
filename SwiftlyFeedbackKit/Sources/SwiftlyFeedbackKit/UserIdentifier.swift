@@ -57,14 +57,53 @@ public enum UserIdentifier {
     /// This ID is consistent across all devices signed into the same iCloud account.
     private static func fetchICloudUserId() async -> String? {
         #if canImport(CloudKit)
+        // Check if CloudKit container is available
+        // CKContainer.default() throws an uncatchable ObjC exception if entitlements are missing
+        guard let containerIdentifier = cloudKitContainerIdentifier() else {
+            return nil
+        }
+
         do {
-            let container = CKContainer.default()
+            // Use explicit container identifier to avoid CKContainer.default() crash
+            let container = CKContainer(identifier: containerIdentifier)
             let recordID = try await container.userRecordID()
             return recordID.recordName
         } catch {
             // iCloud not available or user not signed in
             return nil
         }
+        #else
+        return nil
+        #endif
+    }
+
+    /// Checks if CloudKit is properly configured for this app.
+    /// Returns the container identifier if available, nil otherwise.
+    private static func cloudKitContainerIdentifier() -> String? {
+        #if canImport(CloudKit)
+        // Check for explicit iCloud container identifiers in entitlements
+        // These are only present when the app has the iCloud capability properly configured
+
+        // First check if there's a custom container identifier
+        if let containers = Bundle.main.object(forInfoDictionaryKey: "CKContainerIdentifiers") as? [String],
+           let firstContainer = containers.first {
+            return firstContainer
+        }
+
+        // Check for iCloud containers entitlement (set by Xcode when capability is added)
+        if let containers = Bundle.main.object(forInfoDictionaryKey: "com.apple.developer.icloud-container-identifiers") as? [String],
+           let firstContainer = containers.first {
+            return firstContainer
+        }
+
+        // Without explicit container identifiers in the app's configuration,
+        // we cannot safely use CloudKit as it requires:
+        // 1. com.apple.developer.icloud-services entitlement with "CloudKit"
+        // 2. Proper code signing with a team ID
+        //
+        // Attempting to use CKContainer without these will crash the app.
+        // Return nil to fall back to local UUID generation.
+        return nil
         #else
         return nil
         #endif

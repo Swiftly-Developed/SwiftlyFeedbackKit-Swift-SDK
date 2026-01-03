@@ -85,11 +85,26 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
 - All API calls use async/await
 - Errors are typed via `SwiftlyFeedbackError`
 - API key is sent via `X-API-Key` header
+- JSON encoding/decoding uses snake_case key strategy
+- OSLog logging for debugging (subsystem: `com.swiftlyfeedback.sdk`)
+
+### Error Handling
+- `SwiftlyFeedbackError` cases: `invalidResponse`, `badRequest(message:)`, `unauthorized`, `notFound`, `conflict`, `serverError(statusCode:)`, `decodingError(underlying:)`
+- Server error messages are parsed from response body when available
+
+### User Identification
+- Uses iCloud user record ID when CloudKit is available and properly configured
+- Falls back to local UUID stored in Keychain when CloudKit is unavailable
+- Safely checks for CloudKit container configuration before attempting to use it
 
 ### Views
 - Views use `@State` and `@Environment` for state management
 - Follow AGENTS.md guidelines for SwiftUI patterns
 - Use `#Preview` macro for previews
+- Platform-specific adaptations:
+  - macOS: Uses Grid layout for forms, refresh button (⌘R), submit shortcut (⌘Return)
+  - iOS: Uses Form with sections, keyboard-aware scrolling
+- `FeedbackCategory.iconName` provides SF Symbol names for each category
 
 ## Adding New Features
 

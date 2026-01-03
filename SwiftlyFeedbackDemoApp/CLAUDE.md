@@ -57,3 +57,4 @@ struct SwiftlyFeedbackDemoAppApp: App {
 - Depends on SwiftlyFeedbackKit package
 - Server must be running for full functionality
 - Update API key and baseURL for your environment
+- macOS sandbox enabled with network client capability (incoming/outgoing connections)
