@@ -2,6 +2,7 @@ import Foundation
 
 public enum SwiftlyFeedbackError: Error, LocalizedError {
     case invalidResponse
+    case badRequest(message: String?)
     case unauthorized
     case notFound
     case conflict
@@ -13,6 +14,8 @@ public enum SwiftlyFeedbackError: Error, LocalizedError {
         switch self {
         case .invalidResponse:
             return "Invalid response from server"
+        case .badRequest(let message):
+            return message ?? "Bad request"
         case .unauthorized:
             return "Invalid API key or unauthorized access"
         case .notFound:

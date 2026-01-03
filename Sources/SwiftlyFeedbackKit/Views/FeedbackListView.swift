@@ -25,16 +25,18 @@ public struct FeedbackListView: View {
             }
             .navigationTitle(String(localized: Strings.feedbackListTitle))
             .toolbar {
-                if config.buttons.addButton.display {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            viewModel.showingSubmitSheet = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                        .tint(theme.primaryColor.resolve(for: colorScheme))
+                #if os(macOS)
+                ToolbarItem(placement: .navigation) {
+                    Button {
+                        Task { await viewModel.loadFeedback() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
+                    .disabled(viewModel.isLoading)
+                    .keyboardShortcut("r", modifiers: .command)
+                    .help("Refresh")
                 }
+                #endif
 
                 if config.buttons.segmentedControl.display {
                     ToolbarItem(placement: .automatic) {
@@ -48,6 +50,17 @@ public struct FeedbackListView: View {
                         } label: {
                             Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                         }
+                    }
+                }
+
+                if config.buttons.addButton.display {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            viewModel.showingSubmitSheet = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .tint(theme.primaryColor.resolve(for: colorScheme))
                     }
                 }
             }

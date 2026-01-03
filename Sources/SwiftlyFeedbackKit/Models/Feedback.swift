@@ -75,4 +75,13 @@ public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
         case .other: return "Other"
         }
     }
+
+    public var iconName: String {
+        switch self {
+        case .featureRequest: return "lightbulb"
+        case .bugReport: return "ladybug"
+        case .improvement: return "arrow.up.circle"
+        case .other: return "ellipsis.circle"
+        }
+    }
 }
