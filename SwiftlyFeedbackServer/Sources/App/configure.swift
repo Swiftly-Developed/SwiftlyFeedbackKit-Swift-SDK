@@ -42,6 +42,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(CreateProjectInvite())
     app.migrations.add(AddUserEmailVerified())
     app.migrations.add(CreateEmailVerification())
+    app.migrations.add(CreateSDKUser())
 
     try await app.autoMigrate()
 

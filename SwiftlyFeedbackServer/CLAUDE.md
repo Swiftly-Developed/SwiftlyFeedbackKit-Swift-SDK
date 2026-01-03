@@ -44,7 +44,8 @@ Sources/App/
 │   ├── ProjectController.swift
 │   ├── FeedbackController.swift
 │   ├── VoteController.swift
-│   └── CommentController.swift
+│   ├── CommentController.swift
+│   └── SDKUserController.swift
 ├── Models/               # Fluent database models
 │   ├── User.swift
 │   ├── UserToken.swift
@@ -54,7 +55,8 @@ Sources/App/
 │   ├── EmailVerification.swift
 │   ├── Feedback.swift
 │   ├── Vote.swift
-│   └── Comment.swift
+│   ├── Comment.swift
+│   └── SDKUser.swift
 ├── Migrations/           # Database migrations
 ├── DTOs/                 # Data transfer objects
 ├── Services/             # Business logic services
@@ -115,6 +117,10 @@ All routes prefixed with `/api/v1`.
 - `GET /feedbacks/:id/comments` - List comments
 - `POST /feedbacks/:id/comments` - Add comment (blocked if archived)
 - `DELETE /feedbacks/:id/comments/:commentId` - Delete comment (blocked if archived)
+
+### SDK Users (Bearer token required)
+- `GET /users/project/:projectId` - List SDK users for a project
+- `GET /users/project/:projectId/stats` - Get SDK user stats (total users, MRR totals, averages)
 
 ## Code Patterns
 

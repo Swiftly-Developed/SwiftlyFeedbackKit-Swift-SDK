@@ -28,6 +28,13 @@ struct MainTabView: View {
             }
 
             NavigationStack {
+                UsersDashboardView(projectViewModel: projectViewModel)
+            }
+            .tabItem {
+                Label("Users", systemImage: "person.2")
+            }
+
+            NavigationStack {
                 SettingsView(authViewModel: authViewModel, projectViewModel: projectViewModel)
             }
             .tabItem {
@@ -58,6 +65,7 @@ struct MacNavigationView: View {
     enum SidebarSection: String, CaseIterable, Identifiable {
         case projects = "Projects"
         case feedback = "Feedback"
+        case users = "Users"
         case settings = "Settings"
 
         var id: String { rawValue }
@@ -66,6 +74,7 @@ struct MacNavigationView: View {
             switch self {
             case .projects: return "folder"
             case .feedback: return "bubble.left.and.bubble.right"
+            case .users: return "person.2"
             case .settings: return "gear"
             }
         }
@@ -89,6 +98,10 @@ struct MacNavigationView: View {
             case .feedback:
                 NavigationStack {
                     FeedbackDashboardView(projectViewModel: projectViewModel)
+                }
+            case .users:
+                NavigationStack {
+                    UsersDashboardView(projectViewModel: projectViewModel)
                 }
             case .settings:
                 NavigationStack {

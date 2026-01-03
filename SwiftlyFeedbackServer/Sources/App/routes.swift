@@ -22,4 +22,7 @@ func routes(_ app: Application) throws {
     try api.register(collection: FeedbackController())
     try api.register(collection: VoteController())
     try api.register(collection: CommentController())
+
+    // SDK User routes (for MRR tracking)
+    try api.register(collection: SDKUserController())
 }

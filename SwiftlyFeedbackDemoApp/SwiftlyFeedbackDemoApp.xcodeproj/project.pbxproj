@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D0F3F5E72F093DEF006C891E /* SwiftlyFeedbackKit in Frameworks */ = {isa = PBXBuildFile; productRef = D0F3F5E62F093DEF006C891E /* SwiftlyFeedbackKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D0B8F31A2F08C0EC00C707DC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0F3F5E72F093DEF006C891E /* SwiftlyFeedbackKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				D0B8F30E2F08C0EB00C707DC /* SwiftlyFeedbackDemoApp */,
 				D0B8F31C2F08C0EC00C707DC /* SwiftlyFeedbackDemoAppTests */,
 				D0B8F3262F08C0EC00C707DC /* SwiftlyFeedbackDemoAppUITests */,
+				D0F3F5E52F093DEB006C891E /* Frameworks */,
 				D0B8F30D2F08C0EB00C707DC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				D0B8F3232F08C0EC00C707DC /* SwiftlyFeedbackDemoAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D0F3F5E52F093DEB006C891E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = SwiftlyFeedbackDemoApp;
 			packageProductDependencies = (
+				D0F3F5E62F093DEF006C891E /* SwiftlyFeedbackKit */,
 			);
 			productName = SwiftlyFeedbackDemoApp;
 			productReference = D0B8F30C2F08C0EB00C707DC /* SwiftlyFeedbackDemoApp.app */;
@@ -398,6 +412,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -442,6 +457,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -615,6 +631,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D0F3F5E62F093DEF006C891E /* SwiftlyFeedbackKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftlyFeedbackKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D0B8F3042F08C0EB00C707DC /* Project object */;
 }

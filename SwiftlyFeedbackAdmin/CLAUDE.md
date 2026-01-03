@@ -20,11 +20,13 @@ SwiftlyFeedbackAdmin/
 ├── Models/
 │   ├── AuthModels.swift            # User, token models
 │   ├── ProjectModels.swift         # Project, member models
-│   └── FeedbackModels.swift        # Feedback, Comment models, DTOs
+│   ├── FeedbackModels.swift        # Feedback, Comment models, DTOs
+│   └── SDKUserModels.swift         # SDK user and stats models
 ├── ViewModels/
 │   ├── AuthViewModel.swift         # Authentication state
 │   ├── ProjectViewModel.swift      # Project management state
-│   └── FeedbackViewModel.swift     # Feedback management state
+│   ├── FeedbackViewModel.swift     # Feedback management state
+│   └── SDKUserViewModel.swift      # SDK user management state
 ├── Views/
 │   ├── RootView.swift              # Root navigation
 │   ├── MainTabView.swift           # Tab bar navigation
@@ -43,13 +45,17 @@ SwiftlyFeedbackAdmin/
 │   │   ├── FeedbackDashboardView.swift # Dashboard with List/Kanban views
 │   │   ├── FeedbackListView.swift      # Feedback list with row view
 │   │   └── FeedbackDetailView.swift    # Feedback detail with comments
+│   ├── Users/
+│   │   ├── UsersDashboardView.swift    # Users dashboard with stats and list
+│   │   └── UsersListView.swift         # Users list (legacy, used in project detail)
 │   └── Settings/
 │       ├── SettingsView.swift          # App settings
 │       └── DeveloperCommandsView.swift # Dev tools (DEBUG/TestFlight only)
 └── Services/
     ├── AdminAPIClient.swift        # API client for admin endpoints
     ├── AuthService.swift           # Authentication logic
-    └── KeychainService.swift       # Secure token storage
+    ├── KeychainService.swift       # Secure token storage
+    └── Logger.swift                # Centralized OSLog logging categories
 ```
 
 ## Authentication Flow
@@ -120,6 +126,28 @@ The `FeedbackDashboardView` provides a dedicated tab for managing feedback acros
 - Filter by status and/or category
 - Update status via context menu, swipe actions, or drag-and-drop (Kanban)
 - View feedback details and manage comments
+
+## Users Dashboard
+
+The `UsersDashboardView` provides a dedicated tab for viewing SDK users (end users of apps using SwiftlyFeedbackKit):
+
+### Features
+- Project picker in toolbar to switch between projects
+- Stats cards showing: Total Users, Total MRR, Paying Users, Average MRR
+- Search users by user ID
+- Sort by: Last Seen, MRR, Feedback Count, Vote Count
+- User list showing user type (iCloud/Device/Custom), activity stats, and MRR
+
+### User Types
+- **iCloud**: Users identified via iCloud (`icloud_` prefix)
+- **Device**: Local device-based users (`local_` prefix)
+- **Custom**: Custom user identifiers provided by the app
+
+### Logging
+Uses `Logger.swift` for centralized OSLog logging with categories:
+- `Logger.api` - API requests/responses
+- `Logger.viewModel` - ViewModel state changes
+- `Logger.view` - View lifecycle events
 
 ## Developer Commands (DEBUG/TestFlight only)
 

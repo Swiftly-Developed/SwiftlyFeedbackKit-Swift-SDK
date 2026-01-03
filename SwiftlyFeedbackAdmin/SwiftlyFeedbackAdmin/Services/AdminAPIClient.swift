@@ -396,6 +396,77 @@ actor AdminAPIClient {
         }
         return String(data: data, encoding: .utf8) ?? "Unknown error"
     }
+
+    // MARK: - SDK Users API
+
+    func getSDKUsers(projectId: UUID) async throws -> [SDKUser] {
+        let path = "users/project/\(projectId)"
+        logger.info("🔵 GET \(path) (SDK users)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            logger.debug("📊 SDK Users - attempting to decode \(data.count) bytes")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.debug("📊 SDK Users - raw JSON: \(rawJSON)")
+            }
+            let decoded = try decoder.decode([SDKUser].self, from: data)
+            logger.info("✅ GET \(path) - decoded \(decoded.count) SDK users")
+            return decoded
+        } catch let decodingError as DecodingError {
+            logger.error("❌ GET \(path) - DecodingError: \(self.describeDecodingError(decodingError))")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.error("❌ Raw JSON that failed to decode: \(rawJSON)")
+            }
+            throw APIError.decodingError(decodingError)
+        } catch {
+            logger.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getSDKUserStats(projectId: UUID) async throws -> SDKUserStats {
+        let path = "users/project/\(projectId)/stats"
+        logger.info("🔵 GET \(path) (SDK user stats)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            logger.debug("📊 SDK User Stats - attempting to decode \(data.count) bytes")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.debug("📊 SDK User Stats - raw JSON: \(rawJSON)")
+            }
+            let decoded = try decoder.decode(SDKUserStats.self, from: data)
+            logger.info("✅ GET \(path) - decoded SDK user stats: totalUsers=\(decoded.totalUsers), totalMrr=\(decoded.totalMrr)")
+            return decoded
+        } catch let decodingError as DecodingError {
+            logger.error("❌ GET \(path) - DecodingError: \(self.describeDecodingError(decodingError))")
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                logger.error("❌ Raw JSON that failed to decode: \(rawJSON)")
+            }
+            throw APIError.decodingError(decodingError)
+        } catch {
+            logger.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func describeDecodingError(_ error: DecodingError) -> String {
+        switch error {
+        case .keyNotFound(let key, let context):
+            return "Key '\(key.stringValue)' not found at path: \(context.codingPath.map { $0.stringValue }.joined(separator: ".")). \(context.debugDescription)"
+        case .typeMismatch(let type, let context):
+            return "Type mismatch for type \(type) at path: \(context.codingPath.map { $0.stringValue }.joined(separator: ".")). \(context.debugDescription)"
+        case .valueNotFound(let type, let context):
+            return "Value of type \(type) not found at path: \(context.codingPath.map { $0.stringValue }.joined(separator: ".")). \(context.debugDescription)"
+        case .dataCorrupted(let context):
+            return "Data corrupted at path: \(context.codingPath.map { $0.stringValue }.joined(separator: ".")). \(context.debugDescription)"
+        @unknown default:
+            return error.localizedDescription
+        }
+    }
 }
 
 enum APIError: Error, LocalizedError {

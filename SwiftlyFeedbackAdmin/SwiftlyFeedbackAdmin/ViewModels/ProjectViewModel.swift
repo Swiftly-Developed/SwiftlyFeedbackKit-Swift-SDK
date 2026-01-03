@@ -53,12 +53,15 @@ final class ProjectViewModel {
     }
 
     func loadProject(id: UUID) async {
+        logger.info("📂 Loading project details for: \(id.uuidString)")
         isLoadingDetail = true
         errorMessage = nil
 
         do {
             selectedProject = try await AdminAPIClient.shared.get(path: "projects/\(id)")
+            logger.info("✅ Project loaded: \(self.selectedProject?.name ?? "nil")")
         } catch {
+            logger.error("❌ Failed to load project \(id.uuidString): \(error.localizedDescription)")
             showError(message: error.localizedDescription)
         }
 

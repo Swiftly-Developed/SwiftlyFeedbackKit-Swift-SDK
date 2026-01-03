@@ -4,13 +4,20 @@ struct FeedbackRowView: View {
     let feedback: Feedback
     let onVote: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            VoteButton(
-                voteCount: feedback.voteCount,
-                hasVoted: feedback.hasVoted,
-                action: onVote
-            )
+            if config.showVoteCount {
+                VoteButton(
+                    voteCount: feedback.voteCount,
+                    hasVoted: feedback.hasVoted,
+                    action: onVote
+                )
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(feedback.title)
@@ -20,24 +27,39 @@ struct FeedbackRowView: View {
                 Text(feedback.description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(config.expandDescriptionInList ? nil : 2)
 
-                HStack(spacing: 8) {
-                    StatusBadge(status: feedback.status)
-                    CategoryBadge(category: feedback.category)
-
-                    Spacer()
-
-                    if feedback.commentCount > 0 {
-                        Label("\(feedback.commentCount)", systemImage: "bubble.right")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.top, 4)
+                FeedbackRowMetadataView(feedback: feedback)
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+struct FeedbackRowMetadataView: View {
+    let feedback: Feedback
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if config.showStatusBadge {
+                StatusBadge(status: feedback.status)
+            }
+
+            if config.showCategoryBadge {
+                CategoryBadge(category: feedback.category)
+            }
+
+            Spacer()
+
+            if feedback.commentCount > 0 && config.showCommentSection {
+                Label("\(feedback.commentCount)", systemImage: "bubble.right")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.top, 4)
     }
 }
 
@@ -46,23 +68,45 @@ struct VoteButton: View {
     let hasVoted: Bool
     let action: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    private var voteColor: Color {
+        if hasVoted {
+            return theme.primaryColor.resolve(for: colorScheme)
+        }
+        return .secondary
+    }
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 2) {
                 Image(systemName: hasVoted ? "arrowtriangle.up.fill" : "arrowtriangle.up")
-                    .font(.system(size: 16, weight: .semibold))
-                Text("\(voteCount)")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 16, weight: .bold))
+                Text(voteCount, format: .number)
+                    .font(.system(size: 14))
+                    .fontWeight(.medium)
             }
-            .foregroundStyle(hasVoted ? .blue : .secondary)
+            .foregroundStyle(voteColor)
             .frame(width: 44)
         }
         .buttonStyle(.plain)
+        .disabled(!config.allowUndoVote && hasVoted)
     }
 }
 
 struct StatusBadge: View {
     let status: FeedbackStatus
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    private var statusColor: Color {
+        theme.statusColors.color(for: status)
+    }
 
     var body: some View {
         Text(status.displayName)
@@ -70,42 +114,30 @@ struct StatusBadge: View {
             .fontWeight(.medium)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(backgroundColor)
-            .foregroundStyle(foregroundColor)
-            .clipShape(Capsule())
-    }
-
-    private var backgroundColor: Color {
-        switch status {
-        case .pending: return .gray.opacity(0.2)
-        case .approved: return .blue.opacity(0.2)
-        case .inProgress: return .orange.opacity(0.2)
-        case .completed: return .green.opacity(0.2)
-        case .rejected: return .red.opacity(0.2)
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch status {
-        case .pending: return .gray
-        case .approved: return .blue
-        case .inProgress: return .orange
-        case .completed: return .green
-        case .rejected: return .red
-        }
+            .background(statusColor.opacity(0.2))
+            .foregroundStyle(statusColor)
+            .clipShape(.capsule)
     }
 }
 
 struct CategoryBadge: View {
     let category: FeedbackCategory
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    private var categoryColor: Color {
+        theme.categoryColors.color(for: category)
+    }
+
     var body: some View {
         Text(category.displayName)
             .font(.caption2)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(.secondary.opacity(0.1))
-            .foregroundStyle(.secondary)
-            .clipShape(Capsule())
+            .background(categoryColor.opacity(0.15))
+            .foregroundStyle(categoryColor)
+            .clipShape(.capsule)
     }
 }

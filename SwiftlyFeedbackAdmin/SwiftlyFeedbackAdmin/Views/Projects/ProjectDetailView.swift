@@ -198,10 +198,12 @@ struct ProjectDetailView: View {
             }
             .padding()
             #if os(macOS)
-            .frame(maxWidth: 800)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: 800, alignment: .center)
             #endif
         }
+        #if os(macOS)
+        .frame(maxWidth: .infinity)
+        #endif
         .background(groupedBackgroundColor)
         #if os(iOS)
         .refreshable {
@@ -306,8 +308,8 @@ struct ProjectDetailView: View {
 
     private func statsGrid(_ project: Project) -> some View {
         let columns = isCompact
-            ? [GridItem(.flexible()), GridItem(.flexible())]
-            : [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+            ? [GridItem(.flexible(minimum: 100, maximum: 200)), GridItem(.flexible(minimum: 100, maximum: 200))]
+            : [GridItem(.flexible(minimum: 120, maximum: 180)), GridItem(.flexible(minimum: 120, maximum: 180)), GridItem(.flexible(minimum: 120, maximum: 180)), GridItem(.flexible(minimum: 120, maximum: 180))]
 
         return LazyVGrid(columns: columns, spacing: 12) {
             Button {
@@ -497,7 +499,7 @@ struct StatCard: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
             if showChevron {
                 Image(systemName: "chevron.right")
@@ -505,6 +507,7 @@ struct StatCard: View {
                     .foregroundStyle(.tertiary)
             }
         }
+        .frame(height: 100)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
