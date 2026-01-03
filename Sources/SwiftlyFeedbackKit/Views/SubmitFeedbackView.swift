@@ -4,8 +4,12 @@ public struct SubmitFeedbackView: View {
     let swiftlyFeedback: SwiftlyFeedback?
     let onDismiss: () -> Void
 
-    @StateObject private var viewModel = SubmitFeedbackViewModel()
+    @State private var viewModel = SubmitFeedbackViewModel()
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     public init(swiftlyFeedback: SwiftlyFeedback? = nil, onDismiss: @escaping () -> Void = {}) {
         self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
@@ -16,38 +20,46 @@ public struct SubmitFeedbackView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Title", text: $viewModel.title)
+                    TextField(String(localized: Strings.formTitle), text: $viewModel.title)
 
-                    Picker("Category", selection: $viewModel.category) {
+                    Picker(String(localized: Strings.formCategory), selection: $viewModel.category) {
                         ForEach(FeedbackCategory.allCases, id: \.self) { category in
                             Text(category.displayName).tag(category)
                         }
                     }
                 }
 
-                Section("Description") {
+                Section(String(localized: Strings.formDescription)) {
                     TextEditor(text: $viewModel.description)
                         .frame(minHeight: 100)
                 }
 
-                Section("Optional") {
-                    TextField("Email (for follow-up)", text: $viewModel.email)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
+                if config.showEmailField {
+                    Section {
+                        TextField(String(localized: Strings.formEmailPlaceholder), text: $viewModel.email)
+                            .textContentType(.emailAddress)
+                            #if !os(macOS)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            #endif
+                    } header: {
+                        Text(Strings.formEmail)
+                    }
                 }
             }
-            .navigationTitle("Submit Feedback")
+            .navigationTitle(String(localized: Strings.submitFeedbackTitle))
+            #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(String(localized: Strings.cancelButton)) {
                         dismiss()
                         onDismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Submit") {
+                    Button(String(localized: Strings.submitButton)) {
                         Task {
                             await viewModel.submit(using: swiftlyFeedback)
                             if viewModel.isSubmitted {
@@ -56,20 +68,21 @@ public struct SubmitFeedbackView: View {
                             }
                         }
                     }
+                    .tint(theme.primaryColor.resolve(for: colorScheme))
                     .disabled(!viewModel.isValid || viewModel.isSubmitting)
                 }
             }
-            .alert("Error", isPresented: $viewModel.showingError) {
-                Button("OK", role: .cancel) {}
+            .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
+                Button(String(localized: Strings.errorOK), role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? "Failed to submit feedback")
+                Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
             }
             .overlay {
                 if viewModel.isSubmitting {
-                    ProgressView("Submitting...")
+                    ProgressView()
                         .padding()
                         .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(.rect(cornerRadius: 12))
                 }
             }
         }
@@ -77,15 +90,16 @@ public struct SubmitFeedbackView: View {
 }
 
 @MainActor
-final class SubmitFeedbackViewModel: ObservableObject {
-    @Published var title = ""
-    @Published var description = ""
-    @Published var category: FeedbackCategory = .featureRequest
-    @Published var email = ""
-    @Published var isSubmitting = false
-    @Published var isSubmitted = false
-    @Published var showingError = false
-    @Published var errorMessage: String?
+@Observable
+final class SubmitFeedbackViewModel {
+    var title = ""
+    var description = ""
+    var category: FeedbackCategory = .featureRequest
+    var email = ""
+    var isSubmitting = false
+    var isSubmitted = false
+    var showingError = false
+    var errorMessage: String?
 
     var isValid: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&

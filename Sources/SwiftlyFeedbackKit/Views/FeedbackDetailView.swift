@@ -3,12 +3,14 @@ import SwiftUI
 public struct FeedbackDetailView: View {
     let feedback: Feedback
     let swiftlyFeedback: SwiftlyFeedback?
-    @StateObject private var viewModel: FeedbackDetailViewModel
+    @State private var viewModel: FeedbackDetailViewModel
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
 
     public init(feedback: Feedback, swiftlyFeedback: SwiftlyFeedback? = nil) {
         self.feedback = feedback
         self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
-        _viewModel = StateObject(wrappedValue: FeedbackDetailViewModel(
+        _viewModel = State(wrappedValue: FeedbackDetailViewModel(
             feedback: feedback,
             swiftlyFeedback: swiftlyFeedback ?? SwiftlyFeedback.shared
         ))
@@ -17,111 +19,157 @@ public struct FeedbackDetailView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        StatusBadge(status: feedback.status)
-                        CategoryBadge(category: feedback.category)
-                        Spacer()
-                    }
+                FeedbackDetailHeaderView(feedback: feedback)
+                FeedbackDetailVoteView(viewModel: viewModel)
 
-                    Text(feedback.title)
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text(feedback.description)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-
-                    if let createdAt = feedback.createdAt {
-                        Text("Submitted \(createdAt.formatted(date: .abbreviated, time: .shortened))")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
+                if config.showCommentSection {
+                    FeedbackDetailCommentsView(viewModel: viewModel)
                 }
-                .padding()
-                .background(.background.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                // Vote section
-                HStack {
-                    VoteButton(
-                        voteCount: viewModel.currentFeedback.voteCount,
-                        hasVoted: viewModel.currentFeedback.hasVoted
-                    ) {
-                        Task { await viewModel.toggleVote() }
-                    }
-
-                    Text(viewModel.currentFeedback.hasVoted ? "You voted for this" : "Vote for this feature")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    Spacer()
-                }
-                .padding()
-                .background(.background.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                // Comments section
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Comments (\(viewModel.comments.count))")
-                        .font(.headline)
-
-                    if viewModel.isLoadingComments {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                    } else if viewModel.comments.isEmpty {
-                        Text("No comments yet")
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        ForEach(viewModel.comments) { comment in
-                            CommentRow(comment: comment)
-                        }
-                    }
-
-                    // Add comment
-                    HStack {
-                        TextField("Add a comment...", text: $viewModel.newCommentText)
-                            .textFieldStyle(.roundedBorder)
-
-                        Button {
-                            Task { await viewModel.submitComment() }
-                        } label: {
-                            Image(systemName: "paperplane.fill")
-                        }
-                        .disabled(viewModel.newCommentText.isEmpty || viewModel.isSubmittingComment)
-                    }
-                }
-                .padding()
-                .background(.background.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding()
         }
-        .navigationTitle("Details")
+        .navigationTitle(String(localized: Strings.feedbackDetailTitle))
+        #if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task {
-            await viewModel.loadComments()
+            if config.showCommentSection {
+                await viewModel.loadComments()
+            }
         }
-        .alert("Error", isPresented: $viewModel.showingError) {
-            Button("OK", role: .cancel) {}
+        .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
+            Button(String(localized: Strings.errorOK), role: .cancel) {}
         } message: {
-            Text(viewModel.errorMessage ?? "An error occurred")
+            Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
         }
     }
 }
 
-struct CommentRow: View {
+struct FeedbackDetailHeaderView: View {
+    let feedback: Feedback
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                if config.showStatusBadge {
+                    StatusBadge(status: feedback.status)
+                }
+                if config.showCategoryBadge {
+                    CategoryBadge(category: feedback.category)
+                }
+                Spacer()
+            }
+
+            Text(feedback.title)
+                .font(.title2)
+                .bold()
+
+            Text(feedback.description)
+                .font(.body)
+                .foregroundStyle(.secondary)
+
+            if let createdAt = feedback.createdAt {
+                Text("Submitted \(createdAt.formatted(date: .abbreviated, time: .shortened))")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding()
+        .background(.background.secondary)
+        .clipShape(.rect(cornerRadius: 12))
+    }
+}
+
+struct FeedbackDetailVoteView: View {
+    @Bindable var viewModel: FeedbackDetailViewModel
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    var body: some View {
+        HStack {
+            if config.showVoteCount {
+                VoteButton(
+                    voteCount: viewModel.currentFeedback.voteCount,
+                    hasVoted: viewModel.currentFeedback.hasVoted
+                ) {
+                    Task { await viewModel.toggleVote() }
+                }
+            }
+
+            Text(viewModel.currentFeedback.hasVoted
+                 ? String(localized: Strings.votedButton)
+                 : String(localized: Strings.voteButton))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Spacer()
+        }
+        .padding()
+        .background(.background.secondary)
+        .clipShape(.rect(cornerRadius: 12))
+    }
+}
+
+struct FeedbackDetailCommentsView: View {
+    @Bindable var viewModel: FeedbackDetailViewModel
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("\(String(localized: Strings.commentsTitle)) (\(viewModel.comments.count))")
+                .font(.headline)
+
+            if viewModel.isLoadingComments {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if viewModel.comments.isEmpty {
+                Text(Strings.commentsEmpty)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+            } else {
+                ForEach(viewModel.comments) { comment in
+                    CommentRowView(comment: comment)
+                }
+            }
+
+            HStack {
+                TextField(String(localized: Strings.addCommentPlaceholder), text: $viewModel.newCommentText)
+                    .textFieldStyle(.roundedBorder)
+
+                Button {
+                    Task { await viewModel.submitComment() }
+                } label: {
+                    Image(systemName: "paperplane.fill")
+                }
+                .tint(theme.primaryColor.resolve(for: colorScheme))
+                .disabled(viewModel.newCommentText.isEmpty || viewModel.isSubmittingComment)
+            }
+        }
+        .padding()
+        .background(.background.secondary)
+        .clipShape(.rect(cornerRadius: 12))
+    }
+}
+
+struct CommentRowView: View {
     let comment: Comment
+
+    @Environment(\.colorScheme) private var colorScheme
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(comment.isAdmin ? "Team" : "User")
                     .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(comment.isAdmin ? .blue : .secondary)
+                    .bold()
+                    .foregroundStyle(comment.isAdmin ? theme.primaryColor.resolve(for: colorScheme) : .secondary)
 
                 if let createdAt = comment.createdAt {
                     Text("·")
@@ -140,14 +188,15 @@ struct CommentRow: View {
 }
 
 @MainActor
-final class FeedbackDetailViewModel: ObservableObject {
-    @Published var currentFeedback: Feedback
-    @Published var comments: [Comment] = []
-    @Published var isLoadingComments = false
-    @Published var newCommentText = ""
-    @Published var isSubmittingComment = false
-    @Published var showingError = false
-    @Published var errorMessage: String?
+@Observable
+final class FeedbackDetailViewModel {
+    var currentFeedback: Feedback
+    var comments: [Comment] = []
+    var isLoadingComments = false
+    var newCommentText = ""
+    var isSubmittingComment = false
+    var showingError = false
+    var errorMessage: String?
 
     private let swiftlyFeedback: SwiftlyFeedback?
 
@@ -172,6 +221,13 @@ final class FeedbackDetailViewModel: ObservableObject {
 
     func toggleVote() async {
         guard let sf = swiftlyFeedback else { return }
+
+        let config = SwiftlyFeedback.config
+
+        // Check if undo vote is allowed
+        if currentFeedback.hasVoted && !config.allowUndoVote {
+            return
+        }
 
         do {
             let result: VoteResult

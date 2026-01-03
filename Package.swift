@@ -1,12 +1,12 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "SwiftlyFeedbackKit",
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12),
-        .visionOS(.v1)
+        .iOS(.v26),
+        .macOS(.v26),
+        .visionOS(.v26)
     ],
     products: [
         .library(
@@ -17,7 +17,10 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftlyFeedbackKit",
-            path: "Sources/SwiftlyFeedbackKit"
+            path: "Sources/SwiftlyFeedbackKit",
+            resources: [
+                .process("Resources")
+            ]
         ),
         .testTarget(
             name: "SwiftlyFeedbackKitTests",

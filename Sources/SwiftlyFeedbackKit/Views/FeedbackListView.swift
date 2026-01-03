@@ -2,42 +2,52 @@ import SwiftUI
 
 /// A ready-to-use view that displays a list of feedback items
 public struct FeedbackListView: View {
-    @StateObject private var viewModel: FeedbackListViewModel
+    @State private var viewModel: FeedbackListViewModel
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     public init(swiftlyFeedback: SwiftlyFeedback? = nil) {
-        _viewModel = StateObject(wrappedValue: FeedbackListViewModel(swiftlyFeedback: swiftlyFeedback))
+        _viewModel = State(wrappedValue: FeedbackListViewModel(swiftlyFeedback: swiftlyFeedback))
     }
 
     public var body: some View {
         NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.feedbackItems.isEmpty {
-                    ProgressView("Loading feedback...")
+                    ProgressView()
                 } else if viewModel.feedbackItems.isEmpty {
-                    emptyState
+                    FeedbackEmptyStateView(onSubmit: { viewModel.showingSubmitSheet = true })
                 } else {
-                    feedbackList
+                    FeedbackListContentView(viewModel: viewModel)
                 }
             }
-            .navigationTitle("Feedback")
+            .navigationTitle(String(localized: Strings.feedbackListTitle))
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        viewModel.showingSubmitSheet = true
-                    } label: {
-                        Image(systemName: "plus")
+                if config.buttons.addButton.display {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            viewModel.showingSubmitSheet = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .tint(theme.primaryColor.resolve(for: colorScheme))
                     }
                 }
-                ToolbarItem(placement: .automatic) {
-                    Menu {
-                        Picker("Filter", selection: $viewModel.selectedStatus) {
-                            Text("All").tag(FeedbackStatus?.none)
-                            ForEach(FeedbackStatus.allCases, id: \.self) { status in
-                                Text(status.displayName).tag(FeedbackStatus?.some(status))
+
+                if config.buttons.segmentedControl.display {
+                    ToolbarItem(placement: .automatic) {
+                        Menu {
+                            Picker("Filter", selection: $viewModel.selectedStatus) {
+                                Text("All").tag(FeedbackStatus?.none)
+                                ForEach(FeedbackStatus.allCases, id: \.self) { status in
+                                    Text(status.displayName).tag(FeedbackStatus?.some(status))
+                                }
                             }
+                        } label: {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
                         }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                 }
             }
@@ -53,28 +63,42 @@ public struct FeedbackListView: View {
             .task {
                 await viewModel.loadFeedback()
             }
-            .alert("Error", isPresented: $viewModel.showingError) {
-                Button("OK", role: .cancel) {}
+            .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
+                Button(String(localized: Strings.errorOK), role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
             }
         }
     }
+}
 
-    private var emptyState: some View {
+struct FeedbackEmptyStateView: View {
+    let onSubmit: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    var body: some View {
         ContentUnavailableView {
-            Label("No Feedback", systemImage: "bubble.left.and.bubble.right")
+            Label(String(localized: Strings.feedbackListEmpty), systemImage: "bubble.left.and.bubble.right")
         } description: {
-            Text("Be the first to submit feedback!")
+            Text(Strings.feedbackListEmptyDescription)
         } actions: {
-            Button("Submit Feedback") {
-                viewModel.showingSubmitSheet = true
+            Button(String(localized: Strings.submitFeedbackTitle)) {
+                onSubmit()
             }
             .buttonStyle(.borderedProminent)
+            .tint(theme.primaryColor.resolve(for: colorScheme))
         }
     }
+}
 
-    private var feedbackList: some View {
+struct FeedbackListContentView: View {
+    @Bindable var viewModel: FeedbackListViewModel
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+
+    var body: some View {
         List(viewModel.feedbackItems) { feedback in
             NavigationLink(value: feedback) {
                 FeedbackRowView(feedback: feedback) {
@@ -89,13 +113,14 @@ public struct FeedbackListView: View {
 }
 
 @MainActor
-final class FeedbackListViewModel: ObservableObject {
-    @Published var feedbackItems: [Feedback] = []
-    @Published var isLoading = false
-    @Published var showingSubmitSheet = false
-    @Published var showingError = false
-    @Published var errorMessage: String?
-    @Published var selectedStatus: FeedbackStatus? {
+@Observable
+final class FeedbackListViewModel {
+    var feedbackItems: [Feedback] = []
+    var isLoading = false
+    var showingSubmitSheet = false
+    var showingError = false
+    var errorMessage: String?
+    var selectedStatus: FeedbackStatus? {
         didSet { Task { await loadFeedback() } }
     }
 
@@ -121,6 +146,13 @@ final class FeedbackListViewModel: ObservableObject {
 
     func toggleVote(for feedback: Feedback) async {
         guard let sf = swiftlyFeedback else { return }
+
+        let config = SwiftlyFeedback.config
+
+        // Check if undo vote is allowed
+        if feedback.hasVoted && !config.allowUndoVote {
+            return
+        }
 
         do {
             if feedback.hasVoted {

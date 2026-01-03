@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Feedback: Identifiable, Codable, Sendable, Equatable {
+public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
     public let id: UUID
     public let title: String
     public let description: String
