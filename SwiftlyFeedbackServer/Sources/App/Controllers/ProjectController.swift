@@ -30,6 +30,9 @@ struct ProjectController: RouteCollection {
         // Slack settings
         protected.patch(":projectId", "slack", use: updateSlackSettings)
 
+        // Status settings
+        protected.patch(":projectId", "statuses", use: updateAllowedStatuses)
+
         // Invite management
         protected.get(":projectId", "invites", use: listInvites)
         protected.delete(":projectId", "invites", ":inviteId", use: cancelInvite)
@@ -596,6 +599,44 @@ struct ProjectController: RouteCollection {
         if let notify = dto.slackNotifyStatusChanges {
             project.slackNotifyStatusChanges = notify
         }
+
+        try await project.save(on: req.db)
+
+        try await project.$feedbacks.load(on: req.db)
+        try await project.$members.load(on: req.db)
+        try await project.$owner.load(on: req.db)
+
+        return ProjectResponseDTO(
+            project: project,
+            feedbackCount: project.feedbacks.count,
+            memberCount: project.members.count,
+            ownerEmail: project.owner.email
+        )
+    }
+
+    // MARK: - Status Settings
+
+    @Sendable
+    func updateAllowedStatuses(req: Request) async throws -> ProjectResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        let dto = try req.content.decode(UpdateProjectStatusesDTO.self)
+
+        // Validate that all provided statuses are valid FeedbackStatus values
+        let validStatuses = FeedbackStatus.allCases.map { $0.rawValue }
+        for status in dto.allowedStatuses {
+            guard validStatuses.contains(status) else {
+                throw Abort(.badRequest, reason: "Invalid status: \(status). Valid statuses are: \(validStatuses.joined(separator: ", "))")
+            }
+        }
+
+        // Ensure at least pending and one completion status are included
+        if !dto.allowedStatuses.contains("pending") {
+            throw Abort(.badRequest, reason: "The 'pending' status must always be allowed")
+        }
+
+        project.allowedStatuses = dto.allowedStatuses
 
         try await project.save(on: req.db)
 

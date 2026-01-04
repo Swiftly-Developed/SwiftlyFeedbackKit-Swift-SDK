@@ -42,6 +42,7 @@ Sidebar navigation with: Home, Feedback, Settings
 3. **Settings** - Configuration screen for:
    - User profile (email, name, custom ID)
    - Subscription settings (amount and billing cycle for MRR tracking)
+   - Permissions (allow/disallow feedback submission with custom message)
    - SDK behavior options (vote undo, comment section, email field)
    - Display options (badges, vote count, description expansion)
 
@@ -74,6 +75,10 @@ SwiftlyFeedback.config.showStatusBadge = true
 SwiftlyFeedback.config.showCategoryBadge = true
 SwiftlyFeedback.config.showVoteCount = true
 SwiftlyFeedback.config.expandDescriptionInList = false
+
+// Permission controls
+SwiftlyFeedback.config.allowFeedbackSubmission = true  // Disable for free users
+SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
 ```
 
 ## Settings Persistence

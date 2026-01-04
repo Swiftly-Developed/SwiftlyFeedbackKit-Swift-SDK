@@ -40,6 +40,9 @@ final class Project: Model, Content, @unchecked Sendable {
     @Field(key: "slack_notify_status_changes")
     var slackNotifyStatusChanges: Bool
 
+    @Field(key: "allowed_statuses")
+    var allowedStatuses: [String]
+
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -65,7 +68,8 @@ final class Project: Model, Content, @unchecked Sendable {
         slackWebhookURL: String? = nil,
         slackNotifyNewFeedback: Bool = true,
         slackNotifyNewComments: Bool = true,
-        slackNotifyStatusChanges: Bool = true
+        slackNotifyStatusChanges: Bool = true,
+        allowedStatuses: [String]? = nil
     ) {
         self.id = id
         self.name = name
@@ -78,6 +82,7 @@ final class Project: Model, Content, @unchecked Sendable {
         self.slackNotifyNewFeedback = slackNotifyNewFeedback
         self.slackNotifyNewComments = slackNotifyNewComments
         self.slackNotifyStatusChanges = slackNotifyStatusChanges
+        self.allowedStatuses = allowedStatuses ?? FeedbackStatus.defaultAllowed.map { $0.rawValue }
     }
 }
 

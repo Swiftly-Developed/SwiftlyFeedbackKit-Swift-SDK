@@ -553,6 +553,29 @@ actor AdminAPIClient {
         }
     }
 
+    // MARK: - Project Status Settings API
+
+    func updateProjectAllowedStatuses(
+        projectId: UUID,
+        allowedStatuses: [String]
+    ) async throws -> Project {
+        let path = "projects/\(projectId)/statuses"
+        let body = UpdateProjectStatusesRequest(allowedStatuses: allowedStatuses)
+
+        logger.info("🟠 PATCH \(path) (allowed statuses)")
+        let (data, response) = try await makeRequest(path: path, method: "PATCH", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(Project.self, from: data)
+            logger.info("✅ PATCH \(path) - decoded successfully")
+            return decoded
+        } catch {
+            logger.error("❌ PATCH \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - Merge Feedback API
 
     func mergeFeedback(primaryId: UUID, secondaryIds: [UUID]) async throws -> MergeFeedbackResponse {

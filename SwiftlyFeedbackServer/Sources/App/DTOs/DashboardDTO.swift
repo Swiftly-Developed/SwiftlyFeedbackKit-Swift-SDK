@@ -7,6 +7,7 @@ struct FeedbackByStatusDTO: Content {
     let pending: Int
     let approved: Int
     let inProgress: Int
+    let testflight: Int
     let completed: Int
     let rejected: Int
 }

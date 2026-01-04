@@ -3,6 +3,7 @@ import SwiftUI
 struct FeedbackDetailView: View {
     let feedback: Feedback
     let apiKey: String
+    let allowedStatuses: [FeedbackStatus]
     @Bindable var viewModel: FeedbackViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showingDeleteConfirmation = false
@@ -326,7 +327,7 @@ struct FeedbackDetailView: View {
 
     private var statusMenu: some View {
         Menu {
-            ForEach(FeedbackStatus.allCases, id: \.self) { status in
+            ForEach(allowedStatuses, id: \.self) { status in
                 Button {
                     Task {
                         await viewModel.updateFeedbackStatus(id: feedback.id, status: status)
@@ -473,6 +474,7 @@ struct CommentRowView: View {
                 mergedFeedbackIds: [UUID(), UUID()]
             ),
             apiKey: "test-key",
+            allowedStatuses: [.pending, .approved, .inProgress, .completed, .rejected],
             viewModel: FeedbackViewModel()
         )
     }

@@ -152,7 +152,8 @@ struct SlackSettingsView: View {
             slackWebhookUrl: nil,
             slackNotifyNewFeedback: true,
             slackNotifyNewComments: true,
-            slackNotifyStatusChanges: true
+            slackNotifyStatusChanges: true,
+            allowedStatuses: ["pending", "approved", "in_progress", "completed", "rejected"]
         ),
         viewModel: ProjectViewModel()
     )

@@ -317,6 +317,7 @@ struct FeedbackStatusBreakdownView: View {
                 StatusCard(title: "Pending", count: feedbackByStatus.pending, color: .gray)
                 StatusCard(title: "Approved", count: feedbackByStatus.approved, color: .blue)
                 StatusCard(title: "In Progress", count: feedbackByStatus.inProgress, color: .orange)
+                StatusCard(title: "TestFlight", count: feedbackByStatus.testflight, color: .cyan)
                 StatusCard(title: "Completed", count: feedbackByStatus.completed, color: .green)
                 StatusCard(title: "Rejected", count: feedbackByStatus.rejected, color: .red)
             }

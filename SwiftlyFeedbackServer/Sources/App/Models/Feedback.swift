@@ -88,12 +88,18 @@ final class Feedback: Model, Content, @unchecked Sendable {
     }
 }
 
-enum FeedbackStatus: String, Codable {
+enum FeedbackStatus: String, Codable, CaseIterable {
     case pending
     case approved
     case inProgress = "in_progress"
+    case testflight
     case completed
     case rejected
+
+    /// All statuses that are enabled by default for new projects
+    static var defaultAllowed: [FeedbackStatus] {
+        [.pending, .approved, .inProgress, .completed, .rejected]
+    }
 }
 
 enum FeedbackCategory: String, Codable {

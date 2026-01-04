@@ -58,7 +58,7 @@ final class HomeDashboardViewModel {
         static let empty = DisplayStats(
             totalProjects: 0,
             totalFeedback: 0,
-            feedbackByStatus: FeedbackByStatus(pending: 0, approved: 0, inProgress: 0, completed: 0, rejected: 0),
+            feedbackByStatus: FeedbackByStatus(pending: 0, approved: 0, inProgress: 0, testflight: 0, completed: 0, rejected: 0),
             totalUsers: 0,
             totalComments: 0,
             totalVotes: 0

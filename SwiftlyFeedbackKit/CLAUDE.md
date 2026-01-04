@@ -84,7 +84,9 @@ SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to su
 ### Models
 - All models are `Codable`, `Sendable`, and `Equatable`
 - Use `Identifiable` for SwiftUI list compatibility
+- `FeedbackStatus` - Enum with cases: `pending`, `approved`, `inProgress`, `testflight`, `completed`, `rejected`
 - `FeedbackStatus.canVote` - Returns `false` for `completed`/`rejected` statuses
+- `FeedbackStatus.displayName` - User-friendly name for display
 - `Feedback.mergedIntoId` - Points to primary feedback if this item was merged
 - `Feedback.isMerged` - Computed property to check if feedback was merged
 - `Feedback.mergedFeedbackIds` - Array of IDs merged into this feedback (for primary)

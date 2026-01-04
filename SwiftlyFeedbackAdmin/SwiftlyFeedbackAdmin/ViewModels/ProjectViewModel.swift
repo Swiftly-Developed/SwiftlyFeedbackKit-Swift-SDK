@@ -325,6 +325,26 @@ final class ProjectViewModel {
         }
     }
 
+    // MARK: - Status Settings
+
+    func updateAllowedStatuses(projectId: UUID, allowedStatuses: [String]) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            selectedProject = try await AdminAPIClient.shared.updateProjectAllowedStatuses(
+                projectId: projectId,
+                allowedStatuses: allowedStatuses
+            )
+            isLoading = false
+            return true
+        } catch {
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
+
     // MARK: - Accept Invite
 
     var inviteCode = ""

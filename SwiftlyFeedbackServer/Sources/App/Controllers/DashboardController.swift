@@ -155,6 +155,7 @@ struct DashboardController: RouteCollection {
         var pending = 0
         var approved = 0
         var inProgress = 0
+        var testflight = 0
         var completed = 0
         var rejected = 0
 
@@ -163,6 +164,7 @@ struct DashboardController: RouteCollection {
             case .pending: pending += 1
             case .approved: approved += 1
             case .inProgress: inProgress += 1
+            case .testflight: testflight += 1
             case .completed: completed += 1
             case .rejected: rejected += 1
             }
@@ -172,6 +174,7 @@ struct DashboardController: RouteCollection {
             pending: pending,
             approved: approved,
             inProgress: inProgress,
+            testflight: testflight,
             completed: completed,
             rejected: rejected
         )

@@ -48,6 +48,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(AddUserNotificationSettings())
     app.migrations.add(AddProjectSlackWebhook())
     app.migrations.add(AddFeedbackMergeFields())
+    app.migrations.add(AddProjectAllowedStatuses())
 
     try await app.autoMigrate()
 

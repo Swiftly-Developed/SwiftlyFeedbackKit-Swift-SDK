@@ -18,6 +18,72 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let slackNotifyNewFeedback: Bool
     let slackNotifyNewComments: Bool
     let slackNotifyStatusChanges: Bool
+    let allowedStatuses: [String]
+
+    // Custom decoder to handle backwards compatibility when allowedStatuses is missing
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        apiKey = try container.decode(String.self, forKey: .apiKey)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        ownerId = try container.decode(UUID.self, forKey: .ownerId)
+        ownerEmail = try container.decodeIfPresent(String.self, forKey: .ownerEmail)
+        isArchived = try container.decode(Bool.self, forKey: .isArchived)
+        archivedAt = try container.decodeIfPresent(Date.self, forKey: .archivedAt)
+        colorIndex = try container.decode(Int.self, forKey: .colorIndex)
+        feedbackCount = try container.decode(Int.self, forKey: .feedbackCount)
+        memberCount = try container.decode(Int.self, forKey: .memberCount)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt)
+        slackWebhookUrl = try container.decodeIfPresent(String.self, forKey: .slackWebhookUrl)
+        slackNotifyNewFeedback = try container.decode(Bool.self, forKey: .slackNotifyNewFeedback)
+        slackNotifyNewComments = try container.decode(Bool.self, forKey: .slackNotifyNewComments)
+        slackNotifyStatusChanges = try container.decode(Bool.self, forKey: .slackNotifyStatusChanges)
+        // Default to standard statuses if not present (backwards compatibility)
+        allowedStatuses = try container.decodeIfPresent([String].self, forKey: .allowedStatuses)
+            ?? ["pending", "approved", "in_progress", "completed", "rejected"]
+    }
+
+    init(
+        id: UUID,
+        name: String,
+        apiKey: String,
+        description: String?,
+        ownerId: UUID,
+        ownerEmail: String?,
+        isArchived: Bool,
+        archivedAt: Date?,
+        colorIndex: Int,
+        feedbackCount: Int,
+        memberCount: Int,
+        createdAt: Date?,
+        updatedAt: Date?,
+        slackWebhookUrl: String?,
+        slackNotifyNewFeedback: Bool,
+        slackNotifyNewComments: Bool,
+        slackNotifyStatusChanges: Bool,
+        allowedStatuses: [String]
+    ) {
+        self.id = id
+        self.name = name
+        self.apiKey = apiKey
+        self.description = description
+        self.ownerId = ownerId
+        self.ownerEmail = ownerEmail
+        self.isArchived = isArchived
+        self.archivedAt = archivedAt
+        self.colorIndex = colorIndex
+        self.feedbackCount = feedbackCount
+        self.memberCount = memberCount
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.slackWebhookUrl = slackWebhookUrl
+        self.slackNotifyNewFeedback = slackNotifyNewFeedback
+        self.slackNotifyNewComments = slackNotifyNewComments
+        self.slackNotifyStatusChanges = slackNotifyStatusChanges
+        self.allowedStatuses = allowedStatuses
+    }
 }
 
 struct ProjectListItem: Codable, Identifiable, Sendable {
@@ -89,6 +155,10 @@ struct UpdateProjectSlackRequest: Encodable {
     let slackNotifyNewFeedback: Bool?
     let slackNotifyNewComments: Bool?
     let slackNotifyStatusChanges: Bool?
+}
+
+struct UpdateProjectStatusesRequest: Encodable {
+    let allowedStatuses: [String]
 }
 
 struct AddMemberRequest: Encodable {

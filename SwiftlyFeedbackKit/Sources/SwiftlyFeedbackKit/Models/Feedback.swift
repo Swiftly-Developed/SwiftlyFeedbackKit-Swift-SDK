@@ -62,6 +62,7 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
     case pending
     case approved
     case inProgress = "in_progress"
+    case testflight
     case completed
     case rejected
 
@@ -70,6 +71,7 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
         case .pending: return "Pending"
         case .approved: return "Approved"
         case .inProgress: return "In Progress"
+        case .testflight: return "TestFlight"
         case .completed: return "Completed"
         case .rejected: return "Rejected"
         }
@@ -79,7 +81,7 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
         switch self {
         case .completed, .rejected:
             return false
-        case .pending, .approved, .inProgress:
+        case .pending, .approved, .inProgress, .testflight:
             return true
         }
     }

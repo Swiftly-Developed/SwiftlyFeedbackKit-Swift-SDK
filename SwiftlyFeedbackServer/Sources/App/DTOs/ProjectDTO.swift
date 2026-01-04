@@ -27,6 +27,10 @@ struct UpdateProjectSlackDTO: Content {
     var slackNotifyStatusChanges: Bool?
 }
 
+struct UpdateProjectStatusesDTO: Content {
+    var allowedStatuses: [String]
+}
+
 struct AddMemberDTO: Content, Validatable {
     let email: String
     let role: ProjectRole
@@ -58,6 +62,7 @@ struct ProjectResponseDTO: Content {
     let slackNotifyNewFeedback: Bool
     let slackNotifyNewComments: Bool
     let slackNotifyStatusChanges: Bool
+    let allowedStatuses: [String]
 
     init(project: Project, feedbackCount: Int = 0, memberCount: Int = 0, ownerEmail: String? = nil) {
         self.id = project.id!
@@ -77,6 +82,7 @@ struct ProjectResponseDTO: Content {
         self.slackNotifyNewFeedback = project.slackNotifyNewFeedback
         self.slackNotifyNewComments = project.slackNotifyNewComments
         self.slackNotifyStatusChanges = project.slackNotifyStatusChanges
+        self.allowedStatuses = project.allowedStatuses
     }
 }
 

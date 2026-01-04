@@ -84,6 +84,7 @@ struct FeedbackListView: View {
             FeedbackDetailView(
                 feedback: feedback,
                 apiKey: project.apiKey,
+                allowedStatuses: allowedStatuses,
                 viewModel: viewModel
             )
         }
@@ -91,6 +92,7 @@ struct FeedbackListView: View {
             FeedbackDetailView(
                 feedback: feedback,
                 apiKey: project.apiKey,
+                allowedStatuses: allowedStatuses,
                 viewModel: viewModel
             )
         }
@@ -150,6 +152,14 @@ struct FeedbackListView: View {
         #endif
     }
 
+    // MARK: - Allowed Statuses
+
+    private var allowedStatuses: [FeedbackStatus] {
+        let allowedSet = Set(project.allowedStatuses)
+        // Filter allCases to maintain proper order
+        return FeedbackStatus.allCases.filter { allowedSet.contains($0.rawValue) }
+    }
+
     // MARK: - Filter Menu
 
     private var filterMenu: some View {
@@ -191,7 +201,7 @@ struct FeedbackListView: View {
 
                 Divider()
 
-                ForEach(FeedbackStatus.allCases, id: \.self) { status in
+                ForEach(allowedStatuses, id: \.self) { status in
                     Button {
                         viewModel.statusFilter = status
                     } label: {
@@ -383,12 +393,13 @@ struct FeedbackListView: View {
     private var kanbanView: some View {
         ScrollView(.horizontal, showsIndicators: true) {
             HStack(alignment: .top, spacing: 16) {
-                ForEach(FeedbackStatus.allCases, id: \.self) { status in
+                ForEach(allowedStatuses, id: \.self) { status in
                     KanbanColumnView(
                         status: status,
                         feedbacks: viewModel.feedbacksByStatus[status] ?? [],
                         viewModel: viewModel,
                         apiKey: project.apiKey,
+                        allowedStatuses: allowedStatuses,
                         feedbackToOpen: $feedbackToOpen
                     )
                 }
@@ -406,7 +417,7 @@ struct FeedbackListView: View {
 
     private func statusMenu(for feedback: Feedback) -> some View {
         Menu {
-            ForEach(FeedbackStatus.allCases, id: \.self) { status in
+            ForEach(allowedStatuses, id: \.self) { status in
                 Button {
                     Task {
                         await viewModel.updateFeedbackStatus(id: feedback.id, status: status)
@@ -563,6 +574,7 @@ struct KanbanColumnView: View {
     let feedbacks: [Feedback]
     @Bindable var viewModel: FeedbackViewModel
     let apiKey: String
+    let allowedStatuses: [FeedbackStatus]
     @Binding var feedbackToOpen: Feedback?
 
     var body: some View {
@@ -627,6 +639,7 @@ struct KanbanColumnView: View {
         case .pending: return .gray
         case .approved: return .blue
         case .inProgress: return .orange
+        case .testflight: return .cyan
         case .completed: return .green
         case .rejected: return .red
         }
@@ -702,7 +715,7 @@ struct KanbanColumnView: View {
 
         // Status menu
         Menu {
-            ForEach(FeedbackStatus.allCases, id: \.self) { newStatus in
+            ForEach(allowedStatuses, id: \.self) { newStatus in
                 Button {
                     Task {
                         await viewModel.updateFeedbackStatus(id: feedback.id, status: newStatus)
@@ -834,6 +847,7 @@ struct FeedbackStatusBadge: View {
         case .pending: return .gray
         case .approved: return .blue
         case .inProgress: return .orange
+        case .testflight: return .cyan
         case .completed: return .green
         case .rejected: return .red
         }
@@ -913,7 +927,8 @@ struct MrrBadge: View {
                 slackWebhookUrl: nil,
                 slackNotifyNewFeedback: true,
                 slackNotifyNewComments: true,
-                slackNotifyStatusChanges: true
+                slackNotifyStatusChanges: true,
+                allowedStatuses: ["pending", "approved", "in_progress", "completed", "rejected"]
             ),
             viewModel: FeedbackViewModel()
         )

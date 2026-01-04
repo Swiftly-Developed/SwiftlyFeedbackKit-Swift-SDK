@@ -210,6 +210,26 @@ Events can be any custom string, plus predefined types:
 - `submit_feedback` - User viewed the submit feedback form
 - Custom events - Any string defined by the app developer
 
+## Status Settings
+
+Projects can customize which feedback statuses are available. Configure in Project Details > Menu (⋯) > Status Settings.
+
+### StatusSettingsView Features
+- Toggle optional statuses on/off (pending is always required)
+- Available statuses: Pending, Approved, In Progress, TestFlight, Completed, Rejected
+- Reset to default option
+- Saves to `allowed_statuses` array on project
+
+### FeedbackStatus Enum
+| Status | Raw Value | Color | Can Vote |
+|--------|-----------|-------|----------|
+| Pending | `pending` | gray | Yes |
+| Approved | `approved` | blue | Yes |
+| In Progress | `in_progress` | orange | Yes |
+| TestFlight | `testflight` | cyan | Yes |
+| Completed | `completed` | green | No |
+| Rejected | `rejected` | red | No |
+
 ## Slack Integration
 
 Projects can send notifications to Slack via Incoming Webhooks. Configure in Project Details > Menu (⋯) > Slack Integration.

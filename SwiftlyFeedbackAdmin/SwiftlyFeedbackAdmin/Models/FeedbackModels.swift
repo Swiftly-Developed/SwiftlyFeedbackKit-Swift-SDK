@@ -63,6 +63,7 @@ enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
     case pending
     case approved
     case inProgress = "in_progress"
+    case testflight
     case completed
     case rejected
 
@@ -71,6 +72,7 @@ enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
         case .pending: return "Pending"
         case .approved: return "Approved"
         case .inProgress: return "In Progress"
+        case .testflight: return "TestFlight"
         case .completed: return "Completed"
         case .rejected: return "Rejected"
         }
@@ -81,6 +83,7 @@ enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
         case .pending: return "clock"
         case .approved: return "checkmark.circle"
         case .inProgress: return "arrow.triangle.2.circlepath"
+        case .testflight: return "airplane"
         case .completed: return "checkmark.seal.fill"
         case .rejected: return "xmark.circle"
         }
@@ -91,6 +94,7 @@ enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
         case .pending: return "gray"
         case .approved: return "blue"
         case .inProgress: return "orange"
+        case .testflight: return "cyan"
         case .completed: return "green"
         case .rejected: return "red"
         }

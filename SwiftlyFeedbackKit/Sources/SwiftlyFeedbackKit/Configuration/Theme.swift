@@ -64,6 +64,7 @@ public final class StatusColors: @unchecked Sendable {
     public var pending: Color = .gray
     public var approved: Color = .blue
     public var inProgress: Color = .orange
+    public var testflight: Color = .cyan
     public var completed: Color = .green
     public var rejected: Color = .red
 
@@ -74,6 +75,7 @@ public final class StatusColors: @unchecked Sendable {
         case .pending: return pending
         case .approved: return approved
         case .inProgress: return inProgress
+        case .testflight: return testflight
         case .completed: return completed
         case .rejected: return rejected
         }

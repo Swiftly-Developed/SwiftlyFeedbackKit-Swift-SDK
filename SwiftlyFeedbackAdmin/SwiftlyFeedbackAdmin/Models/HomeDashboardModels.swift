@@ -6,11 +6,32 @@ struct FeedbackByStatus: Codable, Equatable, Sendable {
     let pending: Int
     let approved: Int
     let inProgress: Int
+    let testflight: Int
     let completed: Int
     let rejected: Int
 
     var total: Int {
-        pending + approved + inProgress + completed + rejected
+        pending + approved + inProgress + testflight + completed + rejected
+    }
+
+    // Custom decoder to handle backwards compatibility when testflight is missing
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        pending = try container.decode(Int.self, forKey: .pending)
+        approved = try container.decode(Int.self, forKey: .approved)
+        inProgress = try container.decode(Int.self, forKey: .inProgress)
+        testflight = try container.decodeIfPresent(Int.self, forKey: .testflight) ?? 0
+        completed = try container.decode(Int.self, forKey: .completed)
+        rejected = try container.decode(Int.self, forKey: .rejected)
+    }
+
+    init(pending: Int, approved: Int, inProgress: Int, testflight: Int, completed: Int, rejected: Int) {
+        self.pending = pending
+        self.approved = approved
+        self.inProgress = inProgress
+        self.testflight = testflight
+        self.completed = completed
+        self.rejected = rejected
     }
 }
 

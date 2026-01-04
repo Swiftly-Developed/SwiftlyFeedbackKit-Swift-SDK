@@ -101,6 +101,7 @@ All routes prefixed with `/api/v1`.
 - `POST /projects/:id/unarchive` - Unarchive project (owner only)
 - `POST /projects/:id/regenerate-key` - Regenerate API key (owner only)
 - `PATCH /projects/:id/slack` - Update Slack settings (owner/admin only)
+- `PATCH /projects/:id/statuses` - Update allowed statuses (owner/admin only)
 
 ### Project Members (Bearer token required)
 - `GET /projects/:id/members` - List members

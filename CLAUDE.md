@@ -64,6 +64,37 @@ cd SwiftlyFeedbackServer && swift run
 - SDK disables and dims the vote button for non-votable feedback
 - `FeedbackStatus.canVote` property indicates if voting is allowed
 
+### Configurable Feedback Statuses
+Projects can customize which statuses are available for feedback. This allows enabling/disabling specific workflow stages like TestFlight.
+
+**Available Statuses:**
+| Status | Raw Value | Color | Can Vote | Description |
+|--------|-----------|-------|----------|-------------|
+| Pending | `pending` | Gray | Yes | Default new feedback status (always required) |
+| Approved | `approved` | Blue | Yes | Acknowledged by team |
+| In Progress | `in_progress` | Orange | Yes | Currently being worked on |
+| TestFlight | `testflight` | Cyan | Yes | Available for testing |
+| Completed | `completed` | Green | No | Done - voting blocked |
+| Rejected | `rejected` | Red | No | Not accepted - voting blocked |
+
+**Configuration:**
+- Configure via Admin app: Project Details > Menu (⋯) > Status Settings
+- Toggle optional statuses on/off (pending is always required)
+- Default: pending, approved, in_progress, completed, rejected
+
+**Server Endpoint:**
+- `PATCH /projects/:id/statuses` - Update allowed statuses (bearer auth, owner/admin only)
+
+Request body:
+```json
+{
+  "allowed_statuses": ["pending", "approved", "in_progress", "testflight", "completed", "rejected"]
+}
+```
+
+**Database Field (Project model):**
+- `allowed_statuses` ([String]) - Array of allowed status raw values
+
 ### Feedback Submission Permission
 The SDK supports restricting feedback submission (e.g., for free users):
 

@@ -12,6 +12,7 @@ struct ProjectDetailView: View {
     @State private var showingMembersSheet = false
     @State private var showingEditSheet = false
     @State private var showingSlackSheet = false
+    @State private var showingStatusSheet = false
     @State private var copiedToClipboard = false
 
     private var isCompact: Bool {
@@ -68,6 +69,12 @@ struct ProjectDetailView: View {
                             showingSlackSheet = true
                         } label: {
                             Label("Slack Integration", systemImage: "number")
+                        }
+
+                        Button {
+                            showingStatusSheet = true
+                        } label: {
+                            Label("Status Settings", systemImage: "list.bullet.clipboard")
                         }
 
                         Divider()
@@ -157,6 +164,14 @@ struct ProjectDetailView: View {
                 SlackSettingsView(project: project, viewModel: viewModel)
                     #if os(macOS)
                     .frame(minWidth: 450, minHeight: 350)
+                    #endif
+            }
+        }
+        .sheet(isPresented: $showingStatusSheet) {
+            if let project = viewModel.selectedProject {
+                StatusSettingsView(project: project, viewModel: viewModel)
+                    #if os(macOS)
+                    .frame(minWidth: 400, minHeight: 400)
                     #endif
             }
         }
@@ -738,7 +753,8 @@ struct EditProjectView: View {
             slackWebhookUrl: nil,
             slackNotifyNewFeedback: true,
             slackNotifyNewComments: true,
-            slackNotifyStatusChanges: true
+            slackNotifyStatusChanges: true,
+            allowedStatuses: ["pending", "approved", "in_progress", "completed", "rejected"]
         ),
         viewModel: ProjectViewModel()
     )

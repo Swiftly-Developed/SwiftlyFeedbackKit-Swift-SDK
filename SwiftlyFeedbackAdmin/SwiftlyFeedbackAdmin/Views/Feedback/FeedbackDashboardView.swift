@@ -101,6 +101,7 @@ struct FeedbackDashboardView: View {
                 FeedbackDetailView(
                     feedback: feedback,
                     apiKey: projectApiKey(for: project),
+                    allowedStatuses: allowedStatuses,
                     viewModel: feedbackViewModel
                 )
             }
@@ -110,6 +111,7 @@ struct FeedbackDashboardView: View {
                 FeedbackDetailView(
                     feedback: feedback,
                     apiKey: projectApiKey(for: project),
+                    allowedStatuses: allowedStatuses,
                     viewModel: feedbackViewModel
                 )
             }
@@ -261,7 +263,7 @@ struct FeedbackDashboardView: View {
 
                 Divider()
 
-                ForEach(FeedbackStatus.allCases, id: \.self) { status in
+                ForEach(allowedStatuses, id: \.self) { status in
                     Button {
                         feedbackViewModel.statusFilter = status
                     } label: {
@@ -330,6 +332,15 @@ struct FeedbackDashboardView: View {
         if feedbackViewModel.categoryFilter != nil { count += 1 }
         if feedbackViewModel.sortOption != .votes { count += 1 }
         return count
+    }
+
+    // MARK: - Allowed Statuses
+
+    private var allowedStatuses: [FeedbackStatus] {
+        let statuses = projectViewModel.selectedProject?.allowedStatuses ?? ["pending", "approved", "in_progress", "completed", "rejected"]
+        let allowedSet = Set(statuses)
+        // Filter allCases to maintain proper order
+        return FeedbackStatus.allCases.filter { allowedSet.contains($0.rawValue) }
     }
 
     // MARK: - Dashboard Content
@@ -407,12 +418,13 @@ struct FeedbackDashboardView: View {
     private var kanbanView: some View {
         ScrollView(.horizontal) {
             HStack(alignment: .top, spacing: 16) {
-                ForEach(FeedbackStatus.allCases, id: \.self) { status in
+                ForEach(allowedStatuses, id: \.self) { status in
                     DashboardKanbanColumnView(
                         status: status,
                         feedbacks: feedbackViewModel.feedbacksByStatus[status] ?? [],
                         viewModel: feedbackViewModel,
                         apiKey: selectedProject.map { projectApiKey(for: $0) } ?? "",
+                        allowedStatuses: allowedStatuses,
                         feedbackToOpen: $feedbackToOpen
                     )
                 }
@@ -476,7 +488,7 @@ struct FeedbackDashboardView: View {
 
     private func statusMenu(for feedback: Feedback) -> some View {
         Menu {
-            ForEach(FeedbackStatus.allCases, id: \.self) { status in
+            ForEach(allowedStatuses, id: \.self) { status in
                 Button {
                     Task {
                         await feedbackViewModel.updateFeedbackStatus(id: feedback.id, status: status)
@@ -572,6 +584,7 @@ struct DashboardKanbanColumnView: View {
     let feedbacks: [Feedback]
     @Bindable var viewModel: FeedbackViewModel
     let apiKey: String
+    let allowedStatuses: [FeedbackStatus]
     @Binding var feedbackToOpen: Feedback?
 
     var body: some View {
@@ -636,6 +649,7 @@ struct DashboardKanbanColumnView: View {
         case .pending: return .gray
         case .approved: return .blue
         case .inProgress: return .orange
+        case .testflight: return .cyan
         case .completed: return .green
         case .rejected: return .red
         }
@@ -711,7 +725,7 @@ struct DashboardKanbanColumnView: View {
 
         // Status menu
         Menu {
-            ForEach(FeedbackStatus.allCases, id: \.self) { newStatus in
+            ForEach(allowedStatuses, id: \.self) { newStatus in
                 Button {
                     Task {
                         await viewModel.updateFeedbackStatus(id: feedback.id, status: newStatus)
