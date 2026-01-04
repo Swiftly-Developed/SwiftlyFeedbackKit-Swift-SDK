@@ -13,8 +13,19 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
     let voteCount: Int
     let hasVoted: Bool
     let commentCount: Int
+    /// Total MRR from the feedback creator plus all voters
+    let totalMrr: Double?
     let createdAt: Date?
     let updatedAt: Date?
+
+    /// Formatted total MRR string for display (always shows, even if $0)
+    var formattedMrr: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: totalMrr ?? 0)) ?? "$0"
+    }
 }
 
 // MARK: - Comment

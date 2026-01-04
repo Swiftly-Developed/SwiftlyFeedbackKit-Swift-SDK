@@ -93,6 +93,27 @@ struct FeedbackListView: View {
 
     private var filterMenu: some View {
         Menu {
+            // Sort menu
+            Menu {
+                ForEach(FeedbackSortOption.allCases, id: \.self) { option in
+                    Button {
+                        viewModel.sortOption = option
+                    } label: {
+                        HStack {
+                            Label(option.displayName, systemImage: option.icon)
+                            Spacer()
+                            if viewModel.sortOption == option {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Label("Sort by", systemImage: "arrow.up.arrow.down")
+            }
+
+            Divider()
+
             // Status filter
             Menu {
                 Button {
@@ -159,7 +180,7 @@ struct FeedbackListView: View {
                 Label("Category", systemImage: "tag")
             }
 
-            if viewModel.statusFilter != nil || viewModel.categoryFilter != nil {
+            if viewModel.statusFilter != nil || viewModel.categoryFilter != nil || viewModel.sortOption != .votes {
                 Divider()
 
                 Button(role: .destructive) {
@@ -177,6 +198,7 @@ struct FeedbackListView: View {
         var count = 0
         if viewModel.statusFilter != nil { count += 1 }
         if viewModel.categoryFilter != nil { count += 1 }
+        if viewModel.sortOption != .votes { count += 1 }
         return count
     }
 
@@ -339,6 +361,7 @@ struct FeedbackListRowView: View {
             HStack(spacing: 8) {
                 FeedbackStatusBadge(status: feedback.status)
                 FeedbackCategoryBadge(category: feedback.category)
+                MrrBadge(mrr: feedback.formattedMrr)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
@@ -480,6 +503,7 @@ struct KanbanCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 FeedbackCategoryBadge(category: feedback.category)
+                MrrBadge(mrr: feedback.formattedMrr)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
@@ -592,6 +616,27 @@ struct FeedbackCategoryBadge: View {
         case .improvement: return .teal
         case .other: return .gray
         }
+    }
+}
+
+// MARK: - MRR Badge
+
+struct MrrBadge: View {
+    let mrr: String
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "dollarsign.circle.fill")
+                .font(.caption2)
+            Text(mrr)
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(Color.green.opacity(0.15))
+        .foregroundStyle(.green)
+        .clipShape(Capsule())
     }
 }
 

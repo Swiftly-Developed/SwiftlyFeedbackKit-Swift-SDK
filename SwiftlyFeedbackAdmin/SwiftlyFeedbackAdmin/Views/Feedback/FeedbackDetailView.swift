@@ -75,6 +75,7 @@ struct FeedbackDetailView: View {
             HStack(spacing: 8) {
                 FeedbackStatusBadge(status: feedback.status)
                 FeedbackCategoryBadge(category: feedback.category)
+                MrrBadge(mrr: feedback.formattedMrr)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
@@ -410,6 +411,7 @@ struct CommentRowView: View {
                 voteCount: 42,
                 hasVoted: false,
                 commentCount: 3,
+                totalMrr: 9.99,
                 createdAt: Date().addingTimeInterval(-86400 * 3),
                 updatedAt: Date().addingTimeInterval(-3600)
             ),

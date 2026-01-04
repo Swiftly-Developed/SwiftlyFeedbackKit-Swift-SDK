@@ -59,9 +59,42 @@ struct FeedbackController: RouteCollection {
 
         let feedbacks = try await query.sort(\.$voteCount, .descending).all()
 
+        // Collect all user IDs (creators + voters) to fetch MRR data
+        var allUserIds = Set<String>()
+        for feedback in feedbacks {
+            allUserIds.insert(feedback.userId)
+            for vote in feedback.votes {
+                allUserIds.insert(vote.userId)
+            }
+        }
+
+        // Fetch SDK users to get MRR data
+        let sdkUsers = try await SDKUser.query(on: req.db)
+            .filter(\.$project.$id == project.id!)
+            .filter(\.$userId ~~ Array(allUserIds))
+            .all()
+        let mrrByUserId = Dictionary(uniqueKeysWithValues: sdkUsers.map { ($0.userId, $0.mrr) })
+
         return feedbacks.map { feedback in
             let hasVoted = userId.map { uid in feedback.votes.contains { $0.userId == uid } } ?? false
-            return FeedbackResponseDTO(feedback: feedback, hasVoted: hasVoted, commentCount: feedback.comments.count)
+
+            // Calculate total MRR: creator + all voters
+            var totalMrr: Double = 0
+            if let creatorMrr = mrrByUserId[feedback.userId] ?? nil {
+                totalMrr += creatorMrr
+            }
+            for vote in feedback.votes {
+                if let voterMrr = mrrByUserId[vote.userId] ?? nil {
+                    totalMrr += voterMrr
+                }
+            }
+
+            return FeedbackResponseDTO(
+                feedback: feedback,
+                hasVoted: hasVoted,
+                commentCount: feedback.comments.count,
+                totalMrr: totalMrr > 0 ? totalMrr : nil
+            )
         }
     }
 

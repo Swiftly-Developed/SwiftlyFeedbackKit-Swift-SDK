@@ -26,10 +26,12 @@ struct FeedbackResponseDTO: Content {
     let voteCount: Int
     let hasVoted: Bool
     let commentCount: Int
+    /// Total MRR from the feedback creator plus all voters
+    let totalMrr: Double?
     let createdAt: Date?
     let updatedAt: Date?
 
-    init(feedback: Feedback, hasVoted: Bool = false, commentCount: Int = 0) {
+    init(feedback: Feedback, hasVoted: Bool = false, commentCount: Int = 0, totalMrr: Double? = nil) {
         self.id = feedback.id!
         self.title = feedback.title
         self.description = feedback.description
@@ -40,6 +42,7 @@ struct FeedbackResponseDTO: Content {
         self.voteCount = feedback.voteCount
         self.hasVoted = hasVoted
         self.commentCount = commentCount
+        self.totalMrr = totalMrr
         self.createdAt = feedback.createdAt
         self.updatedAt = feedback.updatedAt
     }

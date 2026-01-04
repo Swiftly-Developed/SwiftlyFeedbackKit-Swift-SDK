@@ -94,6 +94,24 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
 - Tracks first seen, last seen, and MRR (Monthly Recurring Revenue)
 - User IDs: iCloud-based (`icloud_`), local UUID (`local_`), or custom
 
+### Feedback MRR Display
+The Admin app displays total MRR (Monthly Recurring Revenue) on feedback cards to help identify which features are most requested by paying customers.
+
+**How it works:**
+- Each feedback item shows a green MRR badge (e.g., "$20", "$0")
+- Total MRR is calculated as: feedback creator's MRR + all voters' MRR
+- MRR values come from the SDK user tracking (set via `SwiftlyFeedback.setMrr()`)
+
+**Sorting by MRR:**
+- Feedback can be sorted by MRR via the filter menu → "Sort by" → "MRR"
+- Sorts highest MRR first to prioritize feedback from paying customers
+- Other sort options: Votes, Newest, Oldest
+
+**Where MRR is displayed:**
+- Feedback list view (list rows)
+- Kanban view (cards)
+- Feedback detail view (header section)
+
 ### Home Dashboard (KPIs)
 The Admin app includes a Home dashboard with key performance indicators (KPIs) across all projects.
 

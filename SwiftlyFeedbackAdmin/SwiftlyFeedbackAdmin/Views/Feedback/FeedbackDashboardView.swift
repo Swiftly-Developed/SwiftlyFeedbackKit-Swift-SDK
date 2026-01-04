@@ -162,6 +162,27 @@ struct FeedbackDashboardView: View {
 
     private var filterMenu: some View {
         Menu {
+            // Sort menu
+            Menu {
+                ForEach(FeedbackSortOption.allCases, id: \.self) { option in
+                    Button {
+                        feedbackViewModel.sortOption = option
+                    } label: {
+                        HStack {
+                            Label(option.displayName, systemImage: option.icon)
+                            Spacer()
+                            if feedbackViewModel.sortOption == option {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Label("Sort by", systemImage: "arrow.up.arrow.down")
+            }
+
+            Divider()
+
             Menu {
                 Button {
                     feedbackViewModel.statusFilter = nil
@@ -226,7 +247,7 @@ struct FeedbackDashboardView: View {
                 Label("Category", systemImage: "tag")
             }
 
-            if feedbackViewModel.statusFilter != nil || feedbackViewModel.categoryFilter != nil {
+            if feedbackViewModel.statusFilter != nil || feedbackViewModel.categoryFilter != nil || feedbackViewModel.sortOption != .votes {
                 Divider()
 
                 Button(role: .destructive) {
@@ -244,6 +265,7 @@ struct FeedbackDashboardView: View {
         var count = 0
         if feedbackViewModel.statusFilter != nil { count += 1 }
         if feedbackViewModel.categoryFilter != nil { count += 1 }
+        if feedbackViewModel.sortOption != .votes { count += 1 }
         return count
     }
 
@@ -513,6 +535,7 @@ struct DashboardKanbanCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 FeedbackCategoryBadge(category: feedback.category)
+                MrrBadge(mrr: feedback.formattedMrr)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")

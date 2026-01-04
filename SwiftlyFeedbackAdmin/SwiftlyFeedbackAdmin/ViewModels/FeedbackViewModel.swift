@@ -3,6 +3,33 @@ import OSLog
 
 private let logger = Logger(subsystem: "com.swiftlyfeedback.admin", category: "FeedbackViewModel")
 
+// MARK: - Sort Option
+
+enum FeedbackSortOption: String, CaseIterable {
+    case votes
+    case mrr
+    case newest
+    case oldest
+
+    var displayName: String {
+        switch self {
+        case .votes: return "Votes"
+        case .mrr: return "MRR"
+        case .newest: return "Newest"
+        case .oldest: return "Oldest"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .votes: return "arrow.up"
+        case .mrr: return "dollarsign.circle"
+        case .newest: return "clock"
+        case .oldest: return "clock.arrow.circlepath"
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class FeedbackViewModel {
@@ -23,6 +50,7 @@ final class FeedbackViewModel {
     var statusFilter: FeedbackStatus?
     var categoryFilter: FeedbackCategory?
     var searchText = ""
+    var sortOption: FeedbackSortOption = .votes
 
     // New comment field
     var newCommentContent = ""
@@ -51,6 +79,18 @@ final class FeedbackViewModel {
                 $0.description.localizedCaseInsensitiveContains(searchText) ||
                 ($0.userEmail?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
+        }
+
+        // Apply sorting
+        switch sortOption {
+        case .votes:
+            result.sort { $0.voteCount > $1.voteCount }
+        case .mrr:
+            result.sort { ($0.totalMrr ?? 0) > ($1.totalMrr ?? 0) }
+        case .newest:
+            result.sort { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+        case .oldest:
+            result.sort { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
         }
 
         return result
@@ -274,5 +314,6 @@ final class FeedbackViewModel {
         statusFilter = nil
         categoryFilter = nil
         searchText = ""
+        sortOption = .votes
     }
 }
