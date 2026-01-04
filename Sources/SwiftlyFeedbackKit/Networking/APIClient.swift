@@ -1,7 +1,4 @@
 import Foundation
-import OSLog
-
-private let logger = Logger(subsystem: "com.swiftlyfeedback.sdk", category: "APIClient")
 
 public actor APIClient {
     private let baseURL: URL
@@ -25,7 +22,7 @@ public actor APIClient {
         self.encoder.dateEncodingStrategy = .iso8601
         self.encoder.keyEncodingStrategy = .convertToSnakeCase
 
-        logger.debug("APIClient initialized with baseURL: \(baseURL.absoluteString)")
+        SDKLogger.debug("APIClient initialized with baseURL: \(baseURL.absoluteString)")
     }
 
     private func makeRequest(
@@ -44,28 +41,28 @@ public actor APIClient {
             let encodedBody = try encoder.encode(body)
             request.httpBody = encodedBody
             if let bodyString = String(data: encodedBody, encoding: .utf8) {
-                logger.debug("Request body: \(bodyString)")
+                SDKLogger.debug("Request body: \(bodyString)")
             }
         }
 
-        logger.info("\(method) \(path)")
+        SDKLogger.info("\(method) \(path)")
 
         do {
             let (data, response) = try await session.data(for: request)
 
             if let httpResponse = response as? HTTPURLResponse {
-                logger.info("Response: \(httpResponse.statusCode)")
+                SDKLogger.info("Response: \(httpResponse.statusCode)")
 
                 if httpResponse.statusCode >= 400 {
                     if let responseBody = String(data: data, encoding: .utf8) {
-                        logger.error("Error response: \(responseBody)")
+                        SDKLogger.error("Error response: \(responseBody)")
                     }
                 }
             }
 
             return (data, response)
         } catch {
-            logger.error("Network error: \(error.localizedDescription)")
+            SDKLogger.error("Network error: \(error.localizedDescription)")
             throw error
         }
     }
@@ -104,16 +101,16 @@ public actor APIClient {
             return try decoder.decode(T.self, from: data)
         } catch {
             if let responseString = String(data: data, encoding: .utf8) {
-                logger.error("Decoding failed. Response: \(responseString)")
+                SDKLogger.error("Decoding failed. Response: \(responseString)")
             }
-            logger.error("Decoding error: \(error.localizedDescription)")
+            SDKLogger.error("Decoding error: \(error.localizedDescription)")
             throw SwiftlyFeedbackError.decodingError(underlying: error)
         }
     }
 
     private func validateResponse(_ response: URLResponse, data: Data) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
-            logger.error("Invalid response type")
+            SDKLogger.error("Invalid response type")
             throw SwiftlyFeedbackError.invalidResponse
         }
 
@@ -122,19 +119,19 @@ public actor APIClient {
             return
         case 400:
             let errorMessage = parseErrorMessage(from: data)
-            logger.error("Bad request (400): \(errorMessage ?? "Unknown error")")
+            SDKLogger.error("Bad request (400): \(errorMessage ?? "Unknown error")")
             throw SwiftlyFeedbackError.badRequest(message: errorMessage)
         case 401:
-            logger.error("Unauthorized (401)")
+            SDKLogger.error("Unauthorized (401)")
             throw SwiftlyFeedbackError.unauthorized
         case 404:
-            logger.error("Not found (404)")
+            SDKLogger.error("Not found (404)")
             throw SwiftlyFeedbackError.notFound
         case 409:
-            logger.error("Conflict (409)")
+            SDKLogger.error("Conflict (409)")
             throw SwiftlyFeedbackError.conflict
         default:
-            logger.error("Server error (\(httpResponse.statusCode))")
+            SDKLogger.error("Server error (\(httpResponse.statusCode))")
             throw SwiftlyFeedbackError.serverError(statusCode: httpResponse.statusCode)
         }
     }

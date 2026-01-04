@@ -198,7 +198,7 @@ public final class SwiftlyFeedback: @unchecked Sendable {
             let _: RegisterUserResponse = try await client.post(path: "users/register", body: body)
         } catch {
             // Silently fail - user registration is not critical
-            print("SwiftlyFeedback: Failed to register user: \(error)")
+            SDKLogger.error("Failed to register user: \(error)")
         }
     }
 
@@ -338,7 +338,7 @@ public final class SwiftlyFeedback: @unchecked Sendable {
             let _: ViewEventResponse = try await client.post(path: "events/track", body: body)
         } catch {
             // Silently fail - view tracking is not critical
-            print("SwiftlyFeedback: Failed to track view '\(name)': \(error)")
+            SDKLogger.error("Failed to track view '\(name)': \(error)")
         }
     }
 }

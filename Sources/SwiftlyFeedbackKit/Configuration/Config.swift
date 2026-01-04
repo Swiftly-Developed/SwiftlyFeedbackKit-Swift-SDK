@@ -69,6 +69,20 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Enable automatic view tracking for SDK views. Default: `true`
     public var enableAutomaticViewTracking: Bool = true
 
+    // MARK: - Logging
+
+    /// Enable SDK logging output. Default: `true`
+    ///
+    /// When set to `false`, the SDK will not output any debug messages to the console.
+    /// This is useful to prevent the Xcode debug console from being cluttered with SDK logs.
+    ///
+    /// Example:
+    /// ```swift
+    /// // Disable SDK logging
+    /// SwiftlyFeedback.config.loggingEnabled = false
+    /// ```
+    public var loggingEnabled: Bool = true
+
     // MARK: - Buttons Configuration
 
     /// Button configuration options

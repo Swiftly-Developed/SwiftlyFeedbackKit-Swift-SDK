@@ -77,6 +77,9 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
 // Restrict feedback submission (e.g., for free users)
 SwiftlyFeedback.config.allowFeedbackSubmission = false
 SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feedback!"
+
+// Disable SDK logging to reduce console clutter
+SwiftlyFeedback.config.loggingEnabled = false
 ```
 
 ## Code Patterns
@@ -96,7 +99,8 @@ SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to su
 - Errors are typed via `SwiftlyFeedbackError`
 - API key is sent via `X-API-Key` header
 - JSON encoding/decoding uses snake_case key strategy
-- OSLog logging for debugging (subsystem: `com.swiftlyfeedback.sdk`)
+- OSLog logging via `SDKLogger` utility (subsystem: `com.swiftlyfeedback.sdk`)
+- Logging can be disabled via `SwiftlyFeedback.config.loggingEnabled = false`
 
 ### Error Handling
 - `SwiftlyFeedbackError` cases: `invalidResponse`, `badRequest(message:)`, `unauthorized`, `notFound`, `conflict`, `serverError(statusCode:)`, `decodingError(underlying:)`
