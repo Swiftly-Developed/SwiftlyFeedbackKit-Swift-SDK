@@ -43,6 +43,27 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Show email field in submit feedback form. Default: `true`
     public var showEmailField: Bool = true
 
+    // MARK: - Permissions
+
+    /// Allow users to submit new feedback. Default: `true`
+    ///
+    /// When set to `false`, the add button will show an alert with `feedbackSubmissionDisabledMessage`
+    /// instead of opening the submission form. Use this to restrict feedback submission to paying users.
+    ///
+    /// Example:
+    /// ```swift
+    /// // Disable feedback submission for free users
+    /// SwiftlyFeedback.config.allowFeedbackSubmission = user.isPro
+    /// SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feature requests!"
+    /// ```
+    public var allowFeedbackSubmission: Bool = true
+
+    /// Message shown when feedback submission is disabled. Default: `nil` (uses system default)
+    ///
+    /// When `allowFeedbackSubmission` is `false` and the user taps the add button,
+    /// this message is displayed in an alert dialog.
+    public var feedbackSubmissionDisabledMessage: String?
+
     // MARK: - Analytics
 
     /// Enable automatic view tracking for SDK views. Default: `true`

@@ -364,6 +364,28 @@
         }
       }
     },
+    "feedback.submission.disabled.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Submission Disabled"
+          }
+        }
+      }
+    },
+    "feedback.submission.disabled.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback submission is not available. You can still vote for existing feedback."
+          }
+        }
+      }
+    },
     "votes.count" : {
       "extractionState" : "manual",
       "localizations" : {

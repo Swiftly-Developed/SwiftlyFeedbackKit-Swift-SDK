@@ -18,7 +18,10 @@ public struct FeedbackListView: View {
                 if viewModel.isLoading && viewModel.feedbackItems.isEmpty {
                     ProgressView()
                 } else if viewModel.feedbackItems.isEmpty {
-                    FeedbackEmptyStateView(onSubmit: { viewModel.showingSubmitSheet = true })
+                    FeedbackEmptyStateView(
+                        onSubmit: { viewModel.showingSubmitSheet = true },
+                        onSubmitDisabled: { viewModel.showingSubmissionDisabledAlert = true }
+                    )
                 } else {
                     FeedbackListContentView(viewModel: viewModel)
                 }
@@ -56,13 +59,22 @@ public struct FeedbackListView: View {
                 if config.buttons.addButton.display {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
-                            viewModel.showingSubmitSheet = true
+                            if config.allowFeedbackSubmission {
+                                viewModel.showingSubmitSheet = true
+                            } else {
+                                viewModel.showingSubmissionDisabledAlert = true
+                            }
                         } label: {
                             Image(systemName: "plus")
                         }
                         .tint(theme.primaryColor.resolve(for: colorScheme))
                     }
                 }
+            }
+            .alert(String(localized: Strings.feedbackSubmissionDisabledTitle), isPresented: $viewModel.showingSubmissionDisabledAlert) {
+                Button(String(localized: Strings.errorOK), role: .cancel) {}
+            } message: {
+                Text(config.feedbackSubmissionDisabledMessage ?? String(localized: Strings.feedbackSubmissionDisabledMessage))
             }
             .sheet(isPresented: $viewModel.showingSubmitSheet) {
                 SubmitFeedbackView(swiftlyFeedback: viewModel.swiftlyFeedback) {
@@ -92,8 +104,10 @@ public struct FeedbackListView: View {
 
 struct FeedbackEmptyStateView: View {
     let onSubmit: () -> Void
+    let onSubmitDisabled: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     var body: some View {
@@ -103,7 +117,11 @@ struct FeedbackEmptyStateView: View {
             Text(Strings.feedbackListEmptyDescription)
         } actions: {
             Button(String(localized: Strings.submitFeedbackTitle)) {
-                onSubmit()
+                if config.allowFeedbackSubmission {
+                    onSubmit()
+                } else {
+                    onSubmitDisabled()
+                }
             }
             .buttonStyle(.borderedProminent)
             .tint(theme.primaryColor.resolve(for: colorScheme))
@@ -138,6 +156,7 @@ final class FeedbackListViewModel {
     var showingSubmitSheet = false
     var showingError = false
     var errorMessage: String?
+    var showingSubmissionDisabledAlert = false
     var selectedStatus: FeedbackStatus? {
         didSet { Task { await loadFeedback() } }
     }

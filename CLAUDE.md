@@ -73,6 +73,10 @@ SwiftlyFeedback.view(.submitFeedback)
 
 // Disable automatic view tracking
 SwiftlyFeedback.config.enableAutomaticViewTracking = false
+
+// Restrict feedback submission (e.g., for free users)
+SwiftlyFeedback.config.allowFeedbackSubmission = false
+SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feedback!"
 ```
 
 ## Code Patterns

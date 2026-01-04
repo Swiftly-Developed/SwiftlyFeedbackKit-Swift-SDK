@@ -150,6 +150,16 @@ public enum Strings {
         LocalizedStringResource("error.generic", bundle: .forClass(BundleToken.self))
     }
 
+    // MARK: - Feedback Submission Disabled
+
+    public static var feedbackSubmissionDisabledTitle: LocalizedStringResource {
+        LocalizedStringResource("feedback.submission.disabled.title", bundle: .forClass(BundleToken.self))
+    }
+
+    public static var feedbackSubmissionDisabledMessage: LocalizedStringResource {
+        LocalizedStringResource("feedback.submission.disabled.message", bundle: .forClass(BundleToken.self))
+    }
+
     // MARK: - Counts
 
     public static func votesCount(_ count: Int) -> LocalizedStringResource {
