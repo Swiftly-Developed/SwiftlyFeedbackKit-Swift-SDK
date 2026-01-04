@@ -99,7 +99,8 @@ struct FeedbackDetailVoteView: View {
             if config.showVoteCount {
                 VoteButton(
                     voteCount: viewModel.currentFeedback.voteCount,
-                    hasVoted: viewModel.currentFeedback.hasVoted
+                    hasVoted: viewModel.currentFeedback.hasVoted,
+                    status: viewModel.currentFeedback.status
                 ) {
                     Task { await viewModel.toggleVote() }
                 }

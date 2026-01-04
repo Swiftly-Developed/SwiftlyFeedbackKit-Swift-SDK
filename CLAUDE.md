@@ -80,6 +80,7 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
 ### Models
 - All models are `Codable`, `Sendable`, and `Equatable`
 - Use `Identifiable` for SwiftUI list compatibility
+- `FeedbackStatus.canVote` - Returns `false` for `completed`/`rejected` statuses
 
 ### Networking
 - All API calls use async/await
@@ -105,6 +106,7 @@ SwiftlyFeedback.config.enableAutomaticViewTracking = false
   - macOS: Uses Grid layout for forms, refresh button (⌘R), submit shortcut (⌘Return)
   - iOS: Uses Form with sections, keyboard-aware scrolling
 - `FeedbackCategory.iconName` provides SF Symbol names for each category
+- `VoteButton` is disabled and dimmed for feedback with non-votable status
 
 ## Adding New Features
 

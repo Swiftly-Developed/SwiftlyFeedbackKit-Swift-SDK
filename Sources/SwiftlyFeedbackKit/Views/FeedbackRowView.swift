@@ -15,6 +15,7 @@ struct FeedbackRowView: View {
                 VoteButton(
                     voteCount: feedback.voteCount,
                     hasVoted: feedback.hasVoted,
+                    status: feedback.status,
                     action: onVote
                 )
             }
@@ -66,6 +67,7 @@ struct FeedbackRowMetadataView: View {
 struct VoteButton: View {
     let voteCount: Int
     let hasVoted: Bool
+    let status: FeedbackStatus
     let action: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -74,10 +76,17 @@ struct VoteButton: View {
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     private var voteColor: Color {
+        if !status.canVote {
+            return .secondary.opacity(0.5)
+        }
         if hasVoted {
             return theme.primaryColor.resolve(for: colorScheme)
         }
         return .secondary
+    }
+
+    private var isDisabled: Bool {
+        !status.canVote || (!config.allowUndoVote && hasVoted)
     }
 
     var body: some View {
@@ -93,7 +102,7 @@ struct VoteButton: View {
             .frame(width: 44)
         }
         .buttonStyle(.plain)
-        .disabled(!config.allowUndoVote && hasVoted)
+        .disabled(isDisabled)
     }
 }
 

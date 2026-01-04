@@ -59,6 +59,15 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
         case .rejected: return "Rejected"
         }
     }
+
+    public var canVote: Bool {
+        switch self {
+        case .completed, .rejected:
+            return false
+        case .pending, .approved, .inProgress:
+            return true
+        }
+    }
 }
 
 public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
