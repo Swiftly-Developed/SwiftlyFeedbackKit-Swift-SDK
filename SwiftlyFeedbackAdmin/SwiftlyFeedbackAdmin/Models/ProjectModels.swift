@@ -35,6 +35,11 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let clickupSyncComments: Bool
     let clickupVotesFieldId: String?
 
+    /// Whether Slack integration is configured
+    var isSlackConfigured: Bool {
+        slackWebhookUrl != nil && !slackWebhookUrl!.isEmpty
+    }
+
     /// Whether GitHub integration is configured
     var isGitHubConfigured: Bool {
         githubOwner != nil && githubRepo != nil && githubToken != nil
@@ -43,6 +48,11 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     /// Whether ClickUp integration is configured
     var isClickUpConfigured: Bool {
         clickupToken != nil && clickupListId != nil
+    }
+
+    /// Whether any integration is configured
+    var hasAnyIntegration: Bool {
+        isSlackConfigured || isGitHubConfigured || isClickUpConfigured
     }
 
     // Custom decoder to handle backwards compatibility when allowedStatuses is missing

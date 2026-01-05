@@ -112,6 +112,28 @@ The `ProjectListView` supports three view modes (persisted via `@AppStorage`):
 - Archived projects always show gray gradient with archive icon
 - Color picker available in `EditProjectView` for users to customize
 
+## Integrations Visibility
+
+The `ProjectDetailView` displays configured integrations in a dedicated card:
+
+### Features
+- Only shown when at least one integration is configured
+- Each integration row shows: icon, name, and configuration details
+- Tapping a row opens the integration settings sheet
+
+### Integration Details Displayed
+| Integration | Icon | Detail Shown |
+|-------------|------|--------------|
+| Slack | `number` (teal) | "Notifications enabled" |
+| GitHub | `arrow.triangle.branch` (black) | "owner/repo" |
+| ClickUp | `checklist` (purple) | List name or "Connected" |
+
+### Configuration Check Properties (ProjectModels.swift)
+- `isSlackConfigured` - true if `slackWebhookUrl` is set and non-empty
+- `isGitHubConfigured` - true if owner, repo, and token are all set
+- `isClickUpConfigured` - true if token and listId are both set
+- `hasAnyIntegration` - true if any of the above are configured
+
 ## Cross-Platform Considerations
 
 - Use `Color(.systemBackground)` on iOS, `Color(nsColor: .textBackgroundColor)` on macOS

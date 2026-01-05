@@ -243,6 +243,11 @@ struct ProjectDetailView: View {
                 // Stats Grid
                 statsGrid(project)
 
+                // Integrations Card
+                if project.hasAnyIntegration {
+                    integrationsCard(project)
+                }
+
                 // Description Card
                 if let description = project.description, !description.isEmpty {
                     descriptionCard(description)
@@ -430,6 +435,100 @@ struct ProjectDetailView: View {
         .padding()
         .background(.background, in: RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    // MARK: - Integrations Card
+
+    private func integrationsCard(_ project: Project) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Integrations", systemImage: "puzzlepiece.extension")
+                .font(.headline)
+                .foregroundStyle(.primary)
+
+            VStack(spacing: 0) {
+                if project.isSlackConfigured {
+                    integrationRow(
+                        icon: "number",
+                        iconColor: Color(red: 0.24, green: 0.58, blue: 0.55),
+                        name: "Slack",
+                        detail: "Notifications enabled"
+                    ) {
+                        showingSlackSheet = true
+                    }
+                }
+
+                if project.isGitHubConfigured {
+                    if project.isSlackConfigured {
+                        Divider()
+                            .padding(.leading, 44)
+                    }
+                    integrationRow(
+                        icon: "arrow.triangle.branch",
+                        iconColor: .black,
+                        name: "GitHub",
+                        detail: "\(project.githubOwner ?? "")/\(project.githubRepo ?? "")"
+                    ) {
+                        showingGitHubSheet = true
+                    }
+                }
+
+                if project.isClickUpConfigured {
+                    if project.isSlackConfigured || project.isGitHubConfigured {
+                        Divider()
+                            .padding(.leading, 44)
+                    }
+                    integrationRow(
+                        icon: "checklist",
+                        iconColor: Color(red: 0.49, green: 0.31, blue: 0.83),
+                        name: "ClickUp",
+                        detail: project.clickupListName ?? "Connected"
+                    ) {
+                        showingClickUpSheet = true
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func integrationRow(
+        icon: String,
+        iconColor: Color,
+        name: String,
+        detail: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(iconColor, in: RoundedRectangle(cornerRadius: 6))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Quick Actions (iOS Compact)
