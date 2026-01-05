@@ -5,7 +5,12 @@ import SwiftUI
 struct UsersDashboardView: View {
     @Bindable var projectViewModel: ProjectViewModel
     @State private var userViewModel = SDKUserViewModel()
-    @State private var selectedProject: ProjectListItem?
+
+    /// Uses the shared project filter from ProjectViewModel
+    private var selectedProject: ProjectListItem? {
+        get { projectViewModel.selectedFilterProject }
+        nonmutating set { projectViewModel.selectedFilterProject = newValue }
+    }
 
     private var groupedBackgroundColor: Color {
         #if os(macOS)
@@ -28,18 +33,10 @@ struct UsersDashboardView: View {
                 }
             }
             .searchable(text: $userViewModel.searchText, prompt: "Search users...")
-            .onChange(of: selectedProject) { _, newProject in
-                AppLogger.view.info("UsersDashboardView: selectedProject changed to \(newProject?.name ?? "All Projects")")
-                Task {
-                    await userViewModel.loadUsers(projectId: newProject?.id)
-                }
-            }
-            .task {
-                AppLogger.view.info("UsersDashboardView: .task fired - loading all projects by default")
-                // Load all projects by default (selectedProject is nil)
-                if userViewModel.users.isEmpty {
-                    await userViewModel.loadUsers(projectId: nil)
-                }
+            .task(id: selectedProject?.id) {
+                AppLogger.view.info("UsersDashboardView: .task fired for project: \(selectedProject?.name ?? "All Projects")")
+                // Load users for the current selected project (nil = all projects)
+                await userViewModel.loadUsers(projectId: selectedProject?.id)
             }
             #if os(iOS)
             .refreshable {

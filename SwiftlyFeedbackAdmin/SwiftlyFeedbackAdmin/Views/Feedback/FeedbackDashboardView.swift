@@ -26,10 +26,15 @@ enum DashboardViewMode: String, CaseIterable {
 struct FeedbackDashboardView: View {
     @Bindable var projectViewModel: ProjectViewModel
     @State private var feedbackViewModel = FeedbackViewModel()
-    @State private var selectedProject: ProjectListItem?
     @State private var feedbackToOpen: Feedback?
     @AppStorage("dashboardViewMode") private var viewMode: DashboardViewMode = .kanban
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    /// Uses the shared project filter from ProjectViewModel
+    private var selectedProject: ProjectListItem? {
+        get { projectViewModel.selectedFilterProject }
+        nonmutating set { projectViewModel.selectedFilterProject = newValue }
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -55,17 +60,13 @@ struct FeedbackDashboardView: View {
                     }
                 }
                 .searchable(text: $feedbackViewModel.searchText, prompt: "Search feedback...")
-                .onChange(of: selectedProject) { _, newProject in
-                    if let project = newProject {
-                        Task {
-                            await loadFeedbackForProject(project)
-                        }
-                    }
-                }
-                .task {
+                .task(id: selectedProject?.id) {
                     // Auto-select first project if none selected
                     if selectedProject == nil, let first = projectViewModel.projects.first {
                         selectedProject = first
+                    } else if let project = selectedProject {
+                        // Load feedback for the current selected project
+                        await loadFeedbackForProject(project)
                     }
                 }
                 #if os(iOS)

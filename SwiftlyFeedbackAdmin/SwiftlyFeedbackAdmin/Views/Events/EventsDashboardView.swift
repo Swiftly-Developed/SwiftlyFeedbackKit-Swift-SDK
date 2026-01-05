@@ -6,7 +6,12 @@ import Charts
 struct EventsDashboardView: View {
     @Bindable var projectViewModel: ProjectViewModel
     @State private var eventViewModel = ViewEventViewModel()
-    @State private var selectedProject: ProjectListItem?
+
+    /// Uses the shared project filter from ProjectViewModel
+    private var selectedProject: ProjectListItem? {
+        get { projectViewModel.selectedFilterProject }
+        nonmutating set { projectViewModel.selectedFilterProject = newValue }
+    }
 
     private var groupedBackgroundColor: Color {
         #if os(macOS)
@@ -29,18 +34,10 @@ struct EventsDashboardView: View {
                 }
             }
             .searchable(text: $eventViewModel.searchText, prompt: "Search events...")
-            .onChange(of: selectedProject) { _, newProject in
-                AppLogger.view.info("EventsDashboardView: selectedProject changed to \(newProject?.name ?? "All Projects")")
-                Task {
-                    await eventViewModel.loadEvents(projectId: newProject?.id)
-                }
-            }
-            .task {
-                AppLogger.view.info("EventsDashboardView: .task fired - loading all projects by default")
-                // Load all projects by default (selectedProject is nil)
-                if eventViewModel.overview == nil {
-                    await eventViewModel.loadEvents(projectId: nil)
-                }
+            .task(id: selectedProject?.id) {
+                AppLogger.view.info("EventsDashboardView: .task fired for project: \(selectedProject?.name ?? "All Projects")")
+                // Load events for the current selected project (nil = all projects)
+                await eventViewModel.loadEvents(projectId: selectedProject?.id)
             }
             #if os(iOS)
             .refreshable {

@@ -127,6 +127,26 @@ The macOS app uses `NavigationSplitView` with a sidebar (`MainTabView.swift`):
 - Each detail section has its own `NavigationStack` for consistent title styling
 - Detail views provide their own `.navigationTitle()` (e.g., "Projects", "Feedback", "Settings")
 
+## Shared Project Filter
+
+The Feedback, Users, and Events tabs share a common project filter stored in `ProjectViewModel.selectedFilterProject`. This ensures the selected project persists when switching between tabs.
+
+### Implementation
+- `ProjectViewModel.selectedFilterProject: ProjectListItem?` - Shared state for project selection
+- Each view uses a computed property to read/write this shared state:
+  ```swift
+  private var selectedProject: ProjectListItem? {
+      get { projectViewModel.selectedFilterProject }
+      nonmutating set { projectViewModel.selectedFilterProject = newValue }
+  }
+  ```
+- Views use `.task(id: selectedProject?.id)` to reload data when the project changes or the view appears
+
+### Behavior
+- **Feedback tab**: Requires a project selection (auto-selects first project if none selected)
+- **Users tab**: Supports "All Projects" option (nil = all projects, default)
+- **Events tab**: Supports "All Projects" option (nil = all projects, default)
+
 ## Feedback Dashboard
 
 The `FeedbackDashboardView` provides a dedicated tab for managing feedback across all projects:
@@ -139,7 +159,7 @@ The `FeedbackDashboardView` provides a dedicated tab for managing feedback acros
 | Kanban | `rectangle.3.group` | Drag-and-drop columns by status (Pending, Approved, In Progress, Completed, Rejected) |
 
 ### Features
-- Project picker in toolbar to switch between projects
+- Shared project picker in toolbar (persists across tabs)
 - Search feedback by title, description, or user email
 - Filter by status and/or category
 - Update status via context menu, swipe actions, or drag-and-drop (Kanban)
@@ -150,8 +170,8 @@ The `FeedbackDashboardView` provides a dedicated tab for managing feedback acros
 The `UsersDashboardView` provides a dedicated tab for viewing SDK users (end users of apps using SwiftlyFeedbackKit):
 
 ### Features
-- **All Projects** option in toolbar picker to view users across all projects (default)
-- Project picker in toolbar to filter by specific project
+- Shared project picker in toolbar (persists across tabs)
+- **All Projects** option to view users across all projects (default)
 - Stats cards showing: Total Users, Total MRR, Paying Users, Average MRR
 - Search users by user ID
 - Sort by: Last Seen, MRR, Feedback Count, Vote Count
@@ -220,8 +240,8 @@ The `HomeDashboardView` is the first tab displaying key performance indicators a
 The `EventsDashboardView` provides a dedicated tab for viewing SDK view events (screen views and custom events tracked by apps using SwiftlyFeedbackKit):
 
 ### Features
-- **All Projects** option in toolbar picker to view events across all projects (default)
-- Project picker in toolbar to filter by specific project
+- Shared project picker in toolbar (persists across tabs)
+- **All Projects** option to view events across all projects (default)
 - Stats cards showing: Total Events, Unique Users
 - **Daily Events Chart** (Swift Charts) showing 30-day event history with bar visualization
 - Event breakdown showing count and unique users per event type

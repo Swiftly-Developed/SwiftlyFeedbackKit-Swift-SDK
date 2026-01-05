@@ -7,6 +7,10 @@ final class ProjectViewModel {
     var selectedProject: Project?
     var projectMembers: [ProjectMember] = []
 
+    /// Shared project filter selection across Feedback, Users, and Events tabs.
+    /// nil means "All Projects" for tabs that support it.
+    var selectedFilterProject: ProjectListItem?
+
     var isLoading = false
     var isLoadingDetail = false
     var errorMessage: String?
