@@ -48,7 +48,8 @@ SwiftlyFeedbackAdmin/
 │   │   ├── ProjectMembersView.swift   # Manage members
 │   │   ├── AcceptInviteView.swift     # Accept project invite
 │   │   ├── SlackSettingsView.swift    # Configure Slack webhook notifications
-│   │   └── GitHubSettingsView.swift   # Configure GitHub Issues integration
+│   │   ├── GitHubSettingsView.swift   # Configure GitHub Issues integration
+│   │   └── ClickUpSettingsView.swift  # Configure ClickUp Tasks integration
 │   ├── Feedback/
 │   │   ├── FeedbackDashboardView.swift # Dashboard with List/Kanban views
 │   │   ├── FeedbackListView.swift      # Feedback list with row view
@@ -373,6 +374,54 @@ When selecting multiple feedback items, the action bar includes "Push to GitHub"
 - `FeedbackListView.swift` - Row context menu with GitHub actions
 - `FeedbackViewModel.swift` - `createGitHubIssue()` and `bulkCreateGitHubIssues()` methods
 - `AdminAPIClient.swift` - `createGitHubIssue()` and `bulkCreateGitHubIssues()` API calls
+
+## ClickUp Integration
+
+Push feedback items to ClickUp as tasks for tracking in your project management workflow.
+
+### Setup
+1. Get your ClickUp API token from Settings > Apps in ClickUp
+2. In Admin app: Project Details > Menu (⋯) > Integrations > ClickUp
+3. Enter your API token and select the target list via the hierarchy picker
+4. Optionally configure default tags, status sync, comment sync, and vote count sync
+
+### ClickUpSettingsView Features
+- API token SecureField
+- Hierarchy picker: Workspace → Space → Folder (optional) → List
+- Default tags (comma-separated) applied to all tasks
+- Status sync toggle: auto-update ClickUp task status when feedback status changes
+- Comment sync toggle: sync comments to ClickUp tasks
+- Vote count field picker: select a number custom field to sync vote counts
+- Remove integration button
+
+### Status Mapping
+When status sync is enabled:
+- **pending** → "to do"
+- **approved** → "approved"
+- **in_progress** → "in progress"
+- **testflight** → "in review"
+- **completed** → "complete"
+- **rejected** → "closed"
+
+### Feedback Context Menu Actions
+- **Push to ClickUp**: Create a ClickUp task from feedback (only shown if ClickUp configured and no existing task)
+- **View ClickUp Task**: Open the linked task in browser (only shown if feedback has a task)
+
+### Bulk Actions
+When selecting multiple feedback items, the action bar includes "Push to ClickUp" button to create tasks for all selected items that don't already have ClickUp tasks.
+
+### Visual Indicators
+- Purple ClickUp badge on feedback cards that have linked tasks
+- Success toast showing task URL when created
+
+### Files
+- `ClickUpSettingsView.swift` - Settings sheet for ClickUp integration with hierarchy picker
+- `FeedbackDashboardView.swift` - Context menu with Push/View ClickUp actions
+- `FeedbackListView.swift` - Row context menu with ClickUp actions, ClickUpBadge component
+- `FeedbackViewModel.swift` - `createClickUpTask()` and `bulkCreateClickUpTasks()` methods
+- `ProjectViewModel.swift` - `updateClickUpSettings()` and hierarchy loading methods
+- `AdminAPIClient.swift` - All ClickUp API calls (settings, tasks, hierarchy)
+- `ProjectModels.swift` - ClickUp request/response DTOs and hierarchy models
 
 ## Subscription Integration (Stub)
 

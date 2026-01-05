@@ -116,6 +116,35 @@ struct CommentController: RouteCollection {
             }
         }
 
+        // Sync comment to ClickUp if enabled
+        if project.clickupSyncComments,
+           let taskId = feedback.clickupTaskId,
+           let token = project.clickupToken {
+            let isAdmin = dto.isAdmin ?? false
+            let commenterType = isAdmin ? "Admin" : "User"
+            let commentText = """
+            **[\(commenterType)] Comment:**
+
+            \(comment.content)
+
+            ---
+            _Synced from SwiftlyFeedback_
+            """
+
+            Task {
+                do {
+                    _ = try await req.clickupService.createTaskComment(
+                        taskId: taskId,
+                        token: token,
+                        commentText: commentText,
+                        notifyAll: false
+                    )
+                } catch {
+                    req.logger.error("Failed to sync comment to ClickUp: \(error)")
+                }
+            }
+        }
+
         return CommentResponseDTO(comment: comment)
     }
 

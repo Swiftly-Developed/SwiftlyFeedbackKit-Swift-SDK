@@ -50,6 +50,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(AddFeedbackMergeFields())
     app.migrations.add(AddProjectAllowedStatuses())
     app.migrations.add(AddProjectGitHubIntegration())
+    app.migrations.add(AddProjectClickUpIntegration())
 
     try await app.autoMigrate()
 

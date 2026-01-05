@@ -25,10 +25,24 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let githubToken: String?
     let githubDefaultLabels: [String]?
     let githubSyncStatus: Bool
+    // ClickUp integration fields
+    let clickupToken: String?
+    let clickupListId: String?
+    let clickupWorkspaceName: String?
+    let clickupListName: String?
+    let clickupDefaultTags: [String]?
+    let clickupSyncStatus: Bool
+    let clickupSyncComments: Bool
+    let clickupVotesFieldId: String?
 
     /// Whether GitHub integration is configured
     var isGitHubConfigured: Bool {
         githubOwner != nil && githubRepo != nil && githubToken != nil
+    }
+
+    /// Whether ClickUp integration is configured
+    var isClickUpConfigured: Bool {
+        clickupToken != nil && clickupListId != nil
     }
 
     // Custom decoder to handle backwards compatibility when allowedStatuses is missing
@@ -60,6 +74,15 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         githubToken = try container.decodeIfPresent(String.self, forKey: .githubToken)
         githubDefaultLabels = try container.decodeIfPresent([String].self, forKey: .githubDefaultLabels)
         githubSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .githubSyncStatus) ?? false
+        // ClickUp fields (backwards compatibility)
+        clickupToken = try container.decodeIfPresent(String.self, forKey: .clickupToken)
+        clickupListId = try container.decodeIfPresent(String.self, forKey: .clickupListId)
+        clickupWorkspaceName = try container.decodeIfPresent(String.self, forKey: .clickupWorkspaceName)
+        clickupListName = try container.decodeIfPresent(String.self, forKey: .clickupListName)
+        clickupDefaultTags = try container.decodeIfPresent([String].self, forKey: .clickupDefaultTags)
+        clickupSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .clickupSyncStatus) ?? false
+        clickupSyncComments = try container.decodeIfPresent(Bool.self, forKey: .clickupSyncComments) ?? false
+        clickupVotesFieldId = try container.decodeIfPresent(String.self, forKey: .clickupVotesFieldId)
     }
 
     init(
@@ -85,7 +108,15 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         githubRepo: String? = nil,
         githubToken: String? = nil,
         githubDefaultLabels: [String]? = nil,
-        githubSyncStatus: Bool = false
+        githubSyncStatus: Bool = false,
+        clickupToken: String? = nil,
+        clickupListId: String? = nil,
+        clickupWorkspaceName: String? = nil,
+        clickupListName: String? = nil,
+        clickupDefaultTags: [String]? = nil,
+        clickupSyncStatus: Bool = false,
+        clickupSyncComments: Bool = false,
+        clickupVotesFieldId: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -110,6 +141,14 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.githubToken = githubToken
         self.githubDefaultLabels = githubDefaultLabels
         self.githubSyncStatus = githubSyncStatus
+        self.clickupToken = clickupToken
+        self.clickupListId = clickupListId
+        self.clickupWorkspaceName = clickupWorkspaceName
+        self.clickupListName = clickupListName
+        self.clickupDefaultTags = clickupDefaultTags
+        self.clickupSyncStatus = clickupSyncStatus
+        self.clickupSyncComments = clickupSyncComments
+        self.clickupVotesFieldId = clickupVotesFieldId
     }
 }
 
@@ -217,6 +256,67 @@ struct BulkCreateGitHubIssuesRequest: Encodable {
 struct BulkCreateGitHubIssuesResponse: Decodable {
     let created: [CreateGitHubIssueResponse]
     let failed: [UUID]
+}
+
+// MARK: - ClickUp Integration
+
+struct UpdateProjectClickUpRequest: Encodable {
+    let clickupToken: String?
+    let clickupListId: String?
+    let clickupWorkspaceName: String?
+    let clickupListName: String?
+    let clickupDefaultTags: [String]?
+    let clickupSyncStatus: Bool?
+    let clickupSyncComments: Bool?
+    let clickupVotesFieldId: String?
+}
+
+struct CreateClickUpTaskRequest: Encodable {
+    let feedbackId: UUID
+    let additionalTags: [String]?
+}
+
+struct CreateClickUpTaskResponse: Decodable {
+    let feedbackId: UUID
+    let taskUrl: String
+    let taskId: String
+}
+
+struct BulkCreateClickUpTasksRequest: Encodable {
+    let feedbackIds: [UUID]
+    let additionalTags: [String]?
+}
+
+struct BulkCreateClickUpTasksResponse: Decodable {
+    let created: [CreateClickUpTaskResponse]
+    let failed: [UUID]
+}
+
+// ClickUp hierarchy models
+struct ClickUpWorkspace: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct ClickUpSpace: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct ClickUpFolder: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct ClickUpList: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+}
+
+struct ClickUpCustomField: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let type: String
 }
 
 struct AddMemberRequest: Encodable {

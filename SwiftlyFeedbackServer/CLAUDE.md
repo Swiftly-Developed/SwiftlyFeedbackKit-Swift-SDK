@@ -65,7 +65,8 @@ Sources/App/
 ├── Services/             # Business logic services
 │   ├── EmailService.swift    # Email notifications via Resend
 │   ├── SlackService.swift    # Slack webhook notifications
-│   └── GitHubService.swift   # GitHub Issues integration
+│   ├── GitHubService.swift   # GitHub Issues integration
+│   └── ClickUpService.swift  # ClickUp Tasks integration
 ├── configure.swift       # App configuration
 ├── routes.swift          # Route registration
 └── entrypoint.swift      # Main entry point
@@ -106,6 +107,15 @@ All routes prefixed with `/api/v1`.
 - `PATCH /projects/:id/github` - Update GitHub settings (owner/admin only)
 - `POST /projects/:id/github/issue` - Create GitHub issue from feedback (owner/admin only)
 - `POST /projects/:id/github/issues` - Bulk create GitHub issues (owner/admin only)
+- `PATCH /projects/:id/clickup` - Update ClickUp settings (owner/admin only)
+- `POST /projects/:id/clickup/task` - Create ClickUp task from feedback (owner/admin only)
+- `POST /projects/:id/clickup/tasks` - Bulk create ClickUp tasks (owner/admin only)
+- `GET /projects/:id/clickup/workspaces` - Get ClickUp workspaces for hierarchy picker
+- `GET /projects/:id/clickup/spaces/:workspaceId` - Get ClickUp spaces
+- `GET /projects/:id/clickup/folders/:spaceId` - Get ClickUp folders
+- `GET /projects/:id/clickup/lists/:folderId` - Get ClickUp lists in folder
+- `GET /projects/:id/clickup/folderless-lists/:spaceId` - Get ClickUp lists without folder
+- `GET /projects/:id/clickup/custom-fields` - Get ClickUp number fields for vote count
 
 ### Project Members (Bearer token required)
 - `GET /projects/:id/members` - List members
@@ -281,3 +291,113 @@ Handles GitHub API interactions:
 
 ### Migration
 `AddProjectGitHubIntegration` adds GitHub fields to projects and feedbacks tables.
+
+## ClickUp Integration
+
+Push feedback items to ClickUp as tasks for tracking in your project management workflow.
+
+### Configuration Endpoint
+`PATCH /projects/:id/clickup` (Bearer token + owner/admin required)
+
+Request body:
+```json
+{
+  "clickup_token": "pk_xxxxx",
+  "clickup_list_id": "12345",
+  "clickup_workspace_name": "My Workspace",
+  "clickup_list_name": "Feedback",
+  "clickup_default_tags": ["feedback", "user-request"],
+  "clickup_sync_status": true,
+  "clickup_sync_comments": true,
+  "clickup_votes_field_id": "abc123"
+}
+```
+
+### Create Task Endpoint
+`POST /projects/:id/clickup/task` (Bearer token + owner/admin required)
+
+Request body:
+```json
+{
+  "feedback_id": "uuid"
+}
+```
+
+Response:
+```json
+{
+  "feedback_id": "uuid",
+  "task_url": "https://app.clickup.com/t/123abc",
+  "task_id": "123abc"
+}
+```
+
+### Bulk Create Tasks Endpoint
+`POST /projects/:id/clickup/tasks` (Bearer token + owner/admin required)
+
+Request body:
+```json
+{
+  "feedback_ids": ["uuid", "uuid"]
+}
+```
+
+Response:
+```json
+{
+  "created": [{"feedback_id": "uuid", "task_url": "...", "task_id": "123"}],
+  "failed": ["uuid"]
+}
+```
+
+### Hierarchy Endpoints (for list picker)
+- `GET /projects/:id/clickup/workspaces` - Get user's workspaces
+- `GET /projects/:id/clickup/spaces/:workspaceId` - Get spaces in workspace
+- `GET /projects/:id/clickup/folders/:spaceId` - Get folders in space
+- `GET /projects/:id/clickup/lists/:folderId` - Get lists in folder
+- `GET /projects/:id/clickup/folderless-lists/:spaceId` - Get lists without folder
+- `GET /projects/:id/clickup/custom-fields` - Get number fields for vote count sync
+
+### Database Fields
+
+**Project model:**
+- `clickup_token` (String?) - ClickUp API token
+- `clickup_list_id` (String?) - Target list ID
+- `clickup_workspace_name` (String?) - Workspace name for display
+- `clickup_list_name` (String?) - List name for display
+- `clickup_default_tags` ([String]?) - Tags to apply to all tasks
+- `clickup_sync_status` (Bool) - Sync feedback status to task status
+- `clickup_sync_comments` (Bool) - Sync comments to ClickUp task
+- `clickup_votes_field_id` (String?) - Custom field ID for vote count
+
+**Feedback model:**
+- `clickup_task_url` (String?) - URL of linked ClickUp task
+- `clickup_task_id` (String?) - Task ID for API calls
+
+### Status Sync
+When `clickup_sync_status` is enabled, feedback status maps to ClickUp status:
+- **pending** → "to do"
+- **approved** → "approved"
+- **in_progress** → "in progress"
+- **testflight** → "in review"
+- **completed** → "complete"
+- **rejected** → "closed"
+
+### Comment Sync
+When `clickup_sync_comments` is enabled, new comments on feedback are synced to the linked ClickUp task.
+
+### Vote Count Sync
+When `clickup_votes_field_id` is set, vote count changes are synced to the specified ClickUp custom number field.
+
+### ClickUpService
+Handles ClickUp API interactions:
+- `createTask()` - Creates a new task with formatted markdown body
+- `updateTaskStatus()` - Updates task status when feedback status changes
+- `createTaskComment()` - Syncs comments to ClickUp task
+- `setCustomFieldValue()` - Updates vote count custom field
+- `getWorkspaces/Spaces/Folders/Lists()` - Hierarchy navigation for list picker
+- `getCustomFields()` - Get number fields for vote count sync
+- `buildTaskDescription()` - Formats feedback details for task description
+
+### Migration
+`AddProjectClickUpIntegration` adds ClickUp fields to projects and feedbacks tables.

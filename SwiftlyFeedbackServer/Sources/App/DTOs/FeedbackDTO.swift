@@ -37,6 +37,9 @@ struct FeedbackResponseDTO: Content {
     // GitHub integration fields
     let githubIssueUrl: String?
     let githubIssueNumber: Int?
+    // ClickUp integration fields
+    let clickupTaskUrl: String?
+    let clickupTaskId: String?
 
     init(feedback: Feedback, hasVoted: Bool = false, commentCount: Int = 0, totalMrr: Double? = nil) {
         self.id = feedback.id!
@@ -57,5 +60,7 @@ struct FeedbackResponseDTO: Content {
         self.mergedFeedbackIds = feedback.mergedFeedbackIds
         self.githubIssueUrl = feedback.githubIssueURL
         self.githubIssueNumber = feedback.githubIssueNumber
+        self.clickupTaskUrl = feedback.clickupTaskURL
+        self.clickupTaskId = feedback.clickupTaskId
     }
 }

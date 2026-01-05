@@ -60,6 +60,13 @@ final class Feedback: Model, Content, @unchecked Sendable {
     @OptionalField(key: "github_issue_number")
     var githubIssueNumber: Int?
 
+    // ClickUp integration fields
+    @OptionalField(key: "clickup_task_url")
+    var clickupTaskURL: String?
+
+    @OptionalField(key: "clickup_task_id")
+    var clickupTaskId: String?
+
     /// Whether this feedback has been merged into another
     var isMerged: Bool {
         mergedIntoId != nil
@@ -73,6 +80,11 @@ final class Feedback: Model, Content, @unchecked Sendable {
     /// Whether this feedback has a linked GitHub issue
     var hasGitHubIssue: Bool {
         githubIssueURL != nil
+    }
+
+    /// Whether this feedback has a linked ClickUp task
+    var hasClickUpTask: Bool {
+        clickupTaskURL != nil
     }
 
     init() {}
@@ -111,6 +123,25 @@ enum FeedbackStatus: String, Codable, CaseIterable {
     /// All statuses that are enabled by default for new projects
     static var defaultAllowed: [FeedbackStatus] {
         [.pending, .approved, .inProgress, .completed, .rejected]
+    }
+
+    /// Maps SwiftlyFeedback status to ClickUp status names
+    /// Note: These should match the status names configured in the user's ClickUp list
+    var clickupStatusName: String {
+        switch self {
+        case .pending:
+            return "to do"
+        case .approved:
+            return "approved"
+        case .inProgress:
+            return "in progress"
+        case .testflight:
+            return "in review"
+        case .completed:
+            return "complete"
+        case .rejected:
+            return "closed"
+        }
     }
 }
 

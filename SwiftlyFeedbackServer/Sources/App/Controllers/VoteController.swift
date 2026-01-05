@@ -56,6 +56,21 @@ struct VoteController: RouteCollection {
         feedback.voteCount += 1
         try await feedback.save(on: req.db)
 
+        // Sync vote count to ClickUp if configured
+        let project = feedback.project
+        if let votesFieldId = project.clickupVotesFieldId,
+           let taskId = feedback.clickupTaskId,
+           let token = project.clickupToken {
+            Task {
+                try? await req.clickupService.setCustomFieldValue(
+                    taskId: taskId,
+                    fieldId: votesFieldId,
+                    token: token,
+                    value: feedback.voteCount
+                )
+            }
+        }
+
         return VoteResponseDTO(feedbackId: feedbackId, voteCount: feedback.voteCount, hasVoted: true)
     }
 
@@ -91,6 +106,21 @@ struct VoteController: RouteCollection {
         // Update vote count
         feedback.voteCount = max(0, feedback.voteCount - 1)
         try await feedback.save(on: req.db)
+
+        // Sync vote count to ClickUp if configured
+        let project = feedback.project
+        if let votesFieldId = project.clickupVotesFieldId,
+           let taskId = feedback.clickupTaskId,
+           let token = project.clickupToken {
+            Task {
+                try? await req.clickupService.setCustomFieldValue(
+                    taskId: taskId,
+                    fieldId: votesFieldId,
+                    token: token,
+                    value: feedback.voteCount
+                )
+            }
+        }
 
         return VoteResponseDTO(feedbackId: feedbackId, voteCount: feedback.voteCount, hasVoted: false)
     }

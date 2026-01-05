@@ -128,6 +128,19 @@ struct FeedbackListView: View {
                 .disabled(viewModel.selectedFeedbacks.allSatisfy { $0.hasGitHubIssue })
             }
 
+            // ClickUp push button (only show if ClickUp is configured)
+            if project.isClickUpConfigured {
+                Button {
+                    Task {
+                        await viewModel.bulkCreateClickUpTasks(projectId: project.id)
+                    }
+                } label: {
+                    Label("Push to ClickUp", systemImage: "checklist")
+                }
+                .buttonStyle(.bordered)
+                .disabled(viewModel.selectedFeedbacks.allSatisfy { $0.hasClickUpTask })
+            }
+
             Button {
                 viewModel.startMergeWithSelection()
             } label: {
@@ -380,6 +393,26 @@ struct FeedbackListView: View {
             Divider()
         }
 
+        // ClickUp options
+        if project.isClickUpConfigured {
+            if feedback.hasClickUpTask {
+                if let taskUrl = feedback.clickupTaskUrl, let url = URL(string: taskUrl) {
+                    Link(destination: url) {
+                        Label("View ClickUp Task", systemImage: "link")
+                    }
+                }
+            } else {
+                Button {
+                    Task {
+                        await viewModel.createClickUpTask(projectId: project.id, feedbackId: feedback.id)
+                    }
+                } label: {
+                    Label("Push to ClickUp", systemImage: "checklist")
+                }
+            }
+            Divider()
+        }
+
         // Merge option (shows when this + selected >= 2)
         let canMergeThis = viewModel.selectedFeedbackIds.count >= 1 || viewModel.selectedFeedbackIds.contains(feedback.id)
         if canMergeThis {
@@ -534,6 +567,9 @@ struct FeedbackListRowView: View {
                 if feedback.hasGitHubIssue {
                     GitHubBadge()
                 }
+                if feedback.hasClickUpTask {
+                    ClickUpBadge()
+                }
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
@@ -618,6 +654,25 @@ struct GitHubBadge: View {
         .padding(.vertical, 3)
         .background(Color.black.opacity(0.1))
         .foregroundStyle(.primary.opacity(0.7))
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - ClickUp Badge
+
+struct ClickUpBadge: View {
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "checklist")
+                .font(.caption2)
+            Text("ClickUp")
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(Color.purple.opacity(0.15))
+        .foregroundStyle(.purple)
         .clipShape(Capsule())
     }
 }
@@ -762,6 +817,26 @@ struct KanbanColumnView: View {
             Divider()
         }
 
+        // ClickUp options
+        if project.isClickUpConfigured {
+            if feedback.hasClickUpTask {
+                if let taskUrl = feedback.clickupTaskUrl, let url = URL(string: taskUrl) {
+                    Link(destination: url) {
+                        Label("View ClickUp Task", systemImage: "link")
+                    }
+                }
+            } else {
+                Button {
+                    Task {
+                        await viewModel.createClickUpTask(projectId: project.id, feedbackId: feedback.id)
+                    }
+                } label: {
+                    Label("Push to ClickUp", systemImage: "checklist")
+                }
+            }
+            Divider()
+        }
+
         // Merge option
         if viewModel.selectedFeedbackIds.count >= 1 {
             Button {
@@ -836,6 +911,9 @@ struct KanbanCardView: View {
                 }
                 if feedback.hasGitHubIssue {
                     GitHubBadge()
+                }
+                if feedback.hasClickUpTask {
+                    ClickUpBadge()
                 }
                 Spacer()
                 if isSelected {

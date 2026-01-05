@@ -38,6 +38,17 @@ struct ProjectController: RouteCollection {
         protected.post(":projectId", "github", "issue", use: createGitHubIssue)
         protected.post(":projectId", "github", "issues", use: bulkCreateGitHubIssues)
 
+        // ClickUp integration
+        protected.patch(":projectId", "clickup", use: updateClickUpSettings)
+        protected.post(":projectId", "clickup", "task", use: createClickUpTask)
+        protected.post(":projectId", "clickup", "tasks", use: bulkCreateClickUpTasks)
+        protected.get(":projectId", "clickup", "workspaces", use: getClickUpWorkspaces)
+        protected.get(":projectId", "clickup", "spaces", ":workspaceId", use: getClickUpSpaces)
+        protected.get(":projectId", "clickup", "folders", ":spaceId", use: getClickUpFolders)
+        protected.get(":projectId", "clickup", "lists", ":folderId", use: getClickUpLists)
+        protected.get(":projectId", "clickup", "folderless-lists", ":spaceId", use: getClickUpFolderlessLists)
+        protected.get(":projectId", "clickup", "custom-fields", use: getClickUpCustomFields)
+
         // Invite management
         protected.get(":projectId", "invites", use: listInvites)
         protected.delete(":projectId", "invites", ":inviteId", use: cancelInvite)
@@ -869,6 +880,327 @@ struct ProjectController: RouteCollection {
         }
 
         return BulkCreateGitHubIssuesResponseDTO(created: created, failed: failed)
+    }
+
+    // MARK: - ClickUp Integration
+
+    @Sendable
+    func updateClickUpSettings(req: Request) async throws -> ProjectResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        let dto = try req.content.decode(UpdateProjectClickUpDTO.self)
+
+        if let token = dto.clickupToken {
+            project.clickupToken = token.isEmpty ? nil : token
+        }
+        if let listId = dto.clickupListId {
+            project.clickupListId = listId.isEmpty ? nil : listId
+        }
+        if let workspaceName = dto.clickupWorkspaceName {
+            project.clickupWorkspaceName = workspaceName.isEmpty ? nil : workspaceName
+        }
+        if let listName = dto.clickupListName {
+            project.clickupListName = listName.isEmpty ? nil : listName
+        }
+        if let tags = dto.clickupDefaultTags {
+            project.clickupDefaultTags = tags.isEmpty ? nil : tags
+        }
+        if let syncStatus = dto.clickupSyncStatus {
+            project.clickupSyncStatus = syncStatus
+        }
+        if let syncComments = dto.clickupSyncComments {
+            project.clickupSyncComments = syncComments
+        }
+        if let votesFieldId = dto.clickupVotesFieldId {
+            project.clickupVotesFieldId = votesFieldId.isEmpty ? nil : votesFieldId
+        }
+
+        try await project.save(on: req.db)
+
+        try await project.$feedbacks.load(on: req.db)
+        try await project.$members.load(on: req.db)
+        try await project.$owner.load(on: req.db)
+
+        return ProjectResponseDTO(
+            project: project,
+            feedbackCount: project.feedbacks.count,
+            memberCount: project.members.count,
+            ownerEmail: project.owner.email
+        )
+    }
+
+    @Sendable
+    func createClickUpTask(req: Request) async throws -> CreateClickUpTaskResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken,
+              let listId = project.clickupListId else {
+            throw Abort(.badRequest, reason: "ClickUp integration not configured")
+        }
+
+        let dto = try req.content.decode(CreateClickUpTaskDTO.self)
+
+        guard let feedback = try await Feedback.query(on: req.db)
+            .filter(\.$id == dto.feedbackId)
+            .filter(\.$project.$id == project.id!)
+            .with(\.$votes)
+            .first() else {
+            throw Abort(.notFound, reason: "Feedback not found")
+        }
+
+        if feedback.clickupTaskURL != nil {
+            throw Abort(.conflict, reason: "Feedback already has a ClickUp task")
+        }
+
+        // Build tags
+        var tags = project.clickupDefaultTags ?? []
+        if let additional = dto.additionalTags {
+            tags.append(contentsOf: additional)
+        }
+        tags.append(feedback.category.rawValue)
+
+        // Calculate MRR
+        let allUserIds = Set([feedback.userId] + feedback.votes.map { $0.userId })
+        let sdkUsers = try await SDKUser.query(on: req.db)
+            .filter(\.$project.$id == project.id!)
+            .filter(\.$userId ~~ Array(allUserIds))
+            .all()
+        let mrrByUserId = Dictionary(uniqueKeysWithValues: sdkUsers.map { ($0.userId, $0.mrr) })
+
+        var totalMrr: Double = 0
+        if let creatorMrr = mrrByUserId[feedback.userId] ?? nil {
+            totalMrr += creatorMrr
+        }
+        for vote in feedback.votes {
+            if let voterMrr = mrrByUserId[vote.userId] ?? nil {
+                totalMrr += voterMrr
+            }
+        }
+
+        let description = req.clickupService.buildTaskDescription(
+            feedback: feedback,
+            projectName: project.name,
+            voteCount: feedback.voteCount,
+            mrr: totalMrr > 0 ? totalMrr : nil
+        )
+
+        let response = try await req.clickupService.createTask(
+            listId: listId,
+            token: token,
+            name: feedback.title,
+            markdownDescription: description,
+            tags: tags.isEmpty ? nil : tags
+        )
+
+        feedback.clickupTaskURL = response.url
+        feedback.clickupTaskId = response.id
+        try await feedback.save(on: req.db)
+
+        // Sync initial vote count if votes field is configured
+        if let votesFieldId = project.clickupVotesFieldId {
+            Task {
+                try? await req.clickupService.setCustomFieldValue(
+                    taskId: response.id,
+                    fieldId: votesFieldId,
+                    token: token,
+                    value: feedback.voteCount
+                )
+            }
+        }
+
+        return CreateClickUpTaskResponseDTO(
+            feedbackId: feedback.id!,
+            taskUrl: response.url,
+            taskId: response.id
+        )
+    }
+
+    @Sendable
+    func bulkCreateClickUpTasks(req: Request) async throws -> BulkCreateClickUpTasksResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken,
+              let listId = project.clickupListId else {
+            throw Abort(.badRequest, reason: "ClickUp integration not configured")
+        }
+
+        let dto = try req.content.decode(BulkCreateClickUpTasksDTO.self)
+
+        var created: [CreateClickUpTaskResponseDTO] = []
+        var failed: [UUID] = []
+
+        for feedbackId in dto.feedbackIds {
+            do {
+                guard let feedback = try await Feedback.query(on: req.db)
+                    .filter(\.$id == feedbackId)
+                    .filter(\.$project.$id == project.id!)
+                    .with(\.$votes)
+                    .first() else {
+                    failed.append(feedbackId)
+                    continue
+                }
+
+                if feedback.clickupTaskURL != nil {
+                    failed.append(feedbackId)
+                    continue
+                }
+
+                var tags = project.clickupDefaultTags ?? []
+                if let additional = dto.additionalTags {
+                    tags.append(contentsOf: additional)
+                }
+                tags.append(feedback.category.rawValue)
+
+                // Calculate MRR
+                let allUserIds = Set([feedback.userId] + feedback.votes.map { $0.userId })
+                let sdkUsers = try await SDKUser.query(on: req.db)
+                    .filter(\.$project.$id == project.id!)
+                    .filter(\.$userId ~~ Array(allUserIds))
+                    .all()
+                let mrrByUserId = Dictionary(uniqueKeysWithValues: sdkUsers.map { ($0.userId, $0.mrr) })
+
+                var totalMrr: Double = 0
+                if let creatorMrr = mrrByUserId[feedback.userId] ?? nil {
+                    totalMrr += creatorMrr
+                }
+                for vote in feedback.votes {
+                    if let voterMrr = mrrByUserId[vote.userId] ?? nil {
+                        totalMrr += voterMrr
+                    }
+                }
+
+                let description = req.clickupService.buildTaskDescription(
+                    feedback: feedback,
+                    projectName: project.name,
+                    voteCount: feedback.voteCount,
+                    mrr: totalMrr > 0 ? totalMrr : nil
+                )
+
+                let response = try await req.clickupService.createTask(
+                    listId: listId,
+                    token: token,
+                    name: feedback.title,
+                    markdownDescription: description,
+                    tags: tags.isEmpty ? nil : tags
+                )
+
+                feedback.clickupTaskURL = response.url
+                feedback.clickupTaskId = response.id
+                try await feedback.save(on: req.db)
+
+                created.append(CreateClickUpTaskResponseDTO(
+                    feedbackId: feedback.id!,
+                    taskUrl: response.url,
+                    taskId: response.id
+                ))
+            } catch {
+                req.logger.error("Failed to create ClickUp task for \(feedbackId): \(error)")
+                failed.append(feedbackId)
+            }
+        }
+
+        return BulkCreateClickUpTasksResponseDTO(created: created, failed: failed)
+    }
+
+    @Sendable
+    func getClickUpWorkspaces(req: Request) async throws -> [ClickUpWorkspaceDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken else {
+            throw Abort(.badRequest, reason: "ClickUp token not configured")
+        }
+
+        let workspaces = try await req.clickupService.getWorkspaces(token: token)
+        return workspaces.map { ClickUpWorkspaceDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getClickUpSpaces(req: Request) async throws -> [ClickUpSpaceDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken else {
+            throw Abort(.badRequest, reason: "ClickUp token not configured")
+        }
+
+        guard let workspaceId = req.parameters.get("workspaceId") else {
+            throw Abort(.badRequest, reason: "Workspace ID required")
+        }
+
+        let spaces = try await req.clickupService.getSpaces(workspaceId: workspaceId, token: token)
+        return spaces.map { ClickUpSpaceDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getClickUpFolders(req: Request) async throws -> [ClickUpFolderDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken else {
+            throw Abort(.badRequest, reason: "ClickUp token not configured")
+        }
+
+        guard let spaceId = req.parameters.get("spaceId") else {
+            throw Abort(.badRequest, reason: "Space ID required")
+        }
+
+        let folders = try await req.clickupService.getFolders(spaceId: spaceId, token: token)
+        return folders.map { ClickUpFolderDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getClickUpLists(req: Request) async throws -> [ClickUpListDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken else {
+            throw Abort(.badRequest, reason: "ClickUp token not configured")
+        }
+
+        guard let folderId = req.parameters.get("folderId") else {
+            throw Abort(.badRequest, reason: "Folder ID required")
+        }
+
+        let lists = try await req.clickupService.getLists(folderId: folderId, token: token)
+        return lists.map { ClickUpListDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getClickUpFolderlessLists(req: Request) async throws -> [ClickUpListDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken else {
+            throw Abort(.badRequest, reason: "ClickUp token not configured")
+        }
+
+        guard let spaceId = req.parameters.get("spaceId") else {
+            throw Abort(.badRequest, reason: "Space ID required")
+        }
+
+        let lists = try await req.clickupService.getFolderlessLists(spaceId: spaceId, token: token)
+        return lists.map { ClickUpListDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getClickUpCustomFields(req: Request) async throws -> [ClickUpCustomFieldDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.clickupToken,
+              let listId = project.clickupListId else {
+            throw Abort(.badRequest, reason: "ClickUp integration not configured")
+        }
+
+        let fields = try await req.clickupService.getListCustomFields(listId: listId, token: token)
+        // Filter to only return number fields (suitable for vote count)
+        return fields
+            .filter { $0.type == "number" }
+            .map { ClickUpCustomFieldDTO(id: $0.id, name: $0.name, type: $0.type) }
     }
 
     // MARK: - Helpers

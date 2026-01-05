@@ -62,6 +62,71 @@ struct BulkCreateGitHubIssuesResponseDTO: Content {
     var failed: [UUID]
 }
 
+// MARK: - ClickUp Integration DTOs
+
+struct UpdateProjectClickUpDTO: Content {
+    var clickupToken: String?
+    var clickupListId: String?
+    var clickupWorkspaceName: String?
+    var clickupListName: String?
+    var clickupDefaultTags: [String]?
+    var clickupSyncStatus: Bool?
+    var clickupSyncComments: Bool?
+    var clickupVotesFieldId: String?
+}
+
+struct CreateClickUpTaskDTO: Content, Validatable {
+    var feedbackId: UUID
+    var additionalTags: [String]?
+
+    static func validations(_ validations: inout Validations) {
+        validations.add("feedbackId", as: UUID.self, is: .valid)
+    }
+}
+
+struct CreateClickUpTaskResponseDTO: Content {
+    var feedbackId: UUID
+    var taskUrl: String
+    var taskId: String
+}
+
+struct BulkCreateClickUpTasksDTO: Content {
+    var feedbackIds: [UUID]
+    var additionalTags: [String]?
+}
+
+struct BulkCreateClickUpTasksResponseDTO: Content {
+    var created: [CreateClickUpTaskResponseDTO]
+    var failed: [UUID]
+}
+
+// ClickUp hierarchy DTOs for settings UI
+struct ClickUpWorkspaceDTO: Content {
+    var id: String
+    var name: String
+}
+
+struct ClickUpSpaceDTO: Content {
+    var id: String
+    var name: String
+}
+
+struct ClickUpFolderDTO: Content {
+    var id: String
+    var name: String
+}
+
+struct ClickUpListDTO: Content {
+    var id: String
+    var name: String
+}
+
+struct ClickUpCustomFieldDTO: Content {
+    var id: String
+    var name: String
+    var type: String
+}
+
 struct AddMemberDTO: Content, Validatable {
     let email: String
     let role: ProjectRole
@@ -100,6 +165,15 @@ struct ProjectResponseDTO: Content {
     let githubToken: String?
     let githubDefaultLabels: [String]?
     let githubSyncStatus: Bool
+    // ClickUp integration fields
+    let clickupToken: String?
+    let clickupListId: String?
+    let clickupWorkspaceName: String?
+    let clickupListName: String?
+    let clickupDefaultTags: [String]?
+    let clickupSyncStatus: Bool
+    let clickupSyncComments: Bool
+    let clickupVotesFieldId: String?
 
     init(project: Project, feedbackCount: Int = 0, memberCount: Int = 0, ownerEmail: String? = nil) {
         self.id = project.id!
@@ -125,6 +199,14 @@ struct ProjectResponseDTO: Content {
         self.githubToken = project.githubToken
         self.githubDefaultLabels = project.githubDefaultLabels
         self.githubSyncStatus = project.githubSyncStatus
+        self.clickupToken = project.clickupToken
+        self.clickupListId = project.clickupListId
+        self.clickupWorkspaceName = project.clickupWorkspaceName
+        self.clickupListName = project.clickupListName
+        self.clickupDefaultTags = project.clickupDefaultTags
+        self.clickupSyncStatus = project.clickupSyncStatus
+        self.clickupSyncComments = project.clickupSyncComments
+        self.clickupVotesFieldId = project.clickupVotesFieldId
     }
 }
 

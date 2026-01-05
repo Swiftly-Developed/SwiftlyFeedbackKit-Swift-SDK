@@ -473,7 +473,9 @@ struct CommentRowView: View {
                 mergedAt: nil,
                 mergedFeedbackIds: [UUID(), UUID()],
                 githubIssueUrl: nil,
-                githubIssueNumber: nil
+                githubIssueNumber: nil,
+                clickupTaskUrl: nil,
+                clickupTaskId: nil
             ),
             apiKey: "test-key",
             allowedStatuses: [.pending, .approved, .inProgress, .completed, .rejected],

@@ -7,7 +7,7 @@ import OSLog
 /// // In your App init or development settings
 /// AppLogger.isEnabled = false
 /// ```
-var isLoggingEnabled = true
+nonisolated(unsafe) var isLoggingEnabled = true
 
 /// Centralized logging for SwiftlyFeedback Admin app that respects `isLoggingEnabled`.
 ///
@@ -56,22 +56,22 @@ struct LoggerWrapper: Sendable {
         self.logger = Logger(subsystem: subsystem, category: category)
     }
 
-    func debug(_ message: String) {
+    nonisolated func debug(_ message: String) {
         guard isLoggingEnabled else { return }
         logger.debug("\(message)")
     }
 
-    func info(_ message: String) {
+    nonisolated func info(_ message: String) {
         guard isLoggingEnabled else { return }
         logger.info("\(message)")
     }
 
-    func error(_ message: String) {
+    nonisolated func error(_ message: String) {
         guard isLoggingEnabled else { return }
         logger.error("\(message)")
     }
 
-    func warning(_ message: String) {
+    nonisolated func warning(_ message: String) {
         guard isLoggingEnabled else { return }
         logger.warning("\(message)")
     }

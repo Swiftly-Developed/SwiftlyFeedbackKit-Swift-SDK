@@ -499,4 +499,75 @@ final class FeedbackViewModel {
             return false
         }
     }
+
+    // MARK: - ClickUp Integration
+
+    func createClickUpTask(projectId: UUID, feedbackId: UUID) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await AdminAPIClient.shared.createClickUpTask(
+                projectId: projectId,
+                feedbackId: feedbackId
+            )
+
+            // Refresh to get updated ClickUp fields
+            await refreshFeedbacks()
+
+            AppLogger.viewModel.info("✅ ClickUp task created: \(response.taskUrl)")
+            showSuccess(message: "ClickUp task created")
+            isLoading = false
+            return true
+        } catch {
+            AppLogger.viewModel.error("❌ Failed to create ClickUp task: \(error.localizedDescription)")
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
+
+    func bulkCreateClickUpTasks(projectId: UUID) async -> Bool {
+        // Get feedbacks that don't already have ClickUp tasks
+        let feedbackIds = selectedFeedbacks
+            .filter { !$0.hasClickUpTask }
+            .map { $0.id }
+
+        guard !feedbackIds.isEmpty else {
+            showError(message: "No feedbacks to push to ClickUp (all selected items already have tasks)")
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await AdminAPIClient.shared.bulkCreateClickUpTasks(
+                projectId: projectId,
+                feedbackIds: feedbackIds
+            )
+
+            // Refresh to get updated ClickUp fields
+            await refreshFeedbacks()
+
+            // Clear selection
+            clearSelection()
+
+            if response.failed.isEmpty {
+                AppLogger.viewModel.info("✅ ClickUp tasks created: \(response.created.count)")
+                showSuccess(message: "Created \(response.created.count) ClickUp tasks")
+            } else {
+                AppLogger.viewModel.warning("⚠️ ClickUp tasks created with some failures: \(response.created.count) created, \(response.failed.count) failed")
+                showSuccess(message: "Created \(response.created.count) ClickUp tasks (\(response.failed.count) failed)")
+            }
+
+            isLoading = false
+            return true
+        } catch {
+            AppLogger.viewModel.error("❌ Failed to create ClickUp tasks: \(error.localizedDescription)")
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
 }

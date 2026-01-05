@@ -377,6 +377,97 @@ final class ProjectViewModel {
         }
     }
 
+    // MARK: - ClickUp Settings
+
+    func updateClickUpSettings(
+        projectId: UUID,
+        clickupToken: String?,
+        clickupListId: String?,
+        clickupWorkspaceName: String?,
+        clickupListName: String?,
+        clickupDefaultTags: [String]?,
+        clickupSyncStatus: Bool?,
+        clickupSyncComments: Bool?,
+        clickupVotesFieldId: String?
+    ) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            selectedProject = try await AdminAPIClient.shared.updateProjectClickUpSettings(
+                projectId: projectId,
+                clickupToken: clickupToken,
+                clickupListId: clickupListId,
+                clickupWorkspaceName: clickupWorkspaceName,
+                clickupListName: clickupListName,
+                clickupDefaultTags: clickupDefaultTags,
+                clickupSyncStatus: clickupSyncStatus,
+                clickupSyncComments: clickupSyncComments,
+                clickupVotesFieldId: clickupVotesFieldId
+            )
+            isLoading = false
+            return true
+        } catch {
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
+
+    func loadClickUpWorkspaces(projectId: UUID) async -> [ClickUpWorkspace] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpWorkspaces(projectId: projectId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadClickUpSpaces(projectId: UUID, workspaceId: String) async -> [ClickUpSpace] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpSpaces(projectId: projectId, workspaceId: workspaceId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadClickUpFolders(projectId: UUID, spaceId: String) async -> [ClickUpFolder] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpFolders(projectId: projectId, spaceId: spaceId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadClickUpLists(projectId: UUID, folderId: String) async -> [ClickUpList] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpLists(projectId: projectId, folderId: folderId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadClickUpFolderlessLists(projectId: UUID, spaceId: String) async -> [ClickUpList] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpFolderlessLists(projectId: projectId, spaceId: spaceId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadClickUpCustomFields(projectId: UUID) async -> [ClickUpCustomField] {
+        do {
+            return try await AdminAPIClient.shared.getClickUpCustomFields(projectId: projectId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
     // MARK: - Accept Invite
 
     var inviteCode = ""

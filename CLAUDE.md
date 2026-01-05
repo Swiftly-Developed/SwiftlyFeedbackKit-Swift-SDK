@@ -413,6 +413,105 @@ When enabled, feedback status changes sync to GitHub:
 - **View issue**: Right-click feedback with issue > "View GitHub Issue"
 - **Badge**: Feedback cards show GitHub icon when linked to an issue
 
+## ClickUp Integration
+
+Projects can push feedback items to ClickUp as tasks for tracking in your project management workflow. Configuration is done per-project in the Admin app.
+
+### Setup
+1. Get your ClickUp API token from Settings > Apps in ClickUp
+2. In Admin app: Project Details > Menu (⋯) > ClickUp Integration
+3. Enter your API token and select the target list via the hierarchy picker
+4. Optionally configure default tags, status sync, comment sync, and vote count sync
+
+### Features
+- **Create Task**: Push individual feedback to ClickUp as a task
+- **Bulk Create**: Push multiple selected feedback items at once
+- **Status Sync**: Automatically update ClickUp task status when feedback status changes
+- **Comment Sync**: Sync comments from SwiftlyFeedback to ClickUp tasks
+- **Vote Count Sync**: Update a custom field with vote count when users vote
+- **Link Tracking**: ClickUp task URL stored on feedback for quick access
+
+### Task Creation
+When feedback is pushed to ClickUp:
+- Task name = Feedback title
+- Task description (markdown) includes description, category, vote count, MRR, and submitter email
+- Tags: default tags + feedback category (e.g., "feature_request", "bug_report")
+- Feedback card shows ClickUp badge with link to task
+
+### Status Sync (Optional)
+When enabled, feedback status changes map to ClickUp statuses:
+- **pending** → "to do"
+- **approved** → "approved"
+- **in_progress** → "in progress"
+- **testflight** → "in review"
+- **completed** → "complete"
+- **rejected** → "closed"
+
+### Server Endpoints
+- `PATCH /projects/:id/clickup` - Update ClickUp settings (bearer auth, owner/admin only)
+- `POST /projects/:id/clickup/task` - Create single task (bearer auth, owner/admin only)
+- `POST /projects/:id/clickup/tasks` - Bulk create tasks (bearer auth, owner/admin only)
+- `GET /projects/:id/clickup/workspaces` - Get workspaces for hierarchy picker
+- `GET /projects/:id/clickup/spaces/:workspaceId` - Get spaces
+- `GET /projects/:id/clickup/folders/:spaceId` - Get folders
+- `GET /projects/:id/clickup/lists/:folderId` - Get lists in folder
+- `GET /projects/:id/clickup/folderless-lists/:spaceId` - Get lists without folder
+- `GET /projects/:id/clickup/custom-fields` - Get number fields for vote count
+
+**Update settings request:**
+```json
+{
+  "clickup_token": "pk_...",
+  "clickup_list_id": "12345",
+  "clickup_workspace_name": "My Workspace",
+  "clickup_list_name": "Feedback",
+  "clickup_default_tags": ["feedback", "user-request"],
+  "clickup_sync_status": true,
+  "clickup_sync_comments": true,
+  "clickup_votes_field_id": "abc123"
+}
+```
+
+**Create task request:**
+```json
+{
+  "feedback_id": "uuid",
+  "additional_tags": ["priority-high"]
+}
+```
+
+**Create task response:**
+```json
+{
+  "feedback_id": "uuid",
+  "task_url": "https://app.clickup.com/t/123abc",
+  "task_id": "123abc"
+}
+```
+
+### Database Fields
+
+**Project model:**
+- `clickup_token` (String?, optional) - ClickUp API token
+- `clickup_list_id` (String?, optional) - Target list ID
+- `clickup_workspace_name` (String?, optional) - Workspace name for display
+- `clickup_list_name` (String?, optional) - List name for display
+- `clickup_default_tags` ([String]?, optional) - Tags applied to all tasks
+- `clickup_sync_status` (Bool, default: false) - Enable status sync
+- `clickup_sync_comments` (Bool, default: false) - Enable comment sync
+- `clickup_votes_field_id` (String?, optional) - Custom field ID for vote count
+
+**Feedback model:**
+- `clickup_task_url` (String?, optional) - URL of linked ClickUp task
+- `clickup_task_id` (String?, optional) - Task ID for API calls
+
+### Admin App UI
+- **Settings**: Project Details > Menu (⋯) > ClickUp Integration
+- **Push single**: Right-click feedback > "Push to ClickUp"
+- **Push bulk**: Select multiple items > "Push to ClickUp" button in action bar
+- **View task**: Right-click feedback with task > "View ClickUp Task"
+- **Badge**: Feedback cards show purple ClickUp badge when linked to a task
+
 ## Feedback Merging
 
 Admins can merge duplicate feedback items to consolidate similar requests. This helps get an accurate picture of demand while keeping vote counts and comments organized.

@@ -59,6 +59,31 @@ final class Project: Model, Content, @unchecked Sendable {
     @Field(key: "github_sync_status")
     var githubSyncStatus: Bool
 
+    // ClickUp integration fields
+    @OptionalField(key: "clickup_token")
+    var clickupToken: String?
+
+    @OptionalField(key: "clickup_list_id")
+    var clickupListId: String?
+
+    @OptionalField(key: "clickup_workspace_name")
+    var clickupWorkspaceName: String?
+
+    @OptionalField(key: "clickup_list_name")
+    var clickupListName: String?
+
+    @OptionalField(key: "clickup_default_tags")
+    var clickupDefaultTags: [String]?
+
+    @Field(key: "clickup_sync_status")
+    var clickupSyncStatus: Bool
+
+    @Field(key: "clickup_sync_comments")
+    var clickupSyncComments: Bool
+
+    @OptionalField(key: "clickup_votes_field_id")
+    var clickupVotesFieldId: String?
+
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -90,7 +115,15 @@ final class Project: Model, Content, @unchecked Sendable {
         githubRepo: String? = nil,
         githubToken: String? = nil,
         githubDefaultLabels: [String]? = nil,
-        githubSyncStatus: Bool = false
+        githubSyncStatus: Bool = false,
+        clickupToken: String? = nil,
+        clickupListId: String? = nil,
+        clickupWorkspaceName: String? = nil,
+        clickupListName: String? = nil,
+        clickupDefaultTags: [String]? = nil,
+        clickupSyncStatus: Bool = false,
+        clickupSyncComments: Bool = false,
+        clickupVotesFieldId: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -109,6 +142,14 @@ final class Project: Model, Content, @unchecked Sendable {
         self.githubToken = githubToken
         self.githubDefaultLabels = githubDefaultLabels
         self.githubSyncStatus = githubSyncStatus
+        self.clickupToken = clickupToken
+        self.clickupListId = clickupListId
+        self.clickupWorkspaceName = clickupWorkspaceName
+        self.clickupListName = clickupListName
+        self.clickupDefaultTags = clickupDefaultTags
+        self.clickupSyncStatus = clickupSyncStatus
+        self.clickupSyncComments = clickupSyncComments
+        self.clickupVotesFieldId = clickupVotesFieldId
     }
 }
 

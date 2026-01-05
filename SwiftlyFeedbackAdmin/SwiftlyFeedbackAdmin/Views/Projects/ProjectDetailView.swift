@@ -14,6 +14,7 @@ struct ProjectDetailView: View {
     @State private var showingSlackSheet = false
     @State private var showingStatusSheet = false
     @State private var showingGitHubSheet = false
+    @State private var showingClickUpSheet = false
     @State private var copiedToClipboard = false
 
     private var isCompact: Bool {
@@ -67,21 +68,33 @@ struct ProjectDetailView: View {
                         }
 
                         Button {
-                            showingSlackSheet = true
-                        } label: {
-                            Label("Slack Integration", systemImage: "number")
-                        }
-
-                        Button {
                             showingStatusSheet = true
                         } label: {
                             Label("Status Settings", systemImage: "list.bullet.clipboard")
                         }
 
-                        Button {
-                            showingGitHubSheet = true
+                        Divider()
+
+                        Menu {
+                            Button {
+                                showingSlackSheet = true
+                            } label: {
+                                Label("Slack", systemImage: "number")
+                            }
+
+                            Button {
+                                showingGitHubSheet = true
+                            } label: {
+                                Label("GitHub", systemImage: "arrow.triangle.branch")
+                            }
+
+                            Button {
+                                showingClickUpSheet = true
+                            } label: {
+                                Label("ClickUp", systemImage: "checklist")
+                            }
                         } label: {
-                            Label("GitHub Integration", systemImage: "arrow.triangle.branch")
+                            Label("Integrations", systemImage: "puzzlepiece.extension")
                         }
 
                         Divider()
@@ -187,6 +200,14 @@ struct ProjectDetailView: View {
                 GitHubSettingsView(project: project, viewModel: viewModel)
                     #if os(macOS)
                     .frame(minWidth: 450, minHeight: 450)
+                    #endif
+            }
+        }
+        .sheet(isPresented: $showingClickUpSheet) {
+            if let project = viewModel.selectedProject {
+                ClickUpSettingsView(project: project, viewModel: viewModel)
+                    #if os(macOS)
+                    .frame(minWidth: 500, minHeight: 500)
                     #endif
             }
         }

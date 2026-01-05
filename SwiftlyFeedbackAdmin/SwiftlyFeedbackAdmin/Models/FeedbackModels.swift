@@ -24,6 +24,9 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
     // GitHub integration fields
     let githubIssueUrl: String?
     let githubIssueNumber: Int?
+    // ClickUp integration fields
+    let clickupTaskUrl: String?
+    let clickupTaskId: String?
 
     /// Formatted total MRR string for display (always shows, even if $0)
     var formattedMrr: String {
@@ -52,6 +55,11 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
     /// Whether this feedback has a linked GitHub issue
     var hasGitHubIssue: Bool {
         githubIssueUrl != nil
+    }
+
+    /// Whether this feedback has a linked ClickUp task
+    var hasClickUpTask: Bool {
+        clickupTaskUrl != nil
     }
 }
 

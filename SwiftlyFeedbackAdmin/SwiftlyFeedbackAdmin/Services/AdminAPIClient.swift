@@ -723,6 +723,191 @@ actor AdminAPIClient {
         }
     }
 
+    // MARK: - ClickUp Integration API
+
+    func updateProjectClickUpSettings(
+        projectId: UUID,
+        clickupToken: String?,
+        clickupListId: String?,
+        clickupWorkspaceName: String?,
+        clickupListName: String?,
+        clickupDefaultTags: [String]?,
+        clickupSyncStatus: Bool?,
+        clickupSyncComments: Bool?,
+        clickupVotesFieldId: String?
+    ) async throws -> Project {
+        let path = "projects/\(projectId)/clickup"
+        let body = UpdateProjectClickUpRequest(
+            clickupToken: clickupToken,
+            clickupListId: clickupListId,
+            clickupWorkspaceName: clickupWorkspaceName,
+            clickupListName: clickupListName,
+            clickupDefaultTags: clickupDefaultTags,
+            clickupSyncStatus: clickupSyncStatus,
+            clickupSyncComments: clickupSyncComments,
+            clickupVotesFieldId: clickupVotesFieldId
+        )
+
+        AppLogger.api.info("🟠 PATCH \(path) (ClickUp settings)")
+        let (data, response) = try await makeRequest(path: path, method: "PATCH", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(Project.self, from: data)
+            AppLogger.api.info("✅ PATCH \(path) - decoded successfully")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ PATCH \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func createClickUpTask(
+        projectId: UUID,
+        feedbackId: UUID,
+        additionalTags: [String]? = nil
+    ) async throws -> CreateClickUpTaskResponse {
+        let path = "projects/\(projectId)/clickup/task"
+        let body = CreateClickUpTaskRequest(
+            feedbackId: feedbackId,
+            additionalTags: additionalTags
+        )
+
+        AppLogger.api.info("🟢 POST \(path) (create ClickUp task)")
+        let (data, response) = try await makeRequest(path: path, method: "POST", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(CreateClickUpTaskResponse.self, from: data)
+            AppLogger.api.info("✅ POST \(path) - decoded successfully")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ POST \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func bulkCreateClickUpTasks(
+        projectId: UUID,
+        feedbackIds: [UUID],
+        additionalTags: [String]? = nil
+    ) async throws -> BulkCreateClickUpTasksResponse {
+        let path = "projects/\(projectId)/clickup/tasks"
+        let body = BulkCreateClickUpTasksRequest(
+            feedbackIds: feedbackIds,
+            additionalTags: additionalTags
+        )
+
+        AppLogger.api.info("🟢 POST \(path) (bulk create ClickUp tasks)")
+        let (data, response) = try await makeRequest(path: path, method: "POST", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(BulkCreateClickUpTasksResponse.self, from: data)
+            AppLogger.api.info("✅ POST \(path) - decoded: \(decoded.created.count) created, \(decoded.failed.count) failed")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ POST \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpWorkspaces(projectId: UUID) async throws -> [ClickUpWorkspace] {
+        let path = "projects/\(projectId)/clickup/workspaces"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp workspaces)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpWorkspace].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) workspaces")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpSpaces(projectId: UUID, workspaceId: String) async throws -> [ClickUpSpace] {
+        let path = "projects/\(projectId)/clickup/spaces/\(workspaceId)"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp spaces)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpSpace].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) spaces")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpFolders(projectId: UUID, spaceId: String) async throws -> [ClickUpFolder] {
+        let path = "projects/\(projectId)/clickup/folders/\(spaceId)"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp folders)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpFolder].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) folders")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpLists(projectId: UUID, folderId: String) async throws -> [ClickUpList] {
+        let path = "projects/\(projectId)/clickup/lists/\(folderId)"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp lists)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpList].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) lists")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpFolderlessLists(projectId: UUID, spaceId: String) async throws -> [ClickUpList] {
+        let path = "projects/\(projectId)/clickup/folderless-lists/\(spaceId)"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp folderless lists)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpList].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) lists")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getClickUpCustomFields(projectId: UUID) async throws -> [ClickUpCustomField] {
+        let path = "projects/\(projectId)/clickup/custom-fields"
+        AppLogger.api.info("🔵 GET \(path) (ClickUp custom fields)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([ClickUpCustomField].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) custom fields")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - Merge Feedback API
 
     func mergeFeedback(primaryId: UUID, secondaryIds: [UUID]) async throws -> MergeFeedbackResponse {

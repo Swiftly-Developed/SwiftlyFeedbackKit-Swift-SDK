@@ -335,6 +335,25 @@ struct FeedbackController: RouteCollection {
                     }
                 }
             }
+
+            // Sync to ClickUp if configured
+            if let taskId = feedback.clickupTaskId,
+               project.clickupSyncStatus,
+               let token = project.clickupToken {
+                // Map SwiftlyFeedback status to ClickUp status name
+                let clickupStatus = newStatus.clickupStatusName
+                Task {
+                    do {
+                        try await req.clickupService.updateTaskStatus(
+                            taskId: taskId,
+                            token: token,
+                            status: clickupStatus
+                        )
+                    } catch {
+                        req.logger.error("Failed to sync ClickUp task status: \(error)")
+                    }
+                }
+            }
         }
 
         try await feedback.$votes.load(on: req.db)
