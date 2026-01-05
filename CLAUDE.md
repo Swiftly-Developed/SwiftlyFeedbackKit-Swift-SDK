@@ -472,11 +472,13 @@ TextField("Name", text: Bindable(settings).userName)
 Toggle("Feature", isOn: Bindable(settings).featureEnabled)
 ```
 
-## Monetization (RevenueCat)
+## Monetization (Planned)
 
-SwiftlyFeedback uses RevenueCat for subscription management. The implementation is partially complete - see `TODO_MONETIZATION.md` for remaining tasks.
+SwiftlyFeedback will use RevenueCat for subscription management. The implementation is **not yet complete** - see `TODO_MONETIZATION.md` for remaining tasks.
 
-### Subscription Tiers
+**Current Status:** RevenueCat SDK is not integrated. All users are on the Free tier. The subscription UI shows a "Coming Soon" message.
+
+### Subscription Tiers (Planned)
 
 | Tier | Monthly | Yearly | Projects | Feedback | Team Members | Integrations |
 |------|---------|--------|----------|----------|--------------|--------------|
@@ -484,7 +486,7 @@ SwiftlyFeedback uses RevenueCat for subscription management. The implementation 
 | Pro | $15 | $150 | 2 | Unlimited | None | None |
 | Team | $39 | $390 | Unlimited | Unlimited | Unlimited | All |
 
-### Feature Matrix
+### Feature Matrix (Planned)
 
 | Feature | Free | Pro | Team |
 |---------|------|-----|------|
@@ -498,20 +500,21 @@ SwiftlyFeedback uses RevenueCat for subscription management. The implementation 
 ### Current Implementation Status
 
 **Completed (Admin App):**
-- RevenueCat SDK integration (`SubscriptionService.swift`)
-- Subscription UI (`SubscriptionView.swift`)
+- `SubscriptionService.swift` stub (returns free tier)
+- `SubscriptionView.swift` with feature lists and "Coming Soon" message
 - Settings integration with subscription row
-- Auth flow integration (login/logout sync with RevenueCat)
+- Auth flow hooks for future subscription sync
 - Logging category for subscription events
 
 **Not Yet Implemented:**
+- RevenueCat SDK integration
 - Server-side: Database schema, webhook handlers, feature limit enforcement
-- Admin App: Feature gating UI (PaywallView, FeatureGatedView wrappers)
+- Admin App: PaywallView, CustomerCenterView, feature gating UI
 - SDK: 402 Payment Required error handling
 
 See `SwiftlyFeedbackAdmin/CLAUDE.md` for detailed Admin app implementation docs.
 
-### RevenueCat Configuration
+### Planned RevenueCat Configuration
 
 **Entitlements:**
 - `"Swiftly Pro"` - Pro tier access

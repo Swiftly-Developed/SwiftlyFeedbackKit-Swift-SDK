@@ -6,13 +6,9 @@
 //
 
 import SwiftUI
-import RevenueCat
-import RevenueCatUI
 
 struct SubscriptionView: View {
     @State private var subscriptionService = SubscriptionService.shared
-    @State private var showPaywall = false
-    @State private var showCustomerCenter = false
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
 
@@ -27,38 +23,13 @@ struct SubscriptionView: View {
             // Team Features Section
             teamFeaturesSection
 
-            // Manage Section (for subscribers)
-            if subscriptionService.isPaidSubscriber {
-                manageSection
-            }
-
-            // Upgrade Section (for non-subscribers or Pro users who can upgrade to Team)
-            if !subscriptionService.isTeamSubscriber {
-                upgradeSection
-            }
+            // Coming Soon Section (since RevenueCat is not yet integrated)
+            comingSoonSection
 
             // Restore Purchases Section
             restoreSection
         }
         .navigationTitle("Subscription")
-        .refreshable {
-            await subscriptionService.fetchCustomerInfo()
-            await subscriptionService.fetchOfferings()
-        }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
-                .onPurchaseCompleted { _ in
-                    AppLogger.subscription.info("✅ Purchase completed via paywall")
-                    showPaywall = false
-                }
-                .onRestoreCompleted { _ in
-                    AppLogger.subscription.info("✅ Restore completed via paywall")
-                    showPaywall = false
-                }
-        }
-        .sheet(isPresented: $showCustomerCenter) {
-            CustomerCenterView()
-        }
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
             Button("OK") {}
         } message: {
@@ -250,67 +221,30 @@ struct SubscriptionView: View {
         }
     }
 
-    // MARK: - Manage Section
+    // MARK: - Coming Soon Section
 
     @ViewBuilder
-    private var manageSection: some View {
+    private var comingSoonSection: some View {
         Section {
-            Button {
-                showCustomerCenter = true
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 28, height: 28)
-                        .background(.blue, in: RoundedRectangle(cornerRadius: 6))
+            HStack {
+                Spacer()
+                VStack(spacing: 12) {
+                    Image(systemName: "clock.badge.checkmark")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.purple)
 
-                    Text("Manage Subscription")
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            .buttonStyle(.plain)
-        } header: {
-            Text("Manage")
-        } footer: {
-            Text("View billing details, change plan, or cancel subscription.")
-        }
-    }
-
-    // MARK: - Upgrade Section
-
-    @ViewBuilder
-    private var upgradeSection: some View {
-        Section {
-            Button {
-                showPaywall = true
-            } label: {
-                HStack {
-                    Spacer()
-                    Label(upgradeButtonText, systemImage: "crown.fill")
+                    Text("Subscriptions Coming Soon")
                         .font(.headline)
-                    Spacer()
-                }
-                .padding(.vertical, 4)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(subscriptionService.isProSubscriber ? .blue : .purple)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-        }
-    }
 
-    private var upgradeButtonText: String {
-        if subscriptionService.isProSubscriber {
-            return "Upgrade to Team"
+                    Text("Pro and Team subscriptions will be available in a future update.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.vertical, 16)
+                Spacer()
+            }
         }
-        return "View Plans & Upgrade"
     }
 
     // MARK: - Restore Section
@@ -386,7 +320,7 @@ struct SubscriptionView: View {
 
     private func restorePurchases() async {
         do {
-            _ = try await subscriptionService.restorePurchases()
+            try await subscriptionService.restorePurchases()
             switch subscriptionService.currentTier {
             case .team:
                 restoreMessage = "Your Team subscription has been restored!"
@@ -396,8 +330,11 @@ struct SubscriptionView: View {
                 restoreMessage = "No active subscriptions found."
             }
             showRestoreAlert = true
+        } catch SubscriptionError.notImplemented {
+            restoreMessage = SubscriptionError.notImplemented.localizedDescription
+            showRestoreAlert = true
         } catch {
-            // Error is handled by the service
+            // Other errors are handled by the service
         }
     }
 }

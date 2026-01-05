@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RevenueCat
 
 #if os(macOS)
 import AppKit
@@ -46,7 +45,7 @@ struct SwiftlyFeedbackAdminApp: App {
     #endif
 
     init() {
-        // Configure RevenueCat SDK at app launch
+        // Configure subscription service at app launch
         SubscriptionService.shared.configure()
     }
 

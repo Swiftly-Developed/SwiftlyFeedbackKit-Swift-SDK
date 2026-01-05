@@ -329,37 +329,39 @@ When selecting multiple feedback items, the action bar includes "Push to GitHub"
 - `FeedbackViewModel.swift` - `createGitHubIssue()` and `bulkCreateGitHubIssues()` methods
 - `AdminAPIClient.swift` - `createGitHubIssue()` and `bulkCreateGitHubIssues()` API calls
 
-## RevenueCat Subscription Integration
+## Subscription Integration (Stub)
 
-The Admin app integrates RevenueCat for subscription management.
+The Admin app has subscription infrastructure in place, but RevenueCat is **not yet integrated**. The `SubscriptionService` currently returns `.free` tier for all users.
+
+### Current Status
+
+- **RevenueCat SDK**: Not integrated (removed to fix build issues)
+- **All users**: Free tier by default
+- **Subscriptions UI**: Shows "Coming Soon" message
 
 ### SubscriptionService
 
-`SubscriptionService.swift` manages RevenueCat SDK integration:
+`SubscriptionService.swift` is a stub that will integrate with RevenueCat in the future:
 
 ```swift
 // Access singleton
 let service = SubscriptionService.shared
 
 // Configure at app launch (done in SwiftlyFeedbackAdminApp.swift)
-SubscriptionService.shared.configure()
+SubscriptionService.shared.configure()  // No-op currently
 
 // Login/logout (called from AuthViewModel)
-await SubscriptionService.shared.login(userId: user.id)
-await SubscriptionService.shared.logout()
+await SubscriptionService.shared.login(userId: user.id)   // No-op currently
+await SubscriptionService.shared.logout()                  // No-op currently
 
-// Check subscription status
-service.currentTier        // .free, .pro, or .team
-service.isProSubscriber    // Pro or Team active
-service.isTeamSubscriber   // Team active
-service.isPaidSubscriber   // Any paid subscription active
-
-// Purchase and restore
-try await service.purchase(package: package)
-try await service.restorePurchases()
+// Check subscription status (always returns free tier currently)
+service.currentTier        // Always .free
+service.isProSubscriber    // Always false
+service.isTeamSubscriber   // Always false
+service.isPaidSubscriber   // Always false
 ```
 
-### Subscription Tiers
+### Subscription Tiers (Planned)
 
 | Tier | Projects | Feedback | Team Members | Integrations |
 |------|----------|----------|--------------|--------------|
@@ -384,12 +386,12 @@ enum SubscriptionTier: String, Codable, Sendable {
 }
 ```
 
-### Entitlement IDs
+### Planned Entitlement IDs (for RevenueCat)
 
 - `"Swiftly Pro"` - Pro tier entitlement
 - `"Swiftly Team"` - Team tier entitlement
 
-### Product IDs
+### Planned Product IDs (for RevenueCat)
 
 - `monthly` - Pro monthly subscription
 - `yearly` - Pro yearly subscription
@@ -398,30 +400,28 @@ enum SubscriptionTier: String, Codable, Sendable {
 
 ### UI Components
 
-- `SubscriptionView.swift` - Full subscription management screen
-  - Current plan display with tier icon and renewal date
-  - Pro/Team feature lists with checkmarks
-  - Upgrade button with RevenueCatUI PaywallView
-  - Manage subscription via CustomerCenterView
-  - Restore purchases button
-
-- `SettingsView.swift` - Subscription row in settings
-  - Shows current tier with icon
-  - Shows renewal/expiration date for paid users
-  - Links to SubscriptionView
+- `SubscriptionView.swift` - Subscription screen showing features and "Coming Soon" message
+- `SettingsView.swift` - Subscription row in settings showing current tier
 
 ### Logging
 
 Uses `AppLogger.subscription` category:
 
 ```swift
-AppLogger.subscription.info("RevenueCat configured")
-AppLogger.subscription.error("Purchase failed: \(error)")
+AppLogger.subscription.info("SubscriptionService initialized (stub mode)")
 ```
 
 ### Files
 
-- `Services/SubscriptionService.swift` - RevenueCat SDK wrapper
-- `Views/Settings/SubscriptionView.swift` - Subscription management UI
+- `Services/SubscriptionService.swift` - Subscription service stub
+- `Views/Settings/SubscriptionView.swift` - Subscription UI
 - `Views/Settings/SettingsView.swift` - Settings with subscription section
-- `Services/Logger.swift` - Added subscription logging category
+- `Services/Logger.swift` - Subscription logging category
+
+### TODO: Re-enable RevenueCat
+
+To re-integrate RevenueCat when ready:
+1. Add RevenueCat SPM package back to the project
+2. Update `SubscriptionService.swift` to use RevenueCat SDK
+3. Update `SubscriptionView.swift` to use PaywallView and CustomerCenterView
+4. See `TODO_MONETIZATION.md` for full implementation checklist

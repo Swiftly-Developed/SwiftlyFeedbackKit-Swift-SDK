@@ -1,5 +1,4 @@
 import SwiftUI
-import RevenueCatUI
 
 struct SettingsView: View {
     @Bindable var authViewModel: AuthViewModel

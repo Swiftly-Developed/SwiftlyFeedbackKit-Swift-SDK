@@ -44,7 +44,7 @@ final class AuthViewModel {
                     isAuthenticated = true
                     AppLogger.viewModel.info("✅ Auth state restored - user: \(self.currentUser?.id.uuidString ?? "nil"), isEmailVerified: \(self.currentUser?.isEmailVerified ?? false)")
 
-                    // Sync RevenueCat with user ID
+                    // Sync subscription service with user ID
                     if let userId = currentUser?.id {
                         await SubscriptionService.shared.login(userId: userId)
                     }
@@ -82,7 +82,7 @@ final class AuthViewModel {
             AppLogger.viewModel.info("✅ Login successful - isEmailVerified: \(response.user.isEmailVerified)")
             clearLoginFields()
 
-            // Sync RevenueCat with user ID
+            // Sync subscription service with user ID
             await SubscriptionService.shared.login(userId: response.user.id)
         } catch {
             AppLogger.viewModel.error("❌ Login failed: \(error.localizedDescription)")
@@ -126,7 +126,7 @@ final class AuthViewModel {
             AppLogger.viewModel.info("✅ Signup successful - isEmailVerified: \(response.user.isEmailVerified)")
             clearSignupFields()
 
-            // Sync RevenueCat with user ID
+            // Sync subscription service with user ID
             await SubscriptionService.shared.login(userId: response.user.id)
         } catch {
             AppLogger.viewModel.error("❌ Signup failed: \(error.localizedDescription)")
@@ -148,7 +148,7 @@ final class AuthViewModel {
             // Ignore logout errors
         }
 
-        // Logout from RevenueCat
+        // Logout from subscription service
         await SubscriptionService.shared.logout()
 
         currentUser = nil
