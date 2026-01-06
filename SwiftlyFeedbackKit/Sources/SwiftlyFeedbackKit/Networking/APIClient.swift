@@ -61,6 +61,12 @@ public actor APIClient {
             }
 
             return (data, response)
+        } catch is CancellationError {
+            // Re-throw cancellation without logging - this is expected behavior
+            throw CancellationError()
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // URLSession cancellation - convert to CancellationError for consistent handling
+            throw CancellationError()
         } catch {
             SDKLogger.error("Network error: \(error.localizedDescription)")
             throw error

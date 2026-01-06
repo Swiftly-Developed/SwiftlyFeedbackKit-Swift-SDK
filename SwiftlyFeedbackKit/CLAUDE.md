@@ -101,10 +101,12 @@ SwiftlyFeedback.config.loggingEnabled = false
 - JSON encoding/decoding uses snake_case key strategy
 - OSLog logging via `SDKLogger` utility (subsystem: `com.swiftlyfeedback.sdk`)
 - Logging can be disabled via `SwiftlyFeedback.config.loggingEnabled = false`
+- Request cancellation is handled gracefully - `CancellationError` and `URLError.cancelled` are silently re-thrown without logging
 
 ### Error Handling
 - `SwiftlyFeedbackError` cases: `invalidResponse`, `badRequest(message:)`, `unauthorized`, `notFound`, `conflict`, `serverError(statusCode:)`, `decodingError(underlying:)`
 - Server error messages are parsed from response body when available
+- Cancelled requests do not show error alerts to users
 
 ### User Identification
 - Uses iCloud user record ID when CloudKit is available and properly configured
@@ -120,6 +122,13 @@ SwiftlyFeedback.config.loggingEnabled = false
   - iOS: Uses Form with sections, keyboard-aware scrolling
 - `FeedbackCategory.iconName` provides SF Symbol names for each category
 - `VoteButton` is disabled and dimmed for feedback with non-votable status
+
+### Request Deduplication
+- `FeedbackListViewModel` tracks in-flight requests via `loadTask` property
+- New requests cancel any pending request to prevent race conditions
+- `loadFeedbackIfNeeded()` prevents duplicate initial loads (used by `.task` modifier)
+- `loadFeedback()` always executes (used by `.refreshable` and filter changes)
+- Cancelled requests are silently ignored - no error alerts shown to users
 
 ## Adding New Features
 

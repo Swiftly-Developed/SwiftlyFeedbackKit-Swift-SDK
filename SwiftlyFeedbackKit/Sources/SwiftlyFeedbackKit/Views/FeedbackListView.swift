@@ -86,7 +86,7 @@ public struct FeedbackListView: View {
                 await viewModel.loadFeedback()
             }
             .task {
-                await viewModel.loadFeedback()
+                await viewModel.loadFeedbackIfNeeded()
             }
             .onAppear {
                 if SwiftlyFeedback.config.enableAutomaticViewTracking {
@@ -163,6 +163,9 @@ final class FeedbackListViewModel {
 
     let swiftlyFeedback: SwiftlyFeedback?
 
+    private var loadTask: Task<Void, Never>?
+    private var hasLoadedOnce = false
+
     init(swiftlyFeedback: SwiftlyFeedback?) {
         self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
     }
@@ -170,15 +173,34 @@ final class FeedbackListViewModel {
     func loadFeedback() async {
         guard let sf = swiftlyFeedback else { return }
 
-        isLoading = true
-        defer { isLoading = false }
+        // Cancel any in-flight request
+        loadTask?.cancel()
 
-        do {
-            feedbackItems = try await sf.getFeedback(status: selectedStatus)
-        } catch {
-            errorMessage = error.localizedDescription
-            showingError = true
+        isLoading = true
+
+        let task = Task {
+            do {
+                try Task.checkCancellation()
+                let items = try await sf.getFeedback(status: selectedStatus)
+                try Task.checkCancellation()
+                feedbackItems = items
+                hasLoadedOnce = true
+            } catch is CancellationError {
+                // Silently ignore cancellation - another request is taking over
+            } catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+            }
+            isLoading = false
         }
+
+        loadTask = task
+        await task.value
+    }
+
+    func loadFeedbackIfNeeded() async {
+        guard !hasLoadedOnce else { return }
+        await loadFeedback()
     }
 
     func toggleVote(for feedback: Feedback) async {
