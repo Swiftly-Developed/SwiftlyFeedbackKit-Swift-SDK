@@ -14,6 +14,7 @@ struct MondaySettingsView: View {
     @State private var syncComments: Bool
     @State private var statusColumnId: String
     @State private var votesColumnId: String
+    @State private var isActive: Bool
     @State private var showingTokenInfo = false
 
     // Board and group selection state
@@ -42,6 +43,7 @@ struct MondaySettingsView: View {
         _syncComments = State(initialValue: project.mondaySyncComments)
         _statusColumnId = State(initialValue: project.mondayStatusColumnId ?? "")
         _votesColumnId = State(initialValue: project.mondayVotesColumnId ?? "")
+        _isActive = State(initialValue: project.mondayIsActive)
     }
 
     private var hasChanges: Bool {
@@ -53,7 +55,8 @@ struct MondaySettingsView: View {
         syncStatus != project.mondaySyncStatus ||
         syncComments != project.mondaySyncComments ||
         statusColumnId != (project.mondayStatusColumnId ?? "") ||
-        votesColumnId != (project.mondayVotesColumnId ?? "")
+        votesColumnId != (project.mondayVotesColumnId ?? "") ||
+        isActive != project.mondayIsActive
     }
 
     private var isConfigured: Bool {
@@ -68,6 +71,14 @@ struct MondaySettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, Monday.com sync will be paused.")
+                    }
+                }
+
                 Section {
                     SecureField("API Token", text: $token)
                         .onChange(of: token) { _, newValue in
@@ -304,7 +315,8 @@ struct MondaySettingsView: View {
                 mondaySyncStatus: nil,
                 mondaySyncComments: nil,
                 mondayStatusColumnId: nil,
-                mondayVotesColumnId: nil
+                mondayVotesColumnId: nil,
+                mondayIsActive: nil
             )
 
             if success {
@@ -393,7 +405,8 @@ struct MondaySettingsView: View {
                 mondaySyncStatus: syncStatus,
                 mondaySyncComments: syncComments,
                 mondayStatusColumnId: statusColumnId.isEmpty ? "" : statusColumnId,
-                mondayVotesColumnId: votesColumnId.isEmpty ? "" : votesColumnId
+                mondayVotesColumnId: votesColumnId.isEmpty ? "" : votesColumnId,
+                mondayIsActive: isActive
             )
             if success {
                 dismiss()

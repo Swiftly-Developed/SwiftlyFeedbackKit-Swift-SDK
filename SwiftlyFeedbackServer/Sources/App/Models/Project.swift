@@ -40,6 +40,9 @@ final class Project: Model, Content, @unchecked Sendable {
     @Field(key: "slack_notify_status_changes")
     var slackNotifyStatusChanges: Bool
 
+    @Field(key: "slack_is_active")
+    var slackIsActive: Bool
+
     @Field(key: "allowed_statuses")
     var allowedStatuses: [String]
 
@@ -58,6 +61,9 @@ final class Project: Model, Content, @unchecked Sendable {
 
     @Field(key: "github_sync_status")
     var githubSyncStatus: Bool
+
+    @Field(key: "github_is_active")
+    var githubIsActive: Bool
 
     // ClickUp integration fields
     @OptionalField(key: "clickup_token")
@@ -84,6 +90,9 @@ final class Project: Model, Content, @unchecked Sendable {
     @OptionalField(key: "clickup_votes_field_id")
     var clickupVotesFieldId: String?
 
+    @Field(key: "clickup_is_active")
+    var clickupIsActive: Bool
+
     // Notion integration fields
     @OptionalField(key: "notion_token")
     var notionToken: String?
@@ -105,6 +114,9 @@ final class Project: Model, Content, @unchecked Sendable {
 
     @OptionalField(key: "notion_votes_property")
     var notionVotesProperty: String?
+
+    @Field(key: "notion_is_active")
+    var notionIsActive: Bool
 
     // Monday.com integration fields
     @OptionalField(key: "monday_token")
@@ -134,6 +146,9 @@ final class Project: Model, Content, @unchecked Sendable {
     @OptionalField(key: "monday_votes_column_id")
     var mondayVotesColumnId: String?
 
+    @Field(key: "monday_is_active")
+    var mondayIsActive: Bool
+
     // Linear integration fields
     @OptionalField(key: "linear_token")
     var linearToken: String?
@@ -158,6 +173,9 @@ final class Project: Model, Content, @unchecked Sendable {
 
     @Field(key: "linear_sync_comments")
     var linearSyncComments: Bool
+
+    @Field(key: "linear_is_active")
+    var linearIsActive: Bool
 
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -185,12 +203,14 @@ final class Project: Model, Content, @unchecked Sendable {
         slackNotifyNewFeedback: Bool = true,
         slackNotifyNewComments: Bool = true,
         slackNotifyStatusChanges: Bool = true,
+        slackIsActive: Bool = true,
         allowedStatuses: [String]? = nil,
         githubOwner: String? = nil,
         githubRepo: String? = nil,
         githubToken: String? = nil,
         githubDefaultLabels: [String]? = nil,
         githubSyncStatus: Bool = false,
+        githubIsActive: Bool = true,
         clickupToken: String? = nil,
         clickupListId: String? = nil,
         clickupWorkspaceName: String? = nil,
@@ -199,6 +219,7 @@ final class Project: Model, Content, @unchecked Sendable {
         clickupSyncStatus: Bool = false,
         clickupSyncComments: Bool = false,
         clickupVotesFieldId: String? = nil,
+        clickupIsActive: Bool = true,
         notionToken: String? = nil,
         notionDatabaseId: String? = nil,
         notionDatabaseName: String? = nil,
@@ -206,6 +227,7 @@ final class Project: Model, Content, @unchecked Sendable {
         notionSyncComments: Bool = false,
         notionStatusProperty: String? = nil,
         notionVotesProperty: String? = nil,
+        notionIsActive: Bool = true,
         mondayToken: String? = nil,
         mondayBoardId: String? = nil,
         mondayBoardName: String? = nil,
@@ -215,6 +237,7 @@ final class Project: Model, Content, @unchecked Sendable {
         mondaySyncComments: Bool = false,
         mondayStatusColumnId: String? = nil,
         mondayVotesColumnId: String? = nil,
+        mondayIsActive: Bool = true,
         linearToken: String? = nil,
         linearTeamId: String? = nil,
         linearTeamName: String? = nil,
@@ -222,7 +245,8 @@ final class Project: Model, Content, @unchecked Sendable {
         linearProjectName: String? = nil,
         linearDefaultLabelIds: [String]? = nil,
         linearSyncStatus: Bool = false,
-        linearSyncComments: Bool = false
+        linearSyncComments: Bool = false,
+        linearIsActive: Bool = true
     ) {
         self.id = id
         self.name = name
@@ -235,12 +259,14 @@ final class Project: Model, Content, @unchecked Sendable {
         self.slackNotifyNewFeedback = slackNotifyNewFeedback
         self.slackNotifyNewComments = slackNotifyNewComments
         self.slackNotifyStatusChanges = slackNotifyStatusChanges
+        self.slackIsActive = slackIsActive
         self.allowedStatuses = allowedStatuses ?? FeedbackStatus.defaultAllowed.map { $0.rawValue }
         self.githubOwner = githubOwner
         self.githubRepo = githubRepo
         self.githubToken = githubToken
         self.githubDefaultLabels = githubDefaultLabels
         self.githubSyncStatus = githubSyncStatus
+        self.githubIsActive = githubIsActive
         self.clickupToken = clickupToken
         self.clickupListId = clickupListId
         self.clickupWorkspaceName = clickupWorkspaceName
@@ -249,6 +275,7 @@ final class Project: Model, Content, @unchecked Sendable {
         self.clickupSyncStatus = clickupSyncStatus
         self.clickupSyncComments = clickupSyncComments
         self.clickupVotesFieldId = clickupVotesFieldId
+        self.clickupIsActive = clickupIsActive
         self.notionToken = notionToken
         self.notionDatabaseId = notionDatabaseId
         self.notionDatabaseName = notionDatabaseName
@@ -256,6 +283,7 @@ final class Project: Model, Content, @unchecked Sendable {
         self.notionSyncComments = notionSyncComments
         self.notionStatusProperty = notionStatusProperty
         self.notionVotesProperty = notionVotesProperty
+        self.notionIsActive = notionIsActive
         self.mondayToken = mondayToken
         self.mondayBoardId = mondayBoardId
         self.mondayBoardName = mondayBoardName
@@ -265,6 +293,7 @@ final class Project: Model, Content, @unchecked Sendable {
         self.mondaySyncComments = mondaySyncComments
         self.mondayStatusColumnId = mondayStatusColumnId
         self.mondayVotesColumnId = mondayVotesColumnId
+        self.mondayIsActive = mondayIsActive
         self.linearToken = linearToken
         self.linearTeamId = linearTeamId
         self.linearTeamName = linearTeamName
@@ -273,6 +302,7 @@ final class Project: Model, Content, @unchecked Sendable {
         self.linearDefaultLabelIds = linearDefaultLabelIds
         self.linearSyncStatus = linearSyncStatus
         self.linearSyncComments = linearSyncComments
+        self.linearIsActive = linearIsActive
     }
 }
 

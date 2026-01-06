@@ -18,6 +18,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let slackNotifyNewFeedback: Bool
     let slackNotifyNewComments: Bool
     let slackNotifyStatusChanges: Bool
+    let slackIsActive: Bool
     let allowedStatuses: [String]
     // GitHub integration fields
     let githubOwner: String?
@@ -25,6 +26,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let githubToken: String?
     let githubDefaultLabels: [String]?
     let githubSyncStatus: Bool
+    let githubIsActive: Bool
     // ClickUp integration fields
     let clickupToken: String?
     let clickupListId: String?
@@ -34,6 +36,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let clickupSyncStatus: Bool
     let clickupSyncComments: Bool
     let clickupVotesFieldId: String?
+    let clickupIsActive: Bool
     // Notion integration fields
     let notionToken: String?
     let notionDatabaseId: String?
@@ -42,6 +45,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let notionSyncComments: Bool
     let notionStatusProperty: String?
     let notionVotesProperty: String?
+    let notionIsActive: Bool
     // Monday.com integration fields
     let mondayToken: String?
     let mondayBoardId: String?
@@ -52,6 +56,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let mondaySyncComments: Bool
     let mondayStatusColumnId: String?
     let mondayVotesColumnId: String?
+    let mondayIsActive: Bool
     // Linear integration fields
     let linearToken: String?
     let linearTeamId: String?
@@ -61,40 +66,76 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let linearDefaultLabelIds: [String]?
     let linearSyncStatus: Bool
     let linearSyncComments: Bool
+    let linearIsActive: Bool
 
-    /// Whether Slack integration is configured
+    /// Whether Slack integration is configured (has webhook URL)
     var isSlackConfigured: Bool {
         slackWebhookUrl != nil && !slackWebhookUrl!.isEmpty
     }
 
-    /// Whether GitHub integration is configured
+    /// Whether Slack integration is active (configured AND enabled)
+    var isSlackActive: Bool {
+        isSlackConfigured && slackIsActive
+    }
+
+    /// Whether GitHub integration is configured (has required fields)
     var isGitHubConfigured: Bool {
         githubOwner != nil && githubRepo != nil && githubToken != nil
     }
 
-    /// Whether ClickUp integration is configured
+    /// Whether GitHub integration is active (configured AND enabled)
+    var isGitHubActive: Bool {
+        isGitHubConfigured && githubIsActive
+    }
+
+    /// Whether ClickUp integration is configured (has required fields)
     var isClickUpConfigured: Bool {
         clickupToken != nil && clickupListId != nil
     }
 
-    /// Whether Notion integration is configured
+    /// Whether ClickUp integration is active (configured AND enabled)
+    var isClickUpActive: Bool {
+        isClickUpConfigured && clickupIsActive
+    }
+
+    /// Whether Notion integration is configured (has required fields)
     var isNotionConfigured: Bool {
         notionToken != nil && notionDatabaseId != nil
     }
 
-    /// Whether Monday.com integration is configured
+    /// Whether Notion integration is active (configured AND enabled)
+    var isNotionActive: Bool {
+        isNotionConfigured && notionIsActive
+    }
+
+    /// Whether Monday.com integration is configured (has required fields)
     var isMondayConfigured: Bool {
         mondayToken != nil && mondayBoardId != nil
     }
 
-    /// Whether Linear integration is configured
+    /// Whether Monday.com integration is active (configured AND enabled)
+    var isMondayActive: Bool {
+        isMondayConfigured && mondayIsActive
+    }
+
+    /// Whether Linear integration is configured (has required fields)
     var isLinearConfigured: Bool {
         linearToken != nil && linearTeamId != nil
+    }
+
+    /// Whether Linear integration is active (configured AND enabled)
+    var isLinearActive: Bool {
+        isLinearConfigured && linearIsActive
     }
 
     /// Whether any integration is configured
     var hasAnyIntegration: Bool {
         isSlackConfigured || isGitHubConfigured || isClickUpConfigured || isNotionConfigured || isMondayConfigured || isLinearConfigured
+    }
+
+    /// Whether any integration is active
+    var hasAnyActiveIntegration: Bool {
+        isSlackActive || isGitHubActive || isClickUpActive || isNotionActive || isMondayActive || isLinearActive
     }
 
     // Custom decoder to handle backwards compatibility when allowedStatuses is missing
@@ -117,6 +158,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         slackNotifyNewFeedback = try container.decode(Bool.self, forKey: .slackNotifyNewFeedback)
         slackNotifyNewComments = try container.decode(Bool.self, forKey: .slackNotifyNewComments)
         slackNotifyStatusChanges = try container.decode(Bool.self, forKey: .slackNotifyStatusChanges)
+        slackIsActive = try container.decodeIfPresent(Bool.self, forKey: .slackIsActive) ?? true
         // Default to standard statuses if not present (backwards compatibility)
         allowedStatuses = try container.decodeIfPresent([String].self, forKey: .allowedStatuses)
             ?? ["pending", "approved", "in_progress", "completed", "rejected"]
@@ -126,6 +168,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         githubToken = try container.decodeIfPresent(String.self, forKey: .githubToken)
         githubDefaultLabels = try container.decodeIfPresent([String].self, forKey: .githubDefaultLabels)
         githubSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .githubSyncStatus) ?? false
+        githubIsActive = try container.decodeIfPresent(Bool.self, forKey: .githubIsActive) ?? true
         // ClickUp fields (backwards compatibility)
         clickupToken = try container.decodeIfPresent(String.self, forKey: .clickupToken)
         clickupListId = try container.decodeIfPresent(String.self, forKey: .clickupListId)
@@ -135,6 +178,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         clickupSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .clickupSyncStatus) ?? false
         clickupSyncComments = try container.decodeIfPresent(Bool.self, forKey: .clickupSyncComments) ?? false
         clickupVotesFieldId = try container.decodeIfPresent(String.self, forKey: .clickupVotesFieldId)
+        clickupIsActive = try container.decodeIfPresent(Bool.self, forKey: .clickupIsActive) ?? true
         // Notion fields (backwards compatibility)
         notionToken = try container.decodeIfPresent(String.self, forKey: .notionToken)
         notionDatabaseId = try container.decodeIfPresent(String.self, forKey: .notionDatabaseId)
@@ -143,6 +187,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         notionSyncComments = try container.decodeIfPresent(Bool.self, forKey: .notionSyncComments) ?? false
         notionStatusProperty = try container.decodeIfPresent(String.self, forKey: .notionStatusProperty)
         notionVotesProperty = try container.decodeIfPresent(String.self, forKey: .notionVotesProperty)
+        notionIsActive = try container.decodeIfPresent(Bool.self, forKey: .notionIsActive) ?? true
         // Monday.com fields (backwards compatibility)
         mondayToken = try container.decodeIfPresent(String.self, forKey: .mondayToken)
         mondayBoardId = try container.decodeIfPresent(String.self, forKey: .mondayBoardId)
@@ -153,6 +198,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         mondaySyncComments = try container.decodeIfPresent(Bool.self, forKey: .mondaySyncComments) ?? false
         mondayStatusColumnId = try container.decodeIfPresent(String.self, forKey: .mondayStatusColumnId)
         mondayVotesColumnId = try container.decodeIfPresent(String.self, forKey: .mondayVotesColumnId)
+        mondayIsActive = try container.decodeIfPresent(Bool.self, forKey: .mondayIsActive) ?? true
         // Linear fields (backwards compatibility)
         linearToken = try container.decodeIfPresent(String.self, forKey: .linearToken)
         linearTeamId = try container.decodeIfPresent(String.self, forKey: .linearTeamId)
@@ -162,6 +208,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         linearDefaultLabelIds = try container.decodeIfPresent([String].self, forKey: .linearDefaultLabelIds)
         linearSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .linearSyncStatus) ?? false
         linearSyncComments = try container.decodeIfPresent(Bool.self, forKey: .linearSyncComments) ?? false
+        linearIsActive = try container.decodeIfPresent(Bool.self, forKey: .linearIsActive) ?? true
     }
 
     init(
@@ -182,12 +229,14 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         slackNotifyNewFeedback: Bool,
         slackNotifyNewComments: Bool,
         slackNotifyStatusChanges: Bool,
+        slackIsActive: Bool = true,
         allowedStatuses: [String],
         githubOwner: String? = nil,
         githubRepo: String? = nil,
         githubToken: String? = nil,
         githubDefaultLabels: [String]? = nil,
         githubSyncStatus: Bool = false,
+        githubIsActive: Bool = true,
         clickupToken: String? = nil,
         clickupListId: String? = nil,
         clickupWorkspaceName: String? = nil,
@@ -196,6 +245,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         clickupSyncStatus: Bool = false,
         clickupSyncComments: Bool = false,
         clickupVotesFieldId: String? = nil,
+        clickupIsActive: Bool = true,
         notionToken: String? = nil,
         notionDatabaseId: String? = nil,
         notionDatabaseName: String? = nil,
@@ -203,6 +253,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         notionSyncComments: Bool = false,
         notionStatusProperty: String? = nil,
         notionVotesProperty: String? = nil,
+        notionIsActive: Bool = true,
         mondayToken: String? = nil,
         mondayBoardId: String? = nil,
         mondayBoardName: String? = nil,
@@ -212,6 +263,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         mondaySyncComments: Bool = false,
         mondayStatusColumnId: String? = nil,
         mondayVotesColumnId: String? = nil,
+        mondayIsActive: Bool = true,
         linearToken: String? = nil,
         linearTeamId: String? = nil,
         linearTeamName: String? = nil,
@@ -219,7 +271,8 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         linearProjectName: String? = nil,
         linearDefaultLabelIds: [String]? = nil,
         linearSyncStatus: Bool = false,
-        linearSyncComments: Bool = false
+        linearSyncComments: Bool = false,
+        linearIsActive: Bool = true
     ) {
         self.id = id
         self.name = name
@@ -238,12 +291,14 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.slackNotifyNewFeedback = slackNotifyNewFeedback
         self.slackNotifyNewComments = slackNotifyNewComments
         self.slackNotifyStatusChanges = slackNotifyStatusChanges
+        self.slackIsActive = slackIsActive
         self.allowedStatuses = allowedStatuses
         self.githubOwner = githubOwner
         self.githubRepo = githubRepo
         self.githubToken = githubToken
         self.githubDefaultLabels = githubDefaultLabels
         self.githubSyncStatus = githubSyncStatus
+        self.githubIsActive = githubIsActive
         self.clickupToken = clickupToken
         self.clickupListId = clickupListId
         self.clickupWorkspaceName = clickupWorkspaceName
@@ -252,6 +307,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.clickupSyncStatus = clickupSyncStatus
         self.clickupSyncComments = clickupSyncComments
         self.clickupVotesFieldId = clickupVotesFieldId
+        self.clickupIsActive = clickupIsActive
         self.notionToken = notionToken
         self.notionDatabaseId = notionDatabaseId
         self.notionDatabaseName = notionDatabaseName
@@ -259,6 +315,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.notionSyncComments = notionSyncComments
         self.notionStatusProperty = notionStatusProperty
         self.notionVotesProperty = notionVotesProperty
+        self.notionIsActive = notionIsActive
         self.mondayToken = mondayToken
         self.mondayBoardId = mondayBoardId
         self.mondayBoardName = mondayBoardName
@@ -268,6 +325,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.mondaySyncComments = mondaySyncComments
         self.mondayStatusColumnId = mondayStatusColumnId
         self.mondayVotesColumnId = mondayVotesColumnId
+        self.mondayIsActive = mondayIsActive
         self.linearToken = linearToken
         self.linearTeamId = linearTeamId
         self.linearTeamName = linearTeamName
@@ -276,6 +334,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.linearDefaultLabelIds = linearDefaultLabelIds
         self.linearSyncStatus = linearSyncStatus
         self.linearSyncComments = linearSyncComments
+        self.linearIsActive = linearIsActive
     }
 }
 
@@ -348,6 +407,7 @@ struct UpdateProjectSlackRequest: Encodable {
     let slackNotifyNewFeedback: Bool?
     let slackNotifyNewComments: Bool?
     let slackNotifyStatusChanges: Bool?
+    let slackIsActive: Bool?
 }
 
 struct UpdateProjectStatusesRequest: Encodable {
@@ -362,6 +422,7 @@ struct UpdateProjectGitHubRequest: Encodable {
     let githubToken: String?
     let githubDefaultLabels: [String]?
     let githubSyncStatus: Bool?
+    let githubIsActive: Bool?
 }
 
 struct CreateGitHubIssueRequest: Encodable {
@@ -396,6 +457,7 @@ struct UpdateProjectClickUpRequest: Encodable {
     let clickupSyncStatus: Bool?
     let clickupSyncComments: Bool?
     let clickupVotesFieldId: String?
+    let clickupIsActive: Bool?
 }
 
 struct CreateClickUpTaskRequest: Encodable {
@@ -500,6 +562,7 @@ struct UpdateProjectNotionRequest: Encodable {
     let notionSyncComments: Bool?
     let notionStatusProperty: String?
     let notionVotesProperty: String?
+    let notionIsActive: Bool?
 }
 
 struct CreateNotionPageRequest: Encodable {
@@ -545,6 +608,7 @@ struct UpdateProjectMondayRequest: Encodable {
     let mondaySyncComments: Bool?
     let mondayStatusColumnId: String?
     let mondayVotesColumnId: String?
+    let mondayIsActive: Bool?
 }
 
 struct CreateMondayItemRequest: Encodable {
@@ -593,6 +657,7 @@ struct UpdateProjectLinearRequest: Encodable {
     let linearDefaultLabelIds: [String]?
     let linearSyncStatus: Bool?
     let linearSyncComments: Bool?
+    let linearIsActive: Bool?
 }
 
 struct CreateLinearIssueRequest: Encodable {

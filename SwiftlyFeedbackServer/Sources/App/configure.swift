@@ -54,6 +54,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(AddProjectNotionIntegration())
     app.migrations.add(AddProjectMondayIntegration())
     app.migrations.add(AddProjectLinearIntegration())
+    app.migrations.add(AddIntegrationActiveToggles())
 
     try await app.autoMigrate()
 

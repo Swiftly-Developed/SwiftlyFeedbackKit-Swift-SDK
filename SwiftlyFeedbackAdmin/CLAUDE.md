@@ -125,14 +125,20 @@ The `ProjectDetailView` displays configured integrations in a dedicated card:
 - Tapping a row opens the integration settings sheet
 
 ### Integration Details Displayed
-| Integration | Icon | Detail Shown |
-|-------------|------|--------------|
-| Slack | `number` (teal) | "Notifications enabled" |
-| GitHub | `arrow.triangle.branch` (black) | "owner/repo" |
-| ClickUp | `checklist` (purple) | List name or "Connected" |
-| Notion | `doc.text` (black) | Database name or "Connected" |
-| Monday.com | `calendar` (red) | Board name or "Connected" |
-| Linear | `arrow.triangle.branch` (purple) | Team name or "Connected" |
+| Integration | Icon | Detail Shown (Active) | Detail Shown (Paused) |
+|-------------|------|----------------------|----------------------|
+| Slack | `number` (teal) | "Notifications enabled" | "Paused" (orange) |
+| GitHub | `arrow.triangle.branch` (black) | "owner/repo" | "Paused" (orange) |
+| ClickUp | `checklist` (purple) | List name or "Connected" | "Paused" (orange) |
+| Notion | `doc.text` (black) | Database name or "Connected" | "Paused" (orange) |
+| Monday.com | `calendar` (red) | Board name or "Connected" | "Paused" (orange) |
+| Linear | `arrow.triangle.branch` (purple) | Team name or "Connected" | "Paused" (orange) |
+
+### Integration Active Toggle
+Each integration has an "Integration Active" toggle that can be enabled/disabled:
+- When **active**: Shows normal colored icon and detail text
+- When **paused**: Shows gray icon and orange "Paused" text
+- Pausing an integration temporarily disables it without removing the configuration
 
 ### Configuration Check Properties (ProjectModels.swift)
 - `isSlackConfigured` - true if `slackWebhookUrl` is set and non-empty
@@ -196,6 +202,28 @@ The `FeedbackDashboardView` provides a dedicated tab for managing feedback acros
 - Filter by status and/or category
 - Update status via context menu, swipe actions, or drag-and-drop (Kanban)
 - View feedback details and manage comments
+
+### Kanban Card Layout
+Kanban cards display a compact layout to reduce visual clutter:
+- **Top row**: Category badge, MRR badge, (merge badge if applicable), Spacer, Integration icons, Vote count
+- **Integration icons**: Compact 18x18 circular icons instead of full pill badges with text
+- **Title**: 2-line limit
+- **Description**: 2-line limit, secondary color
+- **Bottom row**: User email (if available), Comment count
+
+### Integration Badge Components
+Badge components support both full and compact modes via `compact: Bool` parameter:
+
+| Badge | Icon | Color | Compact Size |
+|-------|------|-------|--------------|
+| `GitHubBadge` | `arrow.triangle.branch` | primary (gray) | 18x18 circle |
+| `ClickUpBadge` | `checklist` | purple | 18x18 circle |
+| `NotionBadge` | `doc.text` | primary (gray) | 18x18 circle |
+| `MondayBadge` | `calendar` | red | 18x18 circle |
+| `LinearBadge` | `lineweight` | indigo | 18x18 circle |
+
+- `IntegrationIconBadge` - Base component for compact circular icon badges
+- `IntegrationsRow` - Groups all integration icons horizontally with 4px spacing
 
 ## Users Dashboard
 

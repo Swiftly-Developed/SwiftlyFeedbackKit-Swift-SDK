@@ -639,6 +639,9 @@ struct ProjectController: RouteCollection {
         if let notify = dto.slackNotifyStatusChanges {
             project.slackNotifyStatusChanges = notify
         }
+        if let isActive = dto.slackIsActive {
+            project.slackIsActive = isActive
+        }
 
         try await project.save(on: req.db)
 
@@ -715,6 +718,9 @@ struct ProjectController: RouteCollection {
         }
         if let syncStatus = dto.githubSyncStatus {
             project.githubSyncStatus = syncStatus
+        }
+        if let isActive = dto.githubIsActive {
+            project.githubIsActive = isActive
         }
 
         try await project.save(on: req.db)
@@ -938,6 +944,9 @@ struct ProjectController: RouteCollection {
         }
         if let votesFieldId = dto.clickupVotesFieldId {
             project.clickupVotesFieldId = votesFieldId.isEmpty ? nil : votesFieldId
+        }
+        if let isActive = dto.clickupIsActive {
+            project.clickupIsActive = isActive
         }
 
         try await project.save(on: req.db)
@@ -1257,6 +1266,9 @@ struct ProjectController: RouteCollection {
         if let votesProperty = dto.notionVotesProperty {
             project.notionVotesProperty = votesProperty.isEmpty ? nil : votesProperty
         }
+        if let isActive = dto.notionIsActive {
+            project.notionIsActive = isActive
+        }
 
         try await project.save(on: req.db)
 
@@ -1517,6 +1529,9 @@ struct ProjectController: RouteCollection {
         }
         if let votesColumnId = dto.mondayVotesColumnId {
             project.mondayVotesColumnId = votesColumnId.isEmpty ? nil : votesColumnId
+        }
+        if let isActive = dto.mondayIsActive {
+            project.mondayIsActive = isActive
         }
 
         try await project.save(on: req.db)
@@ -1807,6 +1822,9 @@ struct ProjectController: RouteCollection {
         }
         if let syncComments = dto.linearSyncComments {
             project.linearSyncComments = syncComments
+        }
+        if let isActive = dto.linearIsActive {
+            project.linearIsActive = isActive
         }
 
         try await project.save(on: req.db)

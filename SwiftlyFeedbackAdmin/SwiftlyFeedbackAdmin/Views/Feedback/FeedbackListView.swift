@@ -621,30 +621,26 @@ struct FeedbackListRowView: View {
     let feedback: Feedback
     var showMergeBadge: Bool = false
 
+    private var hasAnyIntegration: Bool {
+        feedback.hasGitHubIssue || feedback.hasClickUpTask || feedback.hasNotionPage ||
+        feedback.hasMondayItem || feedback.hasLinearIssue
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 FeedbackStatusBadge(status: feedback.status)
                 FeedbackCategoryBadge(category: feedback.category)
                 MrrBadge(mrr: feedback.formattedMrr)
                 if showMergeBadge {
                     MergeBadge(count: feedback.mergedCount)
                 }
-                if feedback.hasGitHubIssue {
-                    GitHubBadge()
+
+                // Integration icons (compact)
+                if hasAnyIntegration {
+                    IntegrationsRow(feedback: feedback)
                 }
-                if feedback.hasClickUpTask {
-                    ClickUpBadge()
-                }
-                if feedback.hasNotionPage {
-                    NotionBadge()
-                }
-                if feedback.hasMondayItem {
-                    MondayBadge()
-                }
-                if feedback.hasLinearIssue {
-                    LinearBadge()
-                }
+
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
@@ -714,98 +710,178 @@ struct MergeBadge: View {
     }
 }
 
+// MARK: - Integration Icon Badge (compact icon-only style)
+
+struct IntegrationIconBadge: View {
+    let icon: String
+    let color: Color
+
+    var body: some View {
+        Image(systemName: icon)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(color)
+            .frame(width: 18, height: 18)
+            .background(color.opacity(0.15))
+            .clipShape(Circle())
+    }
+}
+
 // MARK: - GitHub Badge
 
 struct GitHubBadge: View {
+    var compact: Bool = false
+
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "arrow.triangle.branch")
-                .font(.caption2)
-            Text("GitHub")
-                .font(.caption2)
-                .fontWeight(.medium)
+        if compact {
+            IntegrationIconBadge(icon: "arrow.triangle.branch", color: .primary.opacity(0.7))
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.caption2)
+                Text("GitHub")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color.black.opacity(0.1))
+            .foregroundStyle(.primary.opacity(0.7))
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color.black.opacity(0.1))
-        .foregroundStyle(.primary.opacity(0.7))
-        .clipShape(Capsule())
     }
 }
 
 // MARK: - ClickUp Badge
 
 struct ClickUpBadge: View {
+    var compact: Bool = false
+    private let clickUpColor = Color(red: 0.49, green: 0.31, blue: 0.83)
+
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "checklist")
-                .font(.caption2)
-            Text("ClickUp")
-                .font(.caption2)
-                .fontWeight(.medium)
+        if compact {
+            IntegrationIconBadge(icon: "checklist", color: clickUpColor)
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "checklist")
+                    .font(.caption2)
+                Text("ClickUp")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color.purple.opacity(0.15))
+            .foregroundStyle(.purple)
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color.purple.opacity(0.15))
-        .foregroundStyle(.purple)
-        .clipShape(Capsule())
     }
 }
 
 // MARK: - Notion Badge
 
 struct NotionBadge: View {
+    var compact: Bool = false
+
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "doc.text")
-                .font(.caption2)
-            Text("Notion")
-                .font(.caption2)
-                .fontWeight(.medium)
+        if compact {
+            IntegrationIconBadge(icon: "doc.text", color: .primary.opacity(0.7))
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "doc.text")
+                    .font(.caption2)
+                Text("Notion")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color.black.opacity(0.1))
+            .foregroundStyle(.primary.opacity(0.7))
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color.black.opacity(0.1))
-        .foregroundStyle(.primary.opacity(0.7))
-        .clipShape(Capsule())
     }
 }
 
 // MARK: - Monday.com Badge
 
 struct MondayBadge: View {
+    var compact: Bool = false
+    private let mondayColor = Color(red: 1.0, green: 0.27, blue: 0.38)
+
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "calendar")
-                .font(.caption2)
-            Text("Monday")
-                .font(.caption2)
-                .fontWeight(.medium)
+        if compact {
+            IntegrationIconBadge(icon: "calendar", color: mondayColor)
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "calendar")
+                    .font(.caption2)
+                Text("Monday")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(mondayColor.opacity(0.15))
+            .foregroundStyle(mondayColor)
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color(red: 1.0, green: 0.27, blue: 0.38).opacity(0.15))
-        .foregroundStyle(Color(red: 1.0, green: 0.27, blue: 0.38))
-        .clipShape(Capsule())
     }
 }
 
 // MARK: - Linear Badge
 
 struct LinearBadge: View {
+    var compact: Bool = false
+    private let linearColor = Color(red: 0.35, green: 0.35, blue: 0.85)
+
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "lineweight")
-                .font(.caption2)
-            Text("Linear")
-                .font(.caption2)
-                .fontWeight(.medium)
+        if compact {
+            IntegrationIconBadge(icon: "lineweight", color: linearColor)
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: "lineweight")
+                    .font(.caption2)
+                Text("Linear")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(linearColor.opacity(0.15))
+            .foregroundStyle(linearColor)
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color(red: 0.35, green: 0.35, blue: 0.85).opacity(0.15))
-        .foregroundStyle(Color(red: 0.35, green: 0.35, blue: 0.85))
-        .clipShape(Capsule())
+    }
+}
+
+// MARK: - Integrations Row (compact grouped view)
+
+struct IntegrationsRow: View {
+    let feedback: Feedback
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if feedback.hasGitHubIssue {
+                GitHubBadge(compact: true)
+            }
+            if feedback.hasClickUpTask {
+                ClickUpBadge(compact: true)
+            }
+            if feedback.hasNotionPage {
+                NotionBadge(compact: true)
+            }
+            if feedback.hasMondayItem {
+                MondayBadge(compact: true)
+            }
+            if feedback.hasLinearIssue {
+                LinearBadge(compact: true)
+            }
+        }
+    }
+
+    var hasAnyIntegration: Bool {
+        feedback.hasGitHubIssue || feedback.hasClickUpTask || feedback.hasNotionPage ||
+        feedback.hasMondayItem || feedback.hasLinearIssue
     }
 }
 
@@ -1073,36 +1149,42 @@ struct KanbanCardView: View {
     let feedback: Feedback
     var isSelected: Bool = false
 
+    private var hasAnyIntegration: Bool {
+        feedback.hasGitHubIssue || feedback.hasClickUpTask || feedback.hasNotionPage ||
+        feedback.hasMondayItem || feedback.hasLinearIssue
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            // Top row: Category + MRR + Merge badge (left) | Integrations + Vote count (right)
+            HStack(alignment: .center, spacing: 6) {
+                // Primary info: Category badge
                 FeedbackCategoryBadge(category: feedback.category)
+
+                // MRR (compact - just the value)
                 MrrBadge(mrr: feedback.formattedMrr)
+
+                // Merge badge if applicable
                 if feedback.hasMergedFeedback {
                     MergeBadge(count: feedback.mergedCount)
                 }
-                if feedback.hasGitHubIssue {
-                    GitHubBadge()
-                }
-                if feedback.hasClickUpTask {
-                    ClickUpBadge()
-                }
-                if feedback.hasNotionPage {
-                    NotionBadge()
-                }
-                if feedback.hasMondayItem {
-                    MondayBadge()
-                }
-                if feedback.hasLinearIssue {
-                    LinearBadge()
-                }
+
                 Spacer()
+
+                // Integration icons (compact circular icons)
+                if hasAnyIntegration {
+                    IntegrationsRow(feedback: feedback)
+                }
+
+                // Selection indicator
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.blue)
                         .font(.caption)
                 }
-                HStack(spacing: 4) {
+
+                // Vote count
+                HStack(spacing: 3) {
                     Image(systemName: "arrow.up")
                         .font(.caption2)
                     Text("\(feedback.voteCount)")

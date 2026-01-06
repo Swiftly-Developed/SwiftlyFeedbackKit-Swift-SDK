@@ -10,6 +10,7 @@ struct GitHubSettingsView: View {
     @State private var token: String
     @State private var defaultLabels: String
     @State private var syncStatus: Bool
+    @State private var isActive: Bool
     @State private var showingTokenInfo = false
 
     init(project: Project, viewModel: ProjectViewModel) {
@@ -20,6 +21,7 @@ struct GitHubSettingsView: View {
         _token = State(initialValue: project.githubToken ?? "")
         _defaultLabels = State(initialValue: (project.githubDefaultLabels ?? []).joined(separator: ", "))
         _syncStatus = State(initialValue: project.githubSyncStatus)
+        _isActive = State(initialValue: project.githubIsActive)
     }
 
     private var hasChanges: Bool {
@@ -27,7 +29,8 @@ struct GitHubSettingsView: View {
         repo != (project.githubRepo ?? "") ||
         token != (project.githubToken ?? "") ||
         labelsArray != (project.githubDefaultLabels ?? []) ||
-        syncStatus != project.githubSyncStatus
+        syncStatus != project.githubSyncStatus ||
+        isActive != project.githubIsActive
     }
 
     private var isConfigured: Bool {
@@ -46,6 +49,14 @@ struct GitHubSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, GitHub issue sync will be paused.")
+                    }
+                }
+
                 Section {
                     TextField("Owner", text: $owner)
                         #if os(iOS)
@@ -174,7 +185,8 @@ struct GitHubSettingsView: View {
                 githubRepo: trimmedRepo.isEmpty ? "" : trimmedRepo,
                 githubToken: trimmedToken.isEmpty ? "" : trimmedToken,
                 githubDefaultLabels: labelsArray.isEmpty ? [] : labelsArray,
-                githubSyncStatus: syncStatus
+                githubSyncStatus: syncStatus,
+                githubIsActive: isActive
             )
             if success {
                 dismiss()
@@ -208,7 +220,8 @@ struct GitHubSettingsView: View {
             githubRepo: nil,
             githubToken: nil,
             githubDefaultLabels: nil,
-            githubSyncStatus: false
+            githubSyncStatus: false,
+            githubIsActive: true
         ),
         viewModel: ProjectViewModel()
     )

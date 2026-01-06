@@ -174,8 +174,8 @@ struct FeedbackController: RouteCollection {
             }
         }
 
-        // Send Slack notification if configured
-        if let webhookURL = project.slackWebhookURL, project.slackNotifyNewFeedback {
+        // Send Slack notification if configured and active
+        if let webhookURL = project.slackWebhookURL, project.slackIsActive, project.slackNotifyNewFeedback {
             Task {
                 do {
                     try await req.slackService.sendNewFeedbackNotification(
@@ -288,8 +288,8 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Send Slack notification if configured
-            if let webhookURL = project.slackWebhookURL, project.slackNotifyStatusChanges {
+            // Send Slack notification if configured and active
+            if let webhookURL = project.slackWebhookURL, project.slackIsActive, project.slackNotifyStatusChanges {
                 Task {
                     do {
                         try await req.slackService.sendFeedbackStatusChangeNotification(
@@ -305,8 +305,9 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Sync to GitHub if configured
+            // Sync to GitHub if configured and active
             if let issueNumber = feedback.githubIssueNumber,
+               project.githubIsActive,
                project.githubSyncStatus,
                let owner = project.githubOwner,
                let repo = project.githubRepo,
@@ -336,8 +337,9 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Sync to ClickUp if configured
+            // Sync to ClickUp if configured and active
             if let taskId = feedback.clickupTaskId,
+               project.clickupIsActive,
                project.clickupSyncStatus,
                let token = project.clickupToken {
                 // Map SwiftlyFeedback status to ClickUp status name
@@ -355,8 +357,9 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Sync to Notion if configured
+            // Sync to Notion if configured and active
             if let pageId = feedback.notionPageId,
+               project.notionIsActive,
                project.notionSyncStatus,
                let token = project.notionToken,
                let statusProperty = project.notionStatusProperty,
@@ -376,8 +379,9 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Sync to Monday.com if configured
+            // Sync to Monday.com if configured and active
             if let itemId = feedback.mondayItemId,
+               project.mondayIsActive,
                project.mondaySyncStatus,
                let token = project.mondayToken,
                let boardId = project.mondayBoardId,
@@ -399,8 +403,9 @@ struct FeedbackController: RouteCollection {
                 }
             }
 
-            // Sync to Linear if configured
+            // Sync to Linear if configured and active
             if let issueId = feedback.linearIssueId,
+               project.linearIsActive,
                project.linearSyncStatus,
                let token = project.linearToken,
                let teamId = project.linearTeamId {

@@ -12,6 +12,7 @@ struct NotionSettingsView: View {
     @State private var syncComments: Bool
     @State private var statusProperty: String
     @State private var votesProperty: String
+    @State private var isActive: Bool
     @State private var showingTokenInfo = false
 
     // Database selection state
@@ -35,6 +36,7 @@ struct NotionSettingsView: View {
         _syncComments = State(initialValue: project.notionSyncComments)
         _statusProperty = State(initialValue: project.notionStatusProperty ?? "")
         _votesProperty = State(initialValue: project.notionVotesProperty ?? "")
+        _isActive = State(initialValue: project.notionIsActive)
     }
 
     private var hasChanges: Bool {
@@ -44,7 +46,8 @@ struct NotionSettingsView: View {
         syncStatus != project.notionSyncStatus ||
         syncComments != project.notionSyncComments ||
         statusProperty != (project.notionStatusProperty ?? "") ||
-        votesProperty != (project.notionVotesProperty ?? "")
+        votesProperty != (project.notionVotesProperty ?? "") ||
+        isActive != project.notionIsActive
     }
 
     private var isConfigured: Bool {
@@ -59,6 +62,14 @@ struct NotionSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, Notion sync will be paused.")
+                    }
+                }
+
                 Section {
                     SecureField("Integration Token", text: $token)
                         .onChange(of: token) { _, newValue in
@@ -253,7 +264,8 @@ struct NotionSettingsView: View {
                 notionSyncStatus: nil,
                 notionSyncComments: nil,
                 notionStatusProperty: nil,
-                notionVotesProperty: nil
+                notionVotesProperty: nil,
+                notionIsActive: nil
             )
 
             if success {
@@ -322,7 +334,8 @@ struct NotionSettingsView: View {
                 notionSyncStatus: syncStatus,
                 notionSyncComments: syncComments,
                 notionStatusProperty: statusProperty.isEmpty ? "" : statusProperty,
-                notionVotesProperty: votesProperty.isEmpty ? "" : votesProperty
+                notionVotesProperty: votesProperty.isEmpty ? "" : votesProperty,
+                notionIsActive: isActive
             )
             if success {
                 dismiss()

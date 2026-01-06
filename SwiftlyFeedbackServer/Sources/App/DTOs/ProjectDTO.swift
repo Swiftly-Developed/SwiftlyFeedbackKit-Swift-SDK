@@ -25,6 +25,7 @@ struct UpdateProjectSlackDTO: Content {
     var slackNotifyNewFeedback: Bool?
     var slackNotifyNewComments: Bool?
     var slackNotifyStatusChanges: Bool?
+    var slackIsActive: Bool?
 }
 
 struct UpdateProjectStatusesDTO: Content {
@@ -39,6 +40,7 @@ struct UpdateProjectGitHubDTO: Content {
     var githubToken: String?
     var githubDefaultLabels: [String]?
     var githubSyncStatus: Bool?
+    var githubIsActive: Bool?
 }
 
 struct CreateGitHubIssueDTO: Content {
@@ -73,6 +75,7 @@ struct UpdateProjectClickUpDTO: Content {
     var clickupSyncStatus: Bool?
     var clickupSyncComments: Bool?
     var clickupVotesFieldId: String?
+    var clickupIsActive: Bool?
 }
 
 struct CreateClickUpTaskDTO: Content, Validatable {
@@ -137,6 +140,7 @@ struct UpdateProjectNotionDTO: Content {
     var notionSyncComments: Bool?
     var notionStatusProperty: String?
     var notionVotesProperty: String?
+    var notionIsActive: Bool?
 }
 
 struct CreateNotionPageDTO: Content {
@@ -182,6 +186,7 @@ struct UpdateProjectMondayDTO: Content {
     var mondaySyncComments: Bool?
     var mondayStatusColumnId: String?
     var mondayVotesColumnId: String?
+    var mondayIsActive: Bool?
 }
 
 struct CreateMondayItemDTO: Content {
@@ -230,6 +235,7 @@ struct UpdateProjectLinearDTO: Content {
     var linearDefaultLabelIds: [String]?
     var linearSyncStatus: Bool?
     var linearSyncComments: Bool?
+    var linearIsActive: Bool?
 }
 
 struct CreateLinearIssueDTO: Content {
@@ -311,6 +317,7 @@ struct ProjectResponseDTO: Content {
     let slackNotifyNewFeedback: Bool
     let slackNotifyNewComments: Bool
     let slackNotifyStatusChanges: Bool
+    let slackIsActive: Bool
     let allowedStatuses: [String]
     // GitHub integration fields
     let githubOwner: String?
@@ -318,6 +325,7 @@ struct ProjectResponseDTO: Content {
     let githubToken: String?
     let githubDefaultLabels: [String]?
     let githubSyncStatus: Bool
+    let githubIsActive: Bool
     // ClickUp integration fields
     let clickupToken: String?
     let clickupListId: String?
@@ -327,6 +335,7 @@ struct ProjectResponseDTO: Content {
     let clickupSyncStatus: Bool
     let clickupSyncComments: Bool
     let clickupVotesFieldId: String?
+    let clickupIsActive: Bool
     // Notion integration fields
     let notionToken: String?
     let notionDatabaseId: String?
@@ -335,6 +344,7 @@ struct ProjectResponseDTO: Content {
     let notionSyncComments: Bool
     let notionStatusProperty: String?
     let notionVotesProperty: String?
+    let notionIsActive: Bool
     // Monday.com integration fields
     let mondayToken: String?
     let mondayBoardId: String?
@@ -345,6 +355,7 @@ struct ProjectResponseDTO: Content {
     let mondaySyncComments: Bool
     let mondayStatusColumnId: String?
     let mondayVotesColumnId: String?
+    let mondayIsActive: Bool
     // Linear integration fields
     let linearToken: String?
     let linearTeamId: String?
@@ -354,6 +365,7 @@ struct ProjectResponseDTO: Content {
     let linearDefaultLabelIds: [String]?
     let linearSyncStatus: Bool
     let linearSyncComments: Bool
+    let linearIsActive: Bool
 
     init(project: Project, feedbackCount: Int = 0, memberCount: Int = 0, ownerEmail: String? = nil) {
         self.id = project.id!
@@ -373,12 +385,14 @@ struct ProjectResponseDTO: Content {
         self.slackNotifyNewFeedback = project.slackNotifyNewFeedback
         self.slackNotifyNewComments = project.slackNotifyNewComments
         self.slackNotifyStatusChanges = project.slackNotifyStatusChanges
+        self.slackIsActive = project.slackIsActive
         self.allowedStatuses = project.allowedStatuses
         self.githubOwner = project.githubOwner
         self.githubRepo = project.githubRepo
         self.githubToken = project.githubToken
         self.githubDefaultLabels = project.githubDefaultLabels
         self.githubSyncStatus = project.githubSyncStatus
+        self.githubIsActive = project.githubIsActive
         self.clickupToken = project.clickupToken
         self.clickupListId = project.clickupListId
         self.clickupWorkspaceName = project.clickupWorkspaceName
@@ -387,6 +401,7 @@ struct ProjectResponseDTO: Content {
         self.clickupSyncStatus = project.clickupSyncStatus
         self.clickupSyncComments = project.clickupSyncComments
         self.clickupVotesFieldId = project.clickupVotesFieldId
+        self.clickupIsActive = project.clickupIsActive
         self.notionToken = project.notionToken
         self.notionDatabaseId = project.notionDatabaseId
         self.notionDatabaseName = project.notionDatabaseName
@@ -394,6 +409,7 @@ struct ProjectResponseDTO: Content {
         self.notionSyncComments = project.notionSyncComments
         self.notionStatusProperty = project.notionStatusProperty
         self.notionVotesProperty = project.notionVotesProperty
+        self.notionIsActive = project.notionIsActive
         self.mondayToken = project.mondayToken
         self.mondayBoardId = project.mondayBoardId
         self.mondayBoardName = project.mondayBoardName
@@ -403,6 +419,7 @@ struct ProjectResponseDTO: Content {
         self.mondaySyncComments = project.mondaySyncComments
         self.mondayStatusColumnId = project.mondayStatusColumnId
         self.mondayVotesColumnId = project.mondayVotesColumnId
+        self.mondayIsActive = project.mondayIsActive
         self.linearToken = project.linearToken
         self.linearTeamId = project.linearTeamId
         self.linearTeamName = project.linearTeamName
@@ -411,6 +428,7 @@ struct ProjectResponseDTO: Content {
         self.linearDefaultLabelIds = project.linearDefaultLabelIds
         self.linearSyncStatus = project.linearSyncStatus
         self.linearSyncComments = project.linearSyncComments
+        self.linearIsActive = project.linearIsActive
     }
 }
 

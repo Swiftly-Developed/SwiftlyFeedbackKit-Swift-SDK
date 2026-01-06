@@ -13,6 +13,7 @@ struct LinearSettingsView: View {
     @State private var selectedLabelIds: Set<String>
     @State private var syncStatus: Bool
     @State private var syncComments: Bool
+    @State private var isActive: Bool
     @State private var showingTokenInfo = false
 
     // Team and project selection state
@@ -38,6 +39,7 @@ struct LinearSettingsView: View {
         _selectedLabelIds = State(initialValue: Set(project.linearDefaultLabelIds ?? []))
         _syncStatus = State(initialValue: project.linearSyncStatus)
         _syncComments = State(initialValue: project.linearSyncComments)
+        _isActive = State(initialValue: project.linearIsActive)
     }
 
     private var hasChanges: Bool {
@@ -48,7 +50,8 @@ struct LinearSettingsView: View {
         linearProjectName != (project.linearProjectName ?? "") ||
         Array(selectedLabelIds).sorted() != (project.linearDefaultLabelIds ?? []).sorted() ||
         syncStatus != project.linearSyncStatus ||
-        syncComments != project.linearSyncComments
+        syncComments != project.linearSyncComments ||
+        isActive != project.linearIsActive
     }
 
     private var isConfigured: Bool {
@@ -63,6 +66,14 @@ struct LinearSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, Linear sync will be paused.")
+                    }
+                }
+
                 Section {
                     SecureField("API Token", text: $token)
                         .onChange(of: token) { _, newValue in
@@ -286,7 +297,8 @@ struct LinearSettingsView: View {
                 linearProjectName: nil,
                 linearDefaultLabelIds: nil,
                 linearSyncStatus: nil,
-                linearSyncComments: nil
+                linearSyncComments: nil,
+                linearIsActive: nil
             )
 
             if success {
@@ -362,7 +374,8 @@ struct LinearSettingsView: View {
                 linearProjectName: linearProjectName.isEmpty ? "" : linearProjectName,
                 linearDefaultLabelIds: Array(selectedLabelIds),
                 linearSyncStatus: syncStatus,
-                linearSyncComments: syncComments
+                linearSyncComments: syncComments,
+                linearIsActive: isActive
             )
             if success {
                 dismiss()

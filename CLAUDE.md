@@ -245,6 +245,36 @@ Available gradients (index 0-7):
 6. Purple → Pink
 7. Mint → Green
 
+## Integration Active Toggles
+
+All integrations (Slack, GitHub, ClickUp, Notion, Monday.com, Linear) have an "is_active" toggle that allows temporarily disabling an integration without removing the configuration.
+
+### How It Works
+- Each integration has an `{integration}_is_active` boolean field (default: true)
+- When disabled, all sync operations are paused but credentials/settings are preserved
+- The toggle appears at the top of each integration's settings view when configured
+- Re-enabling resumes normal sync operations without reconfiguration
+
+### Database Fields (Project model)
+- `slack_is_active` (Bool, default: true)
+- `github_is_active` (Bool, default: true)
+- `clickup_is_active` (Bool, default: true)
+- `notion_is_active` (Bool, default: true)
+- `monday_is_active` (Bool, default: true)
+- `linear_is_active` (Bool, default: true)
+
+### Admin App UI
+- Toggle appears at the top of settings when integration is configured
+- Footer text explains: "When disabled, [integration] sync will be paused."
+- Changes are saved with the rest of the integration settings
+
+### Server Behavior
+When an integration is inactive:
+- Notifications are not sent (Slack)
+- Status changes are not synced (GitHub, ClickUp, Notion, Monday.com, Linear)
+- Comments are not synced (ClickUp, Notion, Monday.com, Linear)
+- Vote counts are not updated (ClickUp, Monday.com)
+
 ## Email Notifications
 
 Email notifications are sent via Resend API when certain events occur. Users can configure their notification preferences in the Admin app Settings.
@@ -320,7 +350,8 @@ Request body:
   "slack_webhook_url": "https://hooks.slack.com/...",
   "slack_notify_new_feedback": true,
   "slack_notify_new_comments": true,
-  "slack_notify_status_changes": true
+  "slack_notify_status_changes": true,
+  "slack_is_active": true
 }
 ```
 
@@ -329,6 +360,7 @@ Request body:
 - `slack_notify_new_feedback` (Bool, default: true) - Enable new feedback notifications
 - `slack_notify_new_comments` (Bool, default: true) - Enable comment notifications
 - `slack_notify_status_changes` (Bool, default: true) - Enable status change notifications
+- `slack_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 All Slack notifications are sent asynchronously to avoid blocking API responses.
 
@@ -372,7 +404,8 @@ When enabled, feedback status changes sync to GitHub:
   "github_repo": "swift",
   "github_token": "ghp_...",
   "github_default_labels": ["feedback", "user-request"],
-  "github_sync_status": true
+  "github_sync_status": true,
+  "github_is_active": true
 }
 ```
 
@@ -401,6 +434,7 @@ When enabled, feedback status changes sync to GitHub:
 - `github_token` (String?, optional) - Personal Access Token
 - `github_default_labels` ([String]?, optional) - Labels applied to all issues
 - `github_sync_status` (Bool, default: false) - Enable status sync
+- `github_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 **Feedback model:**
 - `github_issue_url` (String?, optional) - URL of linked GitHub issue
@@ -466,7 +500,8 @@ Note: Status options must exist in your Notion database's Status property.
   "notion_sync_status": true,
   "notion_sync_comments": true,
   "notion_status_property": "Status",
-  "notion_votes_property": "Votes"
+  "notion_votes_property": "Votes",
+  "notion_is_active": true
 }
 ```
 
@@ -496,6 +531,7 @@ Note: Status options must exist in your Notion database's Status property.
 - `notion_sync_comments` (Bool, default: false) - Enable comment sync
 - `notion_status_property` (String?, optional) - Name of Status property in database
 - `notion_votes_property` (String?, optional) - Name of Votes (number) property
+- `notion_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 **Feedback model:**
 - `notion_page_url` (String?, optional) - URL of linked Notion page
@@ -570,7 +606,8 @@ When enabled, feedback status changes map to ClickUp statuses:
   "clickup_default_tags": ["feedback", "user-request"],
   "clickup_sync_status": true,
   "clickup_sync_comments": true,
-  "clickup_votes_field_id": "abc123"
+  "clickup_votes_field_id": "abc123",
+  "clickup_is_active": true
 }
 ```
 
@@ -602,6 +639,7 @@ When enabled, feedback status changes map to ClickUp statuses:
 - `clickup_sync_status` (Bool, default: false) - Enable status sync
 - `clickup_sync_comments` (Bool, default: false) - Enable comment sync
 - `clickup_votes_field_id` (String?, optional) - Custom field ID for vote count
+- `clickup_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 **Feedback model:**
 - `clickup_task_url` (String?, optional) - URL of linked ClickUp task
@@ -669,7 +707,8 @@ Note: Linear finds the matching workflow state by type within the configured tea
   "linear_project_name": "Feedback",
   "linear_default_label_ids": ["label1", "label2"],
   "linear_sync_status": true,
-  "linear_sync_comments": true
+  "linear_sync_comments": true,
+  "linear_is_active": true
 }
 ```
 
@@ -702,6 +741,7 @@ Note: Linear finds the matching workflow state by type within the configured tea
 - `linear_default_label_ids` ([String]?, optional) - Label IDs applied to all issues
 - `linear_sync_status` (Bool, default: false) - Enable status sync
 - `linear_sync_comments` (Bool, default: false) - Enable comment sync
+- `linear_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 **Feedback model:**
 - `linear_issue_url` (String?, optional) - URL of linked Linear issue
@@ -774,7 +814,8 @@ Note: Status labels must exist in your Monday.com board's Status column.
   "monday_sync_status": true,
   "monday_sync_comments": true,
   "monday_status_column_id": "status",
-  "monday_votes_column_id": "numbers"
+  "monday_votes_column_id": "numbers",
+  "monday_is_active": true
 }
 ```
 
@@ -806,6 +847,7 @@ Note: Status labels must exist in your Monday.com board's Status column.
 - `monday_sync_comments` (Bool, default: false) - Enable comment sync
 - `monday_status_column_id` (String?, optional) - Column ID for status sync
 - `monday_votes_column_id` (String?, optional) - Column ID for vote count sync
+- `monday_is_active` (Bool, default: true) - Master toggle to enable/disable integration
 
 **Feedback model:**
 - `monday_item_url` (String?, optional) - URL of linked Monday.com item

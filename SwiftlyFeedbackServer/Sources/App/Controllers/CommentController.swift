@@ -96,8 +96,8 @@ struct CommentController: RouteCollection {
             }
         }
 
-        // Send Slack notification if configured
-        if let webhookURL = project.slackWebhookURL, project.slackNotifyNewComments {
+        // Send Slack notification if configured and active
+        if let webhookURL = project.slackWebhookURL, project.slackIsActive, project.slackNotifyNewComments {
             let isAdmin = dto.isAdmin ?? false
             let commenterName = isAdmin ? "Admin" : "User"
             Task {
@@ -116,8 +116,9 @@ struct CommentController: RouteCollection {
             }
         }
 
-        // Sync comment to ClickUp if enabled
-        if project.clickupSyncComments,
+        // Sync comment to ClickUp if enabled and active
+        if project.clickupIsActive,
+           project.clickupSyncComments,
            let taskId = feedback.clickupTaskId,
            let token = project.clickupToken {
             let isAdmin = dto.isAdmin ?? false
@@ -145,8 +146,9 @@ struct CommentController: RouteCollection {
             }
         }
 
-        // Sync comment to Notion if enabled
-        if project.notionSyncComments,
+        // Sync comment to Notion if enabled and active
+        if project.notionIsActive,
+           project.notionSyncComments,
            let pageId = feedback.notionPageId,
            let token = project.notionToken {
             let isAdmin = dto.isAdmin ?? false
@@ -166,8 +168,9 @@ struct CommentController: RouteCollection {
             }
         }
 
-        // Sync comment to Monday.com if enabled
-        if project.mondaySyncComments,
+        // Sync comment to Monday.com if enabled and active
+        if project.mondayIsActive,
+           project.mondaySyncComments,
            let itemId = feedback.mondayItemId,
            let token = project.mondayToken {
             let isAdmin = dto.isAdmin ?? false
@@ -187,8 +190,9 @@ struct CommentController: RouteCollection {
             }
         }
 
-        // Sync comment to Linear if enabled
-        if project.linearSyncComments,
+        // Sync comment to Linear if enabled and active
+        if project.linearIsActive,
+           project.linearSyncComments,
            let issueId = feedback.linearIssueId,
            let token = project.linearToken {
             let isAdmin = dto.isAdmin ?? false

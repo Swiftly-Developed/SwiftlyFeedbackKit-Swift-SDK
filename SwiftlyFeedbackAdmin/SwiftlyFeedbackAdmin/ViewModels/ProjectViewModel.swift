@@ -304,7 +304,8 @@ final class ProjectViewModel {
         slackWebhookUrl: String?,
         slackNotifyNewFeedback: Bool?,
         slackNotifyNewComments: Bool?,
-        slackNotifyStatusChanges: Bool?
+        slackNotifyStatusChanges: Bool?,
+        slackIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -315,7 +316,8 @@ final class ProjectViewModel {
                 slackWebhookUrl: slackWebhookUrl,
                 slackNotifyNewFeedback: slackNotifyNewFeedback,
                 slackNotifyNewComments: slackNotifyNewComments,
-                slackNotifyStatusChanges: slackNotifyStatusChanges
+                slackNotifyStatusChanges: slackNotifyStatusChanges,
+                slackIsActive: slackIsActive
             )
             isLoading = false
             return true
@@ -354,7 +356,8 @@ final class ProjectViewModel {
         githubRepo: String?,
         githubToken: String?,
         githubDefaultLabels: [String]?,
-        githubSyncStatus: Bool?
+        githubSyncStatus: Bool?,
+        githubIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -366,7 +369,8 @@ final class ProjectViewModel {
                 githubRepo: githubRepo,
                 githubToken: githubToken,
                 githubDefaultLabels: githubDefaultLabels,
-                githubSyncStatus: githubSyncStatus
+                githubSyncStatus: githubSyncStatus,
+                githubIsActive: githubIsActive
             )
             isLoading = false
             return true
@@ -388,7 +392,8 @@ final class ProjectViewModel {
         clickupDefaultTags: [String]?,
         clickupSyncStatus: Bool?,
         clickupSyncComments: Bool?,
-        clickupVotesFieldId: String?
+        clickupVotesFieldId: String?,
+        clickupIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -403,7 +408,8 @@ final class ProjectViewModel {
                 clickupDefaultTags: clickupDefaultTags,
                 clickupSyncStatus: clickupSyncStatus,
                 clickupSyncComments: clickupSyncComments,
-                clickupVotesFieldId: clickupVotesFieldId
+                clickupVotesFieldId: clickupVotesFieldId,
+                clickupIsActive: clickupIsActive
             )
             isLoading = false
             return true
@@ -478,7 +484,8 @@ final class ProjectViewModel {
         notionSyncStatus: Bool?,
         notionSyncComments: Bool?,
         notionStatusProperty: String?,
-        notionVotesProperty: String?
+        notionVotesProperty: String?,
+        notionIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -492,7 +499,8 @@ final class ProjectViewModel {
                 notionSyncStatus: notionSyncStatus,
                 notionSyncComments: notionSyncComments,
                 notionStatusProperty: notionStatusProperty,
-                notionVotesProperty: notionVotesProperty
+                notionVotesProperty: notionVotesProperty,
+                notionIsActive: notionIsActive
             )
             isLoading = false
             return true
@@ -533,7 +541,8 @@ final class ProjectViewModel {
         mondaySyncStatus: Bool?,
         mondaySyncComments: Bool?,
         mondayStatusColumnId: String?,
-        mondayVotesColumnId: String?
+        mondayVotesColumnId: String?,
+        mondayIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -549,7 +558,8 @@ final class ProjectViewModel {
                 mondaySyncStatus: mondaySyncStatus,
                 mondaySyncComments: mondaySyncComments,
                 mondayStatusColumnId: mondayStatusColumnId,
-                mondayVotesColumnId: mondayVotesColumnId
+                mondayVotesColumnId: mondayVotesColumnId,
+                mondayIsActive: mondayIsActive
             )
             isLoading = false
             return true
@@ -598,7 +608,8 @@ final class ProjectViewModel {
         linearProjectName: String?,
         linearDefaultLabelIds: [String]?,
         linearSyncStatus: Bool?,
-        linearSyncComments: Bool?
+        linearSyncComments: Bool?,
+        linearIsActive: Bool?
     ) async -> Bool {
         isLoading = true
         errorMessage = nil
@@ -612,7 +623,8 @@ final class ProjectViewModel {
                 linearProjectName: linearProjectName,
                 linearDefaultLabelIds: linearDefaultLabelIds,
                 linearSyncStatus: linearSyncStatus,
-                linearSyncComments: linearSyncComments
+                linearSyncComments: linearSyncComments,
+                linearIsActive: linearIsActive
             )
             let updated = try await AdminAPIClient.shared.updateLinearSettings(projectId: projectId, request: request)
             selectedProject = updated

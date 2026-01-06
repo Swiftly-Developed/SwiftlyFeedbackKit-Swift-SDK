@@ -593,14 +593,16 @@ actor AdminAPIClient {
         slackWebhookUrl: String?,
         slackNotifyNewFeedback: Bool?,
         slackNotifyNewComments: Bool?,
-        slackNotifyStatusChanges: Bool?
+        slackNotifyStatusChanges: Bool?,
+        slackIsActive: Bool?
     ) async throws -> Project {
         let path = "projects/\(projectId)/slack"
         let body = UpdateProjectSlackRequest(
             slackWebhookUrl: slackWebhookUrl,
             slackNotifyNewFeedback: slackNotifyNewFeedback,
             slackNotifyNewComments: slackNotifyNewComments,
-            slackNotifyStatusChanges: slackNotifyStatusChanges
+            slackNotifyStatusChanges: slackNotifyStatusChanges,
+            slackIsActive: slackIsActive
         )
 
         AppLogger.api.info("🟠 PATCH \(path) (slack settings)")
@@ -648,7 +650,8 @@ actor AdminAPIClient {
         githubRepo: String?,
         githubToken: String?,
         githubDefaultLabels: [String]?,
-        githubSyncStatus: Bool?
+        githubSyncStatus: Bool?,
+        githubIsActive: Bool?
     ) async throws -> Project {
         let path = "projects/\(projectId)/github"
         let body = UpdateProjectGitHubRequest(
@@ -656,7 +659,8 @@ actor AdminAPIClient {
             githubRepo: githubRepo,
             githubToken: githubToken,
             githubDefaultLabels: githubDefaultLabels,
-            githubSyncStatus: githubSyncStatus
+            githubSyncStatus: githubSyncStatus,
+            githubIsActive: githubIsActive
         )
 
         AppLogger.api.info("🟠 PATCH \(path) (GitHub settings)")
@@ -734,7 +738,8 @@ actor AdminAPIClient {
         clickupDefaultTags: [String]?,
         clickupSyncStatus: Bool?,
         clickupSyncComments: Bool?,
-        clickupVotesFieldId: String?
+        clickupVotesFieldId: String?,
+        clickupIsActive: Bool?
     ) async throws -> Project {
         let path = "projects/\(projectId)/clickup"
         let body = UpdateProjectClickUpRequest(
@@ -745,7 +750,8 @@ actor AdminAPIClient {
             clickupDefaultTags: clickupDefaultTags,
             clickupSyncStatus: clickupSyncStatus,
             clickupSyncComments: clickupSyncComments,
-            clickupVotesFieldId: clickupVotesFieldId
+            clickupVotesFieldId: clickupVotesFieldId,
+            clickupIsActive: clickupIsActive
         )
 
         AppLogger.api.info("🟠 PATCH \(path) (ClickUp settings)")
@@ -918,7 +924,8 @@ actor AdminAPIClient {
         notionSyncStatus: Bool?,
         notionSyncComments: Bool?,
         notionStatusProperty: String?,
-        notionVotesProperty: String?
+        notionVotesProperty: String?,
+        notionIsActive: Bool?
     ) async throws -> Project {
         let path = "projects/\(projectId)/notion"
         let body = UpdateProjectNotionRequest(
@@ -928,7 +935,8 @@ actor AdminAPIClient {
             notionSyncStatus: notionSyncStatus,
             notionSyncComments: notionSyncComments,
             notionStatusProperty: notionStatusProperty,
-            notionVotesProperty: notionVotesProperty
+            notionVotesProperty: notionVotesProperty,
+            notionIsActive: notionIsActive
         )
 
         AppLogger.api.info("🟠 PATCH \(path) (Notion settings)")
@@ -1031,7 +1039,8 @@ actor AdminAPIClient {
         mondaySyncStatus: Bool?,
         mondaySyncComments: Bool?,
         mondayStatusColumnId: String?,
-        mondayVotesColumnId: String?
+        mondayVotesColumnId: String?,
+        mondayIsActive: Bool?
     ) async throws -> Project {
         let path = "projects/\(projectId)/monday"
         let body = UpdateProjectMondayRequest(
@@ -1043,7 +1052,8 @@ actor AdminAPIClient {
             mondaySyncStatus: mondaySyncStatus,
             mondaySyncComments: mondaySyncComments,
             mondayStatusColumnId: mondayStatusColumnId,
-            mondayVotesColumnId: mondayVotesColumnId
+            mondayVotesColumnId: mondayVotesColumnId,
+            mondayIsActive: mondayIsActive
         )
 
         AppLogger.api.info("🟠 PATCH \(path) (Monday.com settings)")

@@ -1035,36 +1035,30 @@ struct DashboardKanbanCardView: View {
         viewModel.isSelected(feedback.id)
     }
 
+    private var hasAnyIntegration: Bool {
+        feedback.hasGitHubIssue || feedback.hasClickUpTask || feedback.hasNotionPage ||
+        feedback.hasMondayItem || feedback.hasLinearIssue
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .center, spacing: 6) {
                 FeedbackCategoryBadge(category: feedback.category)
                 MrrBadge(mrr: feedback.formattedMrr)
                 if feedback.hasMergedFeedback {
                     MergeBadge(count: feedback.mergedCount)
                 }
-                if feedback.hasGitHubIssue {
-                    GitHubBadge()
-                }
-                if feedback.hasClickUpTask {
-                    ClickUpBadge()
-                }
-                if feedback.hasNotionPage {
-                    NotionBadge()
-                }
-                if feedback.hasMondayItem {
-                    MondayBadge()
-                }
-                if feedback.hasLinearIssue {
-                    LinearBadge()
-                }
                 Spacer()
+                // Integration icons (compact circular icons)
+                if hasAnyIntegration {
+                    IntegrationsRow(feedback: feedback)
+                }
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.blue)
                         .font(.caption)
                 }
-                HStack(spacing: 4) {
+                HStack(spacing: 3) {
                     Image(systemName: "arrow.up")
                         .font(.caption2)
                     Text("\(feedback.voteCount)")

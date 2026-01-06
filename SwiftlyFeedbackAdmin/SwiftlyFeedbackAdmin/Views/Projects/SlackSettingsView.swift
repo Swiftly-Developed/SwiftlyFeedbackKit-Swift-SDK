@@ -9,6 +9,7 @@ struct SlackSettingsView: View {
     @State private var notifyNewFeedback: Bool
     @State private var notifyNewComments: Bool
     @State private var notifyStatusChanges: Bool
+    @State private var isActive: Bool
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -17,13 +18,15 @@ struct SlackSettingsView: View {
         _notifyNewFeedback = State(initialValue: project.slackNotifyNewFeedback)
         _notifyNewComments = State(initialValue: project.slackNotifyNewComments)
         _notifyStatusChanges = State(initialValue: project.slackNotifyStatusChanges)
+        _isActive = State(initialValue: project.slackIsActive)
     }
 
     private var hasChanges: Bool {
         webhookURL != (project.slackWebhookUrl ?? "") ||
         notifyNewFeedback != project.slackNotifyNewFeedback ||
         notifyNewComments != project.slackNotifyNewComments ||
-        notifyStatusChanges != project.slackNotifyStatusChanges
+        notifyStatusChanges != project.slackNotifyStatusChanges ||
+        isActive != project.slackIsActive
     }
 
     private var isWebhookConfigured: Bool {
@@ -33,6 +36,14 @@ struct SlackSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isWebhookConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, no Slack notifications will be sent even if configured.")
+                    }
+                }
+
                 Section {
                     TextEditor(text: $webhookURL)
                         .font(.system(.body, design: .monospaced))
@@ -124,7 +135,8 @@ struct SlackSettingsView: View {
                 slackWebhookUrl: trimmedURL.isEmpty ? "" : trimmedURL,
                 slackNotifyNewFeedback: notifyNewFeedback,
                 slackNotifyNewComments: notifyNewComments,
-                slackNotifyStatusChanges: notifyStatusChanges
+                slackNotifyStatusChanges: notifyStatusChanges,
+                slackIsActive: isActive
             )
             if success {
                 dismiss()
@@ -153,6 +165,7 @@ struct SlackSettingsView: View {
             slackNotifyNewFeedback: true,
             slackNotifyNewComments: true,
             slackNotifyStatusChanges: true,
+            slackIsActive: true,
             allowedStatuses: ["pending", "approved", "in_progress", "completed", "rejected"]
         ),
         viewModel: ProjectViewModel()

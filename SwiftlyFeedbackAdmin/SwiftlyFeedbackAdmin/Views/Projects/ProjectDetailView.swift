@@ -496,7 +496,8 @@ struct ProjectDetailView: View {
                         icon: "number",
                         iconColor: Color(red: 0.24, green: 0.58, blue: 0.55),
                         name: "Slack",
-                        detail: "Notifications enabled"
+                        detail: project.slackIsActive ? "Notifications enabled" : "Paused",
+                        isActive: project.slackIsActive
                     ) {
                         showingSlackSheet = true
                     }
@@ -511,7 +512,8 @@ struct ProjectDetailView: View {
                         icon: "arrow.triangle.branch",
                         iconColor: .black,
                         name: "GitHub",
-                        detail: "\(project.githubOwner ?? "")/\(project.githubRepo ?? "")"
+                        detail: project.githubIsActive ? "\(project.githubOwner ?? "")/\(project.githubRepo ?? "")" : "Paused",
+                        isActive: project.githubIsActive
                     ) {
                         showingGitHubSheet = true
                     }
@@ -526,7 +528,8 @@ struct ProjectDetailView: View {
                         icon: "checklist",
                         iconColor: Color(red: 0.49, green: 0.31, blue: 0.83),
                         name: "ClickUp",
-                        detail: project.clickupListName ?? "Connected"
+                        detail: project.clickupIsActive ? (project.clickupListName ?? "Connected") : "Paused",
+                        isActive: project.clickupIsActive
                     ) {
                         showingClickUpSheet = true
                     }
@@ -541,7 +544,8 @@ struct ProjectDetailView: View {
                         icon: "doc.text",
                         iconColor: .black,
                         name: "Notion",
-                        detail: project.notionDatabaseName ?? "Connected"
+                        detail: project.notionIsActive ? (project.notionDatabaseName ?? "Connected") : "Paused",
+                        isActive: project.notionIsActive
                     ) {
                         showingNotionSheet = true
                     }
@@ -556,7 +560,8 @@ struct ProjectDetailView: View {
                         icon: "calendar",
                         iconColor: Color(red: 1.0, green: 0.27, blue: 0.38),
                         name: "Monday.com",
-                        detail: project.mondayBoardName ?? "Connected"
+                        detail: project.mondayIsActive ? (project.mondayBoardName ?? "Connected") : "Paused",
+                        isActive: project.mondayIsActive
                     ) {
                         showingMondaySheet = true
                     }
@@ -571,7 +576,8 @@ struct ProjectDetailView: View {
                         icon: "arrow.triangle.branch",
                         iconColor: Color(red: 0.35, green: 0.39, blue: 0.95),
                         name: "Linear",
-                        detail: project.linearTeamName ?? "Connected"
+                        detail: project.linearIsActive ? (project.linearTeamName ?? "Connected") : "Paused",
+                        isActive: project.linearIsActive
                     ) {
                         showingLinearSheet = true
                     }
@@ -588,6 +594,7 @@ struct ProjectDetailView: View {
         iconColor: Color,
         name: String,
         detail: String,
+        isActive: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -596,7 +603,7 @@ struct ProjectDetailView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 28, height: 28)
-                    .background(iconColor, in: RoundedRectangle(cornerRadius: 6))
+                    .background(isActive ? iconColor : Color.gray, in: RoundedRectangle(cornerRadius: 6))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name)
@@ -605,7 +612,7 @@ struct ProjectDetailView: View {
 
                     Text(detail)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(isActive ? Color.secondary : Color.orange)
                         .lineLimit(1)
                 }
 

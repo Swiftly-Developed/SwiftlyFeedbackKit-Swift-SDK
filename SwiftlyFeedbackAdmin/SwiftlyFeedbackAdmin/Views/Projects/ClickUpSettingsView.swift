@@ -13,6 +13,7 @@ struct ClickUpSettingsView: View {
     @State private var syncStatus: Bool
     @State private var syncComments: Bool
     @State private var votesFieldId: String
+    @State private var isActive: Bool
     @State private var showingTokenInfo = false
 
     // Hierarchy selection state
@@ -43,6 +44,7 @@ struct ClickUpSettingsView: View {
         _syncStatus = State(initialValue: project.clickupSyncStatus)
         _syncComments = State(initialValue: project.clickupSyncComments)
         _votesFieldId = State(initialValue: project.clickupVotesFieldId ?? "")
+        _isActive = State(initialValue: project.clickupIsActive)
     }
 
     private var hasChanges: Bool {
@@ -53,7 +55,8 @@ struct ClickUpSettingsView: View {
         tagsArray != (project.clickupDefaultTags ?? []) ||
         syncStatus != project.clickupSyncStatus ||
         syncComments != project.clickupSyncComments ||
-        votesFieldId != (project.clickupVotesFieldId ?? "")
+        votesFieldId != (project.clickupVotesFieldId ?? "") ||
+        isActive != project.clickupIsActive
     }
 
     private var isConfigured: Bool {
@@ -75,6 +78,14 @@ struct ClickUpSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isConfigured {
+                    Section {
+                        Toggle("Integration Active", isOn: $isActive)
+                    } footer: {
+                        Text("When disabled, ClickUp sync will be paused.")
+                    }
+                }
+
                 Section {
                     SecureField("API Token", text: $token)
                         .onChange(of: token) { _, newValue in
@@ -339,7 +350,8 @@ struct ClickUpSettingsView: View {
                 clickupDefaultTags: nil,
                 clickupSyncStatus: nil,
                 clickupSyncComments: nil,
-                clickupVotesFieldId: nil
+                clickupVotesFieldId: nil,
+                clickupIsActive: nil
             )
 
             if success {
@@ -404,7 +416,8 @@ struct ClickUpSettingsView: View {
                 clickupDefaultTags: tagsArray.isEmpty ? [] : tagsArray,
                 clickupSyncStatus: syncStatus,
                 clickupSyncComments: syncComments,
-                clickupVotesFieldId: votesFieldId.isEmpty ? "" : votesFieldId
+                clickupVotesFieldId: votesFieldId.isEmpty ? "" : votesFieldId,
+                clickupIsActive: isActive
             )
             if success {
                 dismiss()
