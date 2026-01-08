@@ -1,6 +1,11 @@
 import Foundation
 import Security
 
+/// Keychain storage service for secure token management.
+///
+/// Marked as `nonisolated` to opt out of the project's default MainActor isolation.
+/// Security framework functions are thread-safe and can be called from any context.
+nonisolated
 enum KeychainService {
     private static let service = "com.swiftly-developed.SwiftlyFeedbackAdmin"
     private static let tokenKey = "authToken"

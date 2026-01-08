@@ -25,4 +25,10 @@
    <FileRef
       location = "group:NOTION_IMPLEMENTATION_PLAN.md">
    </FileRef>
+   <FileRef
+      location = "group:PLAN_LINEAR_INTEGRATION.md">
+   </FileRef>
+   <FileRef
+      location = "group:TODO_MONETIZATION.md">
+   </FileRef>
 </Workspace>

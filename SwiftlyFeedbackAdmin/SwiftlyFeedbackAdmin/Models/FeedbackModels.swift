@@ -1,7 +1,13 @@
 import Foundation
 
+// MARK: - Feedback Models
+//
+// All models are marked `nonisolated` to opt out of the project's default MainActor isolation.
+// This allows their Codable conformances to be used from any actor context (e.g., AdminAPIClient).
+
 // MARK: - Feedback
 
+nonisolated
 struct Feedback: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let title: String
@@ -89,6 +95,7 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
 
 // MARK: - Comment
 
+nonisolated
 struct Comment: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let content: String
@@ -99,6 +106,7 @@ struct Comment: Codable, Identifiable, Sendable, Hashable {
 
 // MARK: - Enums
 
+nonisolated
 enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
     case pending
     case approved
@@ -141,6 +149,7 @@ enum FeedbackStatus: String, Codable, CaseIterable, Sendable, Hashable {
     }
 }
 
+nonisolated
 enum FeedbackCategory: String, Codable, CaseIterable, Sendable, Hashable {
     case featureRequest = "feature_request"
     case bugReport = "bug_report"
@@ -168,20 +177,23 @@ enum FeedbackCategory: String, Codable, CaseIterable, Sendable, Hashable {
 
 // MARK: - Request DTOs
 
-struct UpdateFeedbackRequest: Encodable {
+nonisolated
+struct UpdateFeedbackRequest: Encodable, Sendable {
     let title: String?
     let description: String?
     let status: FeedbackStatus?
     let category: FeedbackCategory?
 }
 
-struct CreateCommentRequest: Encodable {
+nonisolated
+struct CreateCommentRequest: Encodable, Sendable {
     let content: String
     let userId: String
     let isAdmin: Bool?
 }
 
-struct CreateFeedbackRequest: Encodable {
+nonisolated
+struct CreateFeedbackRequest: Encodable, Sendable {
     let title: String
     let description: String
     let category: FeedbackCategory
@@ -191,12 +203,14 @@ struct CreateFeedbackRequest: Encodable {
 
 // MARK: - Merge DTOs
 
-struct MergeFeedbackRequest: Encodable {
+nonisolated
+struct MergeFeedbackRequest: Encodable, Sendable {
     let primaryFeedbackId: UUID
     let secondaryFeedbackIds: [UUID]
 }
 
-struct MergeFeedbackResponse: Codable {
+nonisolated
+struct MergeFeedbackResponse: Codable, Sendable {
     let primaryFeedback: Feedback
     let mergedCount: Int
     let totalVotes: Int

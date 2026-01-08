@@ -1,6 +1,12 @@
 import Foundation
 
+// MARK: - SDK User Models
+//
+// All models are marked `nonisolated` to opt out of the project's default MainActor isolation.
+// This allows their Codable conformances to be used from any actor context (e.g., AdminAPIClient).
+
 /// Represents an SDK user (end user of the client app) with their MRR data
+nonisolated
 struct SDKUser: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let userId: String
@@ -47,6 +53,7 @@ struct SDKUser: Codable, Identifiable, Sendable, Hashable {
 /// Statistics for SDK users in a project
 /// Note: Property names use lowercase "mrr" to match Swift's convertFromSnakeCase
 /// (total_mrr → totalMrr, not totalMRR)
+nonisolated
 struct SDKUserStats: Codable, Sendable {
     let totalUsers: Int
     let totalMrr: Double

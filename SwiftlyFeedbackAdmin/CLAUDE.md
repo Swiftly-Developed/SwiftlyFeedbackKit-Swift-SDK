@@ -30,7 +30,8 @@ SwiftlyFeedbackAdmin/
 │   ├── FeedbackViewModel.swift     # Feedback management state
 │   ├── SDKUserViewModel.swift      # SDK user management state
 │   ├── ViewEventViewModel.swift    # View event management state
-│   └── HomeDashboardViewModel.swift # Home dashboard state
+│   ├── HomeDashboardViewModel.swift # Home dashboard state
+│   └── OnboardingViewModel.swift   # Onboarding state + OnboardingManager
 ├── Views/
 │   ├── RootView.swift              # Root navigation
 │   ├── MainTabView.swift           # Tab bar navigation
@@ -42,6 +43,15 @@ SwiftlyFeedbackAdmin/
 │   │   ├── SignupView.swift           # Signup form
 │   │   ├── EmailVerificationView.swift # Email verification screen
 │   │   └── ForgotPasswordView.swift   # Password reset flow
+│   ├── Onboarding/
+│   │   ├── OnboardingContainerView.swift    # Onboarding flow container
+│   │   ├── OnboardingWelcomeView.swift      # Welcome screen
+│   │   ├── OnboardingCreateAccountView.swift # Account creation
+│   │   ├── OnboardingVerifyEmailView.swift  # Email verification
+│   │   ├── OnboardingProjectChoiceView.swift # Create/join choice
+│   │   ├── OnboardingCreateProjectView.swift # Project creation
+│   │   ├── OnboardingJoinProjectView.swift  # Join via invite
+│   │   └── OnboardingCompletionView.swift   # Success screen
 │   ├── Projects/
 │   │   ├── ProjectListView.swift      # Project list with 3 view modes (list/table/grid)
 │   │   ├── ProjectDetailView.swift    # Project details & feedback
@@ -72,6 +82,59 @@ SwiftlyFeedbackAdmin/
     ├── KeychainService.swift       # Secure token storage
     └── Logger.swift                # Centralized OSLog logging categories
 ```
+
+## Onboarding Flow
+
+New users are guided through a multi-step onboarding process before accessing the main app:
+
+### Steps
+1. **Welcome** (`OnboardingWelcomeView`) - App introduction with feature highlights
+2. **Create Account** (`OnboardingCreateAccountView`) - Name, email, password form
+3. **Verify Email** (`OnboardingVerifyEmailView`) - 8-character verification code
+4. **Project Choice** (`OnboardingProjectChoiceView`) - Create new or join existing project
+5. **Create/Join Project** (`OnboardingCreateProjectView` / `OnboardingJoinProjectView`)
+6. **Completion** (`OnboardingCompletionView`) - Success screen with next steps
+
+### Files
+```
+Views/Onboarding/
+├── OnboardingContainerView.swift      # Main container managing step transitions
+├── OnboardingWelcomeView.swift        # Welcome screen with FeedbackKit logo
+├── OnboardingCreateAccountView.swift  # Account creation form
+├── OnboardingVerifyEmailView.swift    # Email verification code entry
+├── OnboardingProjectChoiceView.swift  # Create or join project choice
+├── OnboardingCreateProjectView.swift  # New project form
+├── OnboardingJoinProjectView.swift    # Join via invite code
+└── OnboardingCompletionView.swift     # Success and next steps
+
+ViewModels/
+└── OnboardingViewModel.swift          # Onboarding state + OnboardingManager
+```
+
+### OnboardingManager
+Singleton managing onboarding completion state via `UserDefaults`:
+- `hasCompletedOnboarding` - Tracked stored property for SwiftUI observation
+- `completeOnboarding()` - Marks onboarding as complete
+- `resetOnboarding()` - Resets for testing (available in Developer Commands)
+
+**Important**: Uses a stored property (not computed) so `@Observable` can track changes.
+
+### Platform-Adaptive Design (Apple HIG)
+All onboarding views follow Apple Human Interface Guidelines:
+- **44pt minimum touch targets** for all interactive elements
+- **Platform-specific layouts**: Grid for iPad/Mac, list for iPhone
+- **`@Environment(\.horizontalSizeClass)`** for responsive sizing
+- **`GeometryReader`** for dynamic spacing based on screen size
+- **`#if os(macOS)` / `#else`** for platform-specific code
+- **Accessibility**: Labels, hints, and traits on all interactive elements
+
+### RootView Integration
+`RootView.swift` manages navigation based on auth and onboarding state:
+- Not authenticated + not onboarded → `OnboardingContainerView`
+- Not authenticated + onboarded → `AuthContainerView` (login)
+- Authenticated + needs verification → `EmailVerificationView`
+- Authenticated + not onboarded → `OnboardingPostAuthView`
+- Authenticated + onboarded → `MainTabView`
 
 ## Authentication Flow
 
@@ -341,6 +404,7 @@ Key patterns:
 - **Generate Dummy Projects**: Create test projects with random names
 - **Generate Dummy Feedback**: Add test feedback items to a project
 - **Generate Dummy Comments**: Add test comments to existing feedback
+- **Reset Onboarding**: Reset onboarding state (sign out required to see welcome screen)
 - **Clear All Feedback**: Delete all feedback for a project
 - **Delete All My Projects**: Remove all projects owned by the user
 

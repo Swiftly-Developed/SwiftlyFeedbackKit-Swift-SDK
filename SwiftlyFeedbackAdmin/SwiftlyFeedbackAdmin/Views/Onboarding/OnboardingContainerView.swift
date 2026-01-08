@@ -1,96 +1,88 @@
 import SwiftUI
 
-struct RootView: View {
-    @State private var authViewModel = AuthViewModel()
-    @State private var projectViewModel = ProjectViewModel()
-    @State private var onboardingManager = OnboardingManager.shared
-
-    var body: some View {
-        Group {
-            if authViewModel.isAuthenticated {
-                if authViewModel.needsEmailVerification {
-                    // User is authenticated but needs email verification
-                    // This handles returning users who haven't verified yet
-                    EmailVerificationView(viewModel: authViewModel)
-                } else if !onboardingManager.hasCompletedOnboarding {
-                    // User is authenticated and verified but hasn't completed onboarding
-                    // Show project choice and completion steps
-                    OnboardingPostAuthView(
-                        authViewModel: authViewModel,
-                        projectViewModel: projectViewModel
-                    )
-                } else {
-                    // Fully authenticated and onboarded user
-                    MainTabView(authViewModel: authViewModel)
-                }
-            } else {
-                // Not authenticated - show onboarding or login
-                if !onboardingManager.hasCompletedOnboarding {
-                    OnboardingContainerView(
-                        authViewModel: authViewModel,
-                        projectViewModel: projectViewModel
-                    )
-                } else {
-                    // Returning user who has completed onboarding before
-                    AuthContainerView(viewModel: authViewModel)
-                }
-            }
-        }
-        .animation(.default, value: authViewModel.isAuthenticated)
-        .animation(.default, value: authViewModel.needsEmailVerification)
-        .animation(.default, value: onboardingManager.hasCompletedOnboarding)
-    }
-}
-
-/// View shown to authenticated users who haven't completed the project setup part of onboarding
-struct OnboardingPostAuthView: View {
+struct OnboardingContainerView: View {
     @Bindable var authViewModel: AuthViewModel
     @Bindable var projectViewModel: ProjectViewModel
     @State private var onboardingViewModel: OnboardingViewModel?
 
+    // Track if we're showing login flow instead of onboarding
+    @State private var showLoginFlow = false
+
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     var body: some View {
         Group {
-            if let viewModel = onboardingViewModel {
-                postAuthContent(viewModel: viewModel)
+            if showLoginFlow {
+                // Standard login flow for existing users
+                AuthContainerView(viewModel: authViewModel)
+            } else if let viewModel = onboardingViewModel {
+                // Onboarding flow for new users
+                onboardingContent(viewModel: viewModel)
             } else {
+                // Loading state
                 ProgressView()
                     .onAppear {
-                        let vm = OnboardingViewModel(
+                        onboardingViewModel = OnboardingViewModel(
                             authViewModel: authViewModel,
                             projectViewModel: projectViewModel
                         )
-                        // Start at project choice since user is already authenticated
-                        vm.currentStep = .projectChoice
-                        onboardingViewModel = vm
                     }
+                    .accessibilityLabel("Loading onboarding")
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: showLoginFlow)
     }
 
     @ViewBuilder
-    private func postAuthContent(viewModel: OnboardingViewModel) -> some View {
+    private func onboardingContent(viewModel: OnboardingViewModel) -> some View {
         ZStack {
+            // Background
             backgroundColor
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Progress Bar
-                OnboardingProgressBar(progress: viewModel.currentStep.progress)
-                    .padding(.horizontal, 32)
+                // Progress Bar (shown after welcome screen)
+                if viewModel.currentStep != .welcome {
+                    OnboardingProgressBar(
+                        progress: viewModel.currentStep.progress,
+                        isCompact: isCompactWidth
+                    )
+                    .padding(.horizontal, progressBarPadding)
                     .padding(.top, 16)
+                    .transition(.opacity)
+                }
 
                 // Content
                 Group {
                     switch viewModel.currentStep {
-                    case .welcome, .createAccount, .verifyEmail:
-                        // These shouldn't happen in post-auth flow, redirect to project choice
-                        OnboardingProjectChoiceView(
-                            viewModel: viewModel,
-                            userName: authViewModel.currentUser?.name
+                    case .welcome:
+                        OnboardingWelcomeView(
+                            onContinue: {
+                                viewModel.goToNextStep()
+                            },
+                            onLogin: {
+                                showLoginFlow = true
+                            }
                         )
-                        .onAppear {
-                            viewModel.currentStep = .projectChoice
-                        }
+
+                    case .createAccount:
+                        OnboardingCreateAccountView(
+                            viewModel: viewModel,
+                            onBack: {
+                                viewModel.goToPreviousStep()
+                            }
+                        )
+
+                    case .verifyEmail:
+                        OnboardingVerifyEmailView(
+                            viewModel: viewModel,
+                            userEmail: authViewModel.currentUser?.email,
+                            onLogout: {
+                                Task {
+                                    await viewModel.logout()
+                                }
+                            }
+                        )
 
                     case .projectChoice:
                         OnboardingProjectChoiceView(
@@ -137,6 +129,24 @@ struct OnboardingPostAuthView: View {
         .animation(.easeInOut(duration: 0.3), value: viewModel.currentStep)
     }
 
+    // MARK: - Platform-Adaptive Properties
+
+    private var isCompactWidth: Bool {
+        #if os(iOS)
+        return horizontalSizeClass == .compact
+        #else
+        return false
+        #endif
+    }
+
+    private var progressBarPadding: CGFloat {
+        #if os(macOS)
+        return 80
+        #else
+        return isCompactWidth ? 24 : 80
+        #endif
+    }
+
     private var backgroundColor: Color {
         #if os(macOS)
         Color(nsColor: .windowBackgroundColor)
@@ -146,17 +156,22 @@ struct OnboardingPostAuthView: View {
     }
 }
 
+// MARK: - Progress Bar Component
+
 private struct OnboardingProgressBar: View {
     let progress: Double
+    let isCompact: Bool
 
     var body: some View {
         VStack(spacing: 8) {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
+                    // Background track
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.secondary.opacity(0.2))
-                        .frame(height: 8)
+                        .frame(height: barHeight)
 
+                    // Progress fill
                     RoundedRectangle(cornerRadius: 4)
                         .fill(
                             LinearGradient(
@@ -165,19 +180,39 @@ private struct OnboardingProgressBar: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: geometry.size.width * progress, height: 8)
+                        .frame(width: geometry.size.width * progress, height: barHeight)
                         .animation(.easeInOut(duration: 0.3), value: progress)
                 }
             }
-            .frame(height: 8)
+            .frame(height: barHeight)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Progress: \(Int(progress * 100)) percent complete")
+            .accessibilityValue("\(Int(progress * 100)) percent")
 
+            // Progress text
             Text("\(Int(progress * 100))% complete")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
+    }
+
+    private var barHeight: CGFloat {
+        isCompact ? 6 : 8
     }
 }
 
-#Preview {
-    RootView()
+#Preview("Welcome") {
+    OnboardingContainerView(
+        authViewModel: AuthViewModel(),
+        projectViewModel: ProjectViewModel()
+    )
+}
+
+#Preview("Welcome - iPad") {
+    OnboardingContainerView(
+        authViewModel: AuthViewModel(),
+        projectViewModel: ProjectViewModel()
+    )
+    .previewDevice("iPad Pro (11-inch)")
 }

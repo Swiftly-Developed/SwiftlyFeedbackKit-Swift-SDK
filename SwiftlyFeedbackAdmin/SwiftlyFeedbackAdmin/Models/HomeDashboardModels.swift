@@ -1,7 +1,13 @@
 import Foundation
 
+// MARK: - Home Dashboard Models
+//
+// All models are marked `nonisolated` to opt out of the project's default MainActor isolation.
+// This allows their Codable conformances to be used from any actor context (e.g., AdminAPIClient).
+
 // MARK: - Feedback Statistics by Status
 
+nonisolated
 struct FeedbackByStatus: Codable, Equatable, Sendable {
     let pending: Int
     let approved: Int
@@ -37,6 +43,7 @@ struct FeedbackByStatus: Codable, Equatable, Sendable {
 
 // MARK: - Feedback Statistics by Category
 
+nonisolated
 struct FeedbackByCategory: Codable, Equatable, Sendable {
     let featureRequest: Int
     let bugReport: Int
@@ -50,6 +57,7 @@ struct FeedbackByCategory: Codable, Equatable, Sendable {
 
 // MARK: - Per-Project Statistics
 
+nonisolated
 struct ProjectStats: Codable, Identifiable, Equatable, Sendable {
     let id: UUID
     let name: String
@@ -65,6 +73,7 @@ struct ProjectStats: Codable, Identifiable, Equatable, Sendable {
 
 // MARK: - Home Dashboard Overview
 
+nonisolated
 struct HomeDashboard: Codable, Equatable, Sendable {
     let totalProjects: Int
     let totalFeedback: Int

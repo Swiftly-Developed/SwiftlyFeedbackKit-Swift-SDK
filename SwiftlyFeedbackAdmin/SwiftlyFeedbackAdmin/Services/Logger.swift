@@ -22,7 +22,8 @@ import OSLog
 // MARK: - Private State
 
 /// Subsystem identifier for OSLog.
-private let loggerSubsystem = "com.swiftlyfeedback.admin"
+/// Using nonisolated(unsafe) to opt out of MainActor isolation since this is a constant string.
+private nonisolated let loggerSubsystem = "com.swiftlyfeedback.admin"
 
 /// Thread-safe logging enabled flag.
 /// Using nonisolated(unsafe) is appropriate here because:

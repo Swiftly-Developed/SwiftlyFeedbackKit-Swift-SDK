@@ -1,6 +1,12 @@
 import Foundation
 
+// MARK: - View Event Models
+//
+// All models are marked `nonisolated` to opt out of the project's default MainActor isolation.
+// This allows their Codable conformances to be used from any actor context (e.g., AdminAPIClient).
+
 /// Represents a view event tracked from the SDK
+nonisolated
 struct ViewEvent: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let eventName: String
@@ -43,6 +49,7 @@ struct ViewEvent: Codable, Identifiable, Sendable, Hashable {
 }
 
 /// Statistics for a specific event type
+nonisolated
 struct ViewEventStats: Codable, Sendable {
     let eventName: String
     let totalCount: Int
@@ -50,6 +57,7 @@ struct ViewEventStats: Codable, Sendable {
 }
 
 /// Overview of all view events for a project
+nonisolated
 struct ViewEventsOverview: Codable, Sendable {
     let totalEvents: Int
     let uniqueUsers: Int
@@ -59,6 +67,7 @@ struct ViewEventsOverview: Codable, Sendable {
 }
 
 /// Daily statistics for events
+nonisolated
 struct DailyEventStats: Codable, Sendable, Identifiable {
     let date: String  // ISO date string (YYYY-MM-DD)
     let totalCount: Int

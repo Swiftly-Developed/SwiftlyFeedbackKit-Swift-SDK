@@ -1,5 +1,59 @@
 import SwiftUI
 
+struct FeedbackCardView: View {
+    let feedback: Feedback
+    let onVote: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+
+    private var cardBackground: Color {
+        #if os(macOS)
+        colorScheme == .dark ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1)
+        #else
+        colorScheme == .dark ? Color(.systemGray5) : Color(.systemGray6)
+        #endif
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            if config.showVoteCount {
+                VoteButton(
+                    voteCount: feedback.voteCount,
+                    hasVoted: feedback.hasVoted,
+                    status: feedback.status,
+                    action: onVote
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(feedback.title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+
+                Text(feedback.description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(config.expandDescriptionInList ? nil : 2)
+                    .multilineTextAlignment(.leading)
+
+                FeedbackRowMetadataView(feedback: feedback)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(12)
+        .background(cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
 struct FeedbackRowView: View {
     let feedback: Feedback
     let onVote: () -> Void

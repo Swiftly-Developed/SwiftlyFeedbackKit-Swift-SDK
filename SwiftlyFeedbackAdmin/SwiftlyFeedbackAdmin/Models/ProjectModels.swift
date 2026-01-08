@@ -1,5 +1,11 @@
 import Foundation
 
+// MARK: - Project Models
+//
+// All models are marked `nonisolated` to opt out of the project's default MainActor isolation.
+// This allows their Codable conformances to be used from any actor context (e.g., AdminAPIClient).
+
+nonisolated
 struct Project: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let name: String
@@ -338,6 +344,7 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     }
 }
 
+nonisolated
 struct ProjectListItem: Codable, Identifiable, Sendable {
     let id: UUID
     let name: String
@@ -360,6 +367,7 @@ extension ProjectListItem: Hashable {
     }
 }
 
+nonisolated
 struct ProjectMember: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let userId: UUID
@@ -369,6 +377,7 @@ struct ProjectMember: Codable, Identifiable, Sendable, Hashable {
     let createdAt: Date?
 }
 
+nonisolated
 enum ProjectRole: String, Codable, CaseIterable, Sendable, Hashable {
     case admin
     case member
@@ -391,18 +400,21 @@ enum ProjectRole: String, Codable, CaseIterable, Sendable, Hashable {
     }
 }
 
-struct CreateProjectRequest: Encodable {
+nonisolated
+struct CreateProjectRequest: Encodable, Sendable {
     let name: String
     let description: String?
 }
 
-struct UpdateProjectRequest: Encodable {
+nonisolated
+struct UpdateProjectRequest: Encodable, Sendable {
     let name: String?
     let description: String?
     let colorIndex: Int?
 }
 
-struct UpdateProjectSlackRequest: Encodable {
+nonisolated
+struct UpdateProjectSlackRequest: Encodable, Sendable {
     let slackWebhookUrl: String?
     let slackNotifyNewFeedback: Bool?
     let slackNotifyNewComments: Bool?
@@ -410,13 +422,15 @@ struct UpdateProjectSlackRequest: Encodable {
     let slackIsActive: Bool?
 }
 
-struct UpdateProjectStatusesRequest: Encodable {
+nonisolated
+struct UpdateProjectStatusesRequest: Encodable, Sendable {
     let allowedStatuses: [String]
 }
 
 // MARK: - GitHub Integration
 
-struct UpdateProjectGitHubRequest: Encodable {
+nonisolated
+struct UpdateProjectGitHubRequest: Encodable, Sendable {
     let githubOwner: String?
     let githubRepo: String?
     let githubToken: String?
@@ -425,30 +439,35 @@ struct UpdateProjectGitHubRequest: Encodable {
     let githubIsActive: Bool?
 }
 
-struct CreateGitHubIssueRequest: Encodable {
+nonisolated
+struct CreateGitHubIssueRequest: Encodable, Sendable {
     let feedbackId: UUID
     let additionalLabels: [String]?
 }
 
-struct CreateGitHubIssueResponse: Decodable {
+nonisolated
+struct CreateGitHubIssueResponse: Decodable, Sendable {
     let feedbackId: UUID
     let issueUrl: String
     let issueNumber: Int
 }
 
-struct BulkCreateGitHubIssuesRequest: Encodable {
+nonisolated
+struct BulkCreateGitHubIssuesRequest: Encodable, Sendable {
     let feedbackIds: [UUID]
     let additionalLabels: [String]?
 }
 
-struct BulkCreateGitHubIssuesResponse: Decodable {
+nonisolated
+struct BulkCreateGitHubIssuesResponse: Decodable, Sendable {
     let created: [CreateGitHubIssueResponse]
     let failed: [UUID]
 }
 
 // MARK: - ClickUp Integration
 
-struct UpdateProjectClickUpRequest: Encodable {
+nonisolated
+struct UpdateProjectClickUpRequest: Encodable, Sendable {
     let clickupToken: String?
     let clickupListId: String?
     let clickupWorkspaceName: String?
@@ -460,63 +479,75 @@ struct UpdateProjectClickUpRequest: Encodable {
     let clickupIsActive: Bool?
 }
 
-struct CreateClickUpTaskRequest: Encodable {
+nonisolated
+struct CreateClickUpTaskRequest: Encodable, Sendable {
     let feedbackId: UUID
     let additionalTags: [String]?
 }
 
-struct CreateClickUpTaskResponse: Decodable {
+nonisolated
+struct CreateClickUpTaskResponse: Decodable, Sendable {
     let feedbackId: UUID
     let taskUrl: String
     let taskId: String
 }
 
-struct BulkCreateClickUpTasksRequest: Encodable {
+nonisolated
+struct BulkCreateClickUpTasksRequest: Encodable, Sendable {
     let feedbackIds: [UUID]
     let additionalTags: [String]?
 }
 
-struct BulkCreateClickUpTasksResponse: Decodable {
+nonisolated
+struct BulkCreateClickUpTasksResponse: Decodable, Sendable {
     let created: [CreateClickUpTaskResponse]
     let failed: [UUID]
 }
 
 // ClickUp hierarchy models
-struct ClickUpWorkspace: Codable, Identifiable, Hashable {
+nonisolated
+struct ClickUpWorkspace: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
 }
 
-struct ClickUpSpace: Codable, Identifiable, Hashable {
+nonisolated
+struct ClickUpSpace: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
 }
 
-struct ClickUpFolder: Codable, Identifiable, Hashable {
+nonisolated
+struct ClickUpFolder: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
 }
 
-struct ClickUpList: Codable, Identifiable, Hashable {
+nonisolated
+struct ClickUpList: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
 }
 
-struct ClickUpCustomField: Codable, Identifiable, Hashable {
+nonisolated
+struct ClickUpCustomField: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let type: String
 }
 
-struct AddMemberRequest: Encodable {
+nonisolated
+struct AddMemberRequest: Encodable, Sendable {
     let email: String
     let role: ProjectRole
 }
 
-struct UpdateMemberRoleRequest: Encodable {
+nonisolated
+struct UpdateMemberRoleRequest: Encodable, Sendable {
     let role: ProjectRole
 }
 
+nonisolated
 struct ProjectInvite: Codable, Identifiable, Sendable, Hashable {
     let id: UUID
     let email: String
@@ -526,16 +557,19 @@ struct ProjectInvite: Codable, Identifiable, Sendable, Hashable {
     let createdAt: Date?
 }
 
+nonisolated
 struct AddMemberResponse: Codable, Sendable {
     let member: ProjectMember?
     let invite: ProjectInvite?
     let inviteSent: Bool
 }
 
-struct AcceptInviteRequest: Encodable {
+nonisolated
+struct AcceptInviteRequest: Encodable, Sendable {
     let code: String
 }
 
+nonisolated
 struct InvitePreview: Codable, Sendable {
     let projectName: String
     let projectDescription: String?
@@ -546,6 +580,7 @@ struct InvitePreview: Codable, Sendable {
     let inviteEmail: String
 }
 
+nonisolated
 struct AcceptInviteResponse: Codable, Sendable {
     let projectId: UUID
     let projectName: String
@@ -554,7 +589,8 @@ struct AcceptInviteResponse: Codable, Sendable {
 
 // MARK: - Notion Integration
 
-struct UpdateProjectNotionRequest: Encodable {
+nonisolated
+struct UpdateProjectNotionRequest: Encodable, Sendable {
     let notionToken: String?
     let notionDatabaseId: String?
     let notionDatabaseName: String?
@@ -565,32 +601,38 @@ struct UpdateProjectNotionRequest: Encodable {
     let notionIsActive: Bool?
 }
 
-struct CreateNotionPageRequest: Encodable {
+nonisolated
+struct CreateNotionPageRequest: Encodable, Sendable {
     let feedbackId: UUID
 }
 
-struct CreateNotionPageResponse: Decodable {
+nonisolated
+struct CreateNotionPageResponse: Decodable, Sendable {
     let feedbackId: UUID
     let pageUrl: String
     let pageId: String
 }
 
-struct BulkCreateNotionPagesRequest: Encodable {
+nonisolated
+struct BulkCreateNotionPagesRequest: Encodable, Sendable {
     let feedbackIds: [UUID]
 }
 
-struct BulkCreateNotionPagesResponse: Decodable {
+nonisolated
+struct BulkCreateNotionPagesResponse: Decodable, Sendable {
     let created: [CreateNotionPageResponse]
     let failed: [UUID]
 }
 
-struct NotionDatabase: Codable, Identifiable, Hashable {
+nonisolated
+struct NotionDatabase: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let properties: [NotionProperty]
 }
 
-struct NotionProperty: Codable, Identifiable, Hashable {
+nonisolated
+struct NotionProperty: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let type: String
@@ -598,7 +640,8 @@ struct NotionProperty: Codable, Identifiable, Hashable {
 
 // MARK: - Monday.com Integration
 
-struct UpdateProjectMondayRequest: Encodable {
+nonisolated
+struct UpdateProjectMondayRequest: Encodable, Sendable {
     let mondayToken: String?
     let mondayBoardId: String?
     let mondayBoardName: String?
@@ -611,36 +654,43 @@ struct UpdateProjectMondayRequest: Encodable {
     let mondayIsActive: Bool?
 }
 
-struct CreateMondayItemRequest: Encodable {
+nonisolated
+struct CreateMondayItemRequest: Encodable, Sendable {
     let feedbackId: UUID
 }
 
-struct CreateMondayItemResponse: Decodable {
+nonisolated
+struct CreateMondayItemResponse: Decodable, Sendable {
     let feedbackId: UUID
     let itemUrl: String
     let itemId: String
 }
 
-struct BulkCreateMondayItemsRequest: Encodable {
+nonisolated
+struct BulkCreateMondayItemsRequest: Encodable, Sendable {
     let feedbackIds: [UUID]
 }
 
-struct BulkCreateMondayItemsResponse: Decodable {
+nonisolated
+struct BulkCreateMondayItemsResponse: Decodable, Sendable {
     let created: [CreateMondayItemResponse]
     let failed: [UUID]
 }
 
-struct MondayBoard: Codable, Identifiable, Hashable {
+nonisolated
+struct MondayBoard: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
 }
 
-struct MondayGroup: Codable, Identifiable, Hashable {
+nonisolated
+struct MondayGroup: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let title: String
 }
 
-struct MondayColumn: Codable, Identifiable, Hashable {
+nonisolated
+struct MondayColumn: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let title: String
     let type: String
@@ -648,7 +698,8 @@ struct MondayColumn: Codable, Identifiable, Hashable {
 
 // MARK: - Linear Integration
 
-struct UpdateProjectLinearRequest: Encodable {
+nonisolated
+struct UpdateProjectLinearRequest: Encodable, Sendable {
     let linearToken: String?
     let linearTeamId: String?
     let linearTeamName: String?
@@ -660,49 +711,57 @@ struct UpdateProjectLinearRequest: Encodable {
     let linearIsActive: Bool?
 }
 
-struct CreateLinearIssueRequest: Encodable {
+nonisolated
+struct CreateLinearIssueRequest: Encodable, Sendable {
     let feedbackId: UUID
     let additionalLabelIds: [String]?
 }
 
-struct CreateLinearIssueResponse: Decodable {
+nonisolated
+struct CreateLinearIssueResponse: Decodable, Sendable {
     let feedbackId: UUID
     let issueUrl: String
     let issueId: String
     let identifier: String
 }
 
-struct BulkCreateLinearIssuesRequest: Encodable {
+nonisolated
+struct BulkCreateLinearIssuesRequest: Encodable, Sendable {
     let feedbackIds: [UUID]
     let additionalLabelIds: [String]?
 }
 
-struct BulkCreateLinearIssuesResponse: Decodable {
+nonisolated
+struct BulkCreateLinearIssuesResponse: Decodable, Sendable {
     let created: [CreateLinearIssueResponse]
     let failed: [UUID]
 }
 
 // Linear hierarchy models
-struct LinearTeam: Codable, Identifiable, Hashable {
+nonisolated
+struct LinearTeam: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let key: String
 }
 
-struct LinearProject: Codable, Identifiable, Hashable {
+nonisolated
+struct LinearProject: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let state: String
 }
 
-struct LinearWorkflowState: Codable, Identifiable, Hashable {
+nonisolated
+struct LinearWorkflowState: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let type: String
     let position: Double
 }
 
-struct LinearLabel: Codable, Identifiable, Hashable {
+nonisolated
+struct LinearLabel: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let color: String

@@ -437,10 +437,9 @@ final class FeedbackViewModel {
                 feedbackId: feedbackId
             )
 
-            // Update local feedback with GitHub issue info
-            if let index = feedbacks.firstIndex(where: { $0.id == feedbackId }) {
-                // We need to reload the feedback to get the updated GitHub fields
-                // since our response only contains the URL and number
+            // Reload feedbacks to get the updated GitHub fields
+            // since our response only contains the URL and number
+            if feedbacks.contains(where: { $0.id == feedbackId }) {
                 await refreshFeedbacks()
             }
 

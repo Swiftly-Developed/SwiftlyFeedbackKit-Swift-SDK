@@ -12,8 +12,11 @@ enum AppEnvironment {
     }
 
     static var isTestFlight: Bool {
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else { return false }
-        return receiptURL.lastPathComponent == "sandboxReceipt"
+        #if  TESTFLIGHT
+        return true
+        #else
+        return false
+        #endif
     }
 
     static var isDeveloperMode: Bool {
@@ -134,6 +137,27 @@ struct DeveloperCommandsView: View {
                     Text("Comments")
                 } footer: {
                     Text("Adds \(commentCount) comment(s) to each feedback item in the selected project.")
+                }
+
+                // Onboarding
+                Section {
+                    HStack {
+                        Text("Onboarding Completed")
+                        Spacer()
+                        Text(OnboardingManager.shared.hasCompletedOnboarding ? "Yes" : "No")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        resetOnboarding()
+                    } label: {
+                        Label("Reset Onboarding", systemImage: "arrow.counterclockwise")
+                    }
+                    .disabled(isGenerating)
+                } header: {
+                    Text("Onboarding")
+                } footer: {
+                    Text("Resets the onboarding flow. You'll need to sign out to see the welcome screen again.")
                 }
 
                 // Danger Zone
@@ -427,6 +451,16 @@ struct DeveloperCommandsView: View {
             success: true,
             message: "Deleted \(deleted) project(s)",
             details: []
+        )
+        showingResult = true
+    }
+
+    private func resetOnboarding() {
+        OnboardingManager.shared.resetOnboarding()
+        generationResult = GenerationResult(
+            success: true,
+            message: "Onboarding has been reset",
+            details: ["Sign out to see the welcome screen again"]
         )
         showingResult = true
     }
