@@ -2,7 +2,7 @@ import Vapor
 
 func routes(_ app: Application) throws {
     app.get { req in
-        "SwiftlyFeedback API Server"
+        "Feedback Kit API Server"
     }
 
     app.get("health") { req in

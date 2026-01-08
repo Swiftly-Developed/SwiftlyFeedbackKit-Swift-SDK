@@ -31,10 +31,10 @@ struct EmailService {
             <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
                 <p style="font-size: 16px; margin-bottom: 20px;">Hi there,</p>
                 <p style="font-size: 16px; margin-bottom: 20px;">
-                    <strong>\(inviterName)</strong> has invited you to join <strong>\(projectName)</strong> on Swiftly Feedback as a <strong>\(role.rawValue)</strong>.
+                    <strong>\(inviterName)</strong> has invited you to join <strong>\(projectName)</strong> on Feedback Kit as a <strong>\(role.rawValue)</strong>.
                 </p>
                 <p style="font-size: 16px; margin-bottom: 25px;">
-                    Swiftly Feedback helps teams collect and manage user feedback for their apps.
+                    Feedback Kit helps teams collect and manage user feedback for their apps.
                 </p>
                 <p style="font-size: 16px; margin-bottom: 10px; text-align: center;">
                     Your invite code is:
@@ -45,10 +45,10 @@ struct EmailService {
                     </div>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-top: 25px; text-align: center;">
-                    Open the Swiftly Feedback app and enter this code to accept your invitation.
+                    Open the Feedback Kit app and enter this code to accept your invitation.
                 </p>
                 <p style="font-size: 14px; color: #666; margin-top: 10px; text-align: center;">
-                    If you don't have a Swiftly Feedback account yet, create one first, then enter this code.
+                    If you don't have a Feedback Kit account yet, create one first, then enter this code.
                 </p>
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
@@ -60,7 +60,7 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: [email],
             subject: "\(inviterName) invited you to \(projectName)",
             html: html
@@ -88,7 +88,7 @@ struct EmailService {
             <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
                 <p style="font-size: 16px; margin-bottom: 20px;">Hi \(userName),</p>
                 <p style="font-size: 16px; margin-bottom: 20px;">
-                    Welcome to Swiftly Feedback! Please verify your email address to complete your registration.
+                    Welcome to Feedback Kit! Please verify your email address to complete your registration.
                 </p>
                 <p style="font-size: 16px; margin-bottom: 10px; text-align: center;">
                     Your verification code is:
@@ -99,14 +99,14 @@ struct EmailService {
                     </div>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-top: 25px; text-align: center;">
-                    Enter this code in the Swiftly Feedback app to verify your email.
+                    Enter this code in the Feedback Kit app to verify your email.
                 </p>
                 <p style="font-size: 14px; color: #666; margin-top: 10px; text-align: center;">
                     This code expires in 24 hours.
                 </p>
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
-                    If you didn't create an account with Swiftly Feedback, you can safely ignore this email.
+                    If you didn't create an account with Feedback Kit, you can safely ignore this email.
                 </p>
             </div>
         </body>
@@ -114,9 +114,9 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: [email],
-            subject: "Verify your email for Swiftly Feedback",
+            subject: "Verify your email for Feedback Kit",
             html: html
         )
 
@@ -157,7 +157,7 @@ struct EmailService {
                     <p style="font-size: 14px; color: #555; margin: 0;">\(truncatedDescription)</p>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-top: 25px; text-align: center;">
-                    Open the Swiftly Feedback app to view and respond to this feedback.
+                    Open the Feedback Kit app to view and respond to this feedback.
                 </p>
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
@@ -169,7 +169,7 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: emails,
             subject: "[\(projectName)] New feedback: \(feedbackTitle)",
             html: html
@@ -215,7 +215,7 @@ struct EmailService {
                     </div>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-top: 25px; text-align: center;">
-                    Open the Swiftly Feedback app to view and respond to this comment.
+                    Open the Feedback Kit app to view and respond to this comment.
                 </p>
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
                 <p style="font-size: 12px; color: #999; text-align: center;">
@@ -227,7 +227,7 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: emails,
             subject: "[\(projectName)] New comment on: \(feedbackTitle)",
             html: html
@@ -300,7 +300,7 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: emails,
             subject: "[\(projectName)] \(statusEmoji) \(feedbackTitle) - \(formattedNewStatus)",
             html: html
@@ -328,7 +328,7 @@ struct EmailService {
             <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 12px 12px;">
                 <p style="font-size: 16px; margin-bottom: 20px;">Hi \(userName),</p>
                 <p style="font-size: 16px; margin-bottom: 20px;">
-                    We received a request to reset your password for your Swiftly Feedback account.
+                    We received a request to reset your password for your Feedback Kit account.
                 </p>
                 <p style="font-size: 16px; margin-bottom: 10px; text-align: center;">
                     Your password reset code is:
@@ -339,7 +339,7 @@ struct EmailService {
                     </div>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-top: 25px; text-align: center;">
-                    Enter this code in the Swiftly Feedback app to reset your password.
+                    Enter this code in the Feedback Kit app to reset your password.
                 </p>
                 <p style="font-size: 14px; color: #e74c3c; margin-top: 10px; text-align: center; font-weight: 600;">
                     This code expires in 1 hour.
@@ -354,9 +354,9 @@ struct EmailService {
         """
 
         let request = ResendEmailRequest(
-            from: "Swiftly Feedback <noreply@swiftly-workspace.com>",
+            from: "Feedback Kit <noreply@swiftly-workspace.com>",
             to: [email],
-            subject: "Reset your Swiftly Feedback password",
+            subject: "Reset your Feedback Kit password",
             html: html
         )
 

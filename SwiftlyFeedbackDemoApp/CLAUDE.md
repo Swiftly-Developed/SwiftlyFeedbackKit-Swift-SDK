@@ -1,6 +1,6 @@
-# CLAUDE.md - SwiftlyFeedbackDemoApp
+# CLAUDE.md - Feedback Kit Demo App
 
-Demo application showcasing SwiftlyFeedbackKit SDK integration.
+Demo application showcasing the Feedback Kit SDK integration.
 
 ## Build & Test
 

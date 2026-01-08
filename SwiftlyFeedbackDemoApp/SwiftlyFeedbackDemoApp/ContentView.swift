@@ -33,7 +33,7 @@ struct ContentView: View {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
             }
-            .navigationTitle("Swiftly Feedback")
+            .navigationTitle("Feedback Kit")
         } detail: {
             HomeView()
         }

@@ -50,7 +50,7 @@ struct SwiftlyFeedbackAdminApp: App {
         SubscriptionService.shared.configure()
 
         // Configure SwiftlyFeedbackKit SDK for in-app feature requests
-        SwiftlyFeedback.configure(with: "sf_fY0dPzpz85eVw04ncj3uYnKtGBISDAiD")
+        SwiftlyFeedback.configure(with: "sf_WJMqm3tWs50hEYP2vl7bu9zjmsC8R25d")
         SwiftlyFeedback.theme.primaryColor = .color(.blue)
     }
 
@@ -58,5 +58,63 @@ struct SwiftlyFeedbackAdminApp: App {
         WindowGroup {
             RootView()
         }
+        #if os(macOS)
+        .commands {
+            DeveloperCommands()
+        }
+        #endif
     }
 }
+
+// MARK: - Developer Commands Menu (macOS)
+
+#if os(macOS)
+struct DeveloperCommands: Commands {
+    var body: some Commands {
+        if AppEnvironment.isDeveloperMode {
+            CommandGroup(after: .appSettings) {
+                Button("Developer Commands...") {
+                    DeveloperCommandsWindowController.shared.showWindow()
+                }
+                .keyboardShortcut("D", modifiers: [.command, .shift])
+            }
+        }
+    }
+}
+
+@MainActor
+final class DeveloperCommandsWindowController {
+    static let shared = DeveloperCommandsWindowController()
+
+    private var window: NSWindow?
+
+    private init() {}
+
+    func showWindow() {
+        if let existingWindow = window, existingWindow.isVisible {
+            existingWindow.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let projectViewModel = ProjectViewModel()
+
+        let contentView = DeveloperCommandsView(projectViewModel: projectViewModel, isStandaloneWindow: true)
+            .frame(minWidth: 500, minHeight: 600)
+
+        let hostingController = NSHostingController(rootView: contentView)
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "Developer Commands"
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.setContentSize(NSSize(width: 550, height: 650))
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+
+        self.window = window
+
+        // Load projects
+        Task {
+            await projectViewModel.loadProjects()
+        }
+    }
+}
+#endif

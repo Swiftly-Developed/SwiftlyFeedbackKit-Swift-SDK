@@ -121,7 +121,7 @@ struct OnboardingCompletionView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .padding(.bottom, bottomPadding)
-                    .accessibilityHint("Complete onboarding and start using SwiftlyFeedback")
+                    .accessibilityHint("Complete onboarding and start using Feedback Kit")
                 }
                 .padding(.horizontal, horizontalPadding)
                 .frame(maxWidth: maxContentWidth)

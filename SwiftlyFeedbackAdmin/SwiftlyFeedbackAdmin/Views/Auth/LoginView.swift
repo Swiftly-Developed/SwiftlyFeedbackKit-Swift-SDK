@@ -19,7 +19,7 @@ struct LoginView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(.blue)
 
-                Text("SwiftlyFeedback")
+                Text("Feedback Kit")
                     .font(.largeTitle)
                     .fontWeight(.bold)
 

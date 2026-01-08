@@ -29,11 +29,13 @@ enum AppEnvironment {
 struct DeveloperCommandsView: View {
     @Bindable var projectViewModel: ProjectViewModel
     @Environment(\.dismiss) private var dismiss
+    var isStandaloneWindow: Bool = false
 
     @State private var selectedProject: ProjectListItem?
     @State private var isGenerating = false
     @State private var generationResult: GenerationResult?
     @State private var showingResult = false
+    @State private var showingFullResetConfirmation = false
 
     // Generation options
     @State private var projectCount = 3
@@ -139,12 +141,13 @@ struct DeveloperCommandsView: View {
                     Text("Adds \(commentCount) comment(s) to each feedback item in the selected project.")
                 }
 
-                // Onboarding
+                // Resets Section
                 Section {
+                    // Onboarding Status
                     HStack {
-                        Text("Onboarding Completed")
+                        Label("Onboarding", systemImage: "figure.walk.arrival")
                         Spacer()
-                        Text(OnboardingManager.shared.hasCompletedOnboarding ? "Yes" : "No")
+                        Text(OnboardingManager.shared.hasCompletedOnboarding ? "Completed" : "Not Completed")
                             .foregroundStyle(.secondary)
                     }
 
@@ -153,21 +156,44 @@ struct DeveloperCommandsView: View {
                     } label: {
                         Label("Reset Onboarding", systemImage: "arrow.counterclockwise")
                     }
+                    .disabled(isGenerating || !OnboardingManager.shared.hasCompletedOnboarding)
+
+                    // Keychain Status
+                    HStack {
+                        Label("Auth Token", systemImage: "key.fill")
+                        Spacer()
+                        Text(KeychainService.getToken() != nil ? "Stored" : "None")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        clearAuthToken()
+                    } label: {
+                        Label("Clear Auth Token", systemImage: "key.slash")
+                    }
+                    .disabled(isGenerating || KeychainService.getToken() == nil)
+
+                    // UserDefaults
+                    Button {
+                        clearUserDefaults()
+                    } label: {
+                        Label("Clear UserDefaults", systemImage: "externaldrive.badge.minus")
+                    }
                     .disabled(isGenerating)
                 } header: {
-                    Text("Onboarding")
+                    Label("Resets", systemImage: "arrow.counterclockwise")
                 } footer: {
-                    Text("Resets the onboarding flow. You'll need to sign out to see the welcome screen again.")
+                    Text("Reset local app state. Sign out may be required for changes to take effect.")
                 }
 
-                // Danger Zone
+                // Danger Zone - Data Deletion
                 Section {
                     Button(role: .destructive) {
                         Task {
                             await clearAllFeedback()
                         }
                     } label: {
-                        Label("Clear All Feedback", systemImage: "trash")
+                        Label("Clear Project Feedback", systemImage: "bubble.left.and.bubble.right")
                     }
                     .disabled(isGenerating || selectedProject == nil)
 
@@ -176,14 +202,37 @@ struct DeveloperCommandsView: View {
                             await clearAllProjects()
                         }
                     } label: {
-                        Label("Delete All My Projects", systemImage: "trash.fill")
+                        Label("Delete All My Projects", systemImage: "folder.badge.minus")
                     }
-                    .disabled(isGenerating)
+                    .disabled(isGenerating || projectViewModel.projects.isEmpty)
                 } header: {
-                    Label("Danger Zone", systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
+                    Label("Data Deletion", systemImage: "trash")
+                        .foregroundStyle(.orange)
                 } footer: {
-                    Text("These actions cannot be undone.")
+                    Text("Delete server data. This affects the selected project or all your projects.")
+                }
+
+                // Full Reset Section (DEBUG only)
+                if AppEnvironment.isDebug {
+                    Section {
+                        Button(role: .destructive) {
+                            showingFullResetConfirmation = true
+                        } label: {
+                            HStack {
+                                Label("Full Database Reset", systemImage: "exclamationmark.triangle.fill")
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                        .disabled(isGenerating)
+                    } header: {
+                        Label("Danger Zone", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    } footer: {
+                        Text("Deletes ALL your data: projects, feedback, comments, and local state. You will be signed out.")
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -192,9 +241,11 @@ struct DeveloperCommandsView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
+                if !isStandaloneWindow {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") {
+                            dismiss()
+                        }
                     }
                 }
             }
@@ -226,6 +277,20 @@ struct DeveloperCommandsView: View {
                             .font(.caption)
                     }
                 }
+            }
+            .confirmationDialog(
+                "Full Database Reset",
+                isPresented: $showingFullResetConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Reset Everything", role: .destructive) {
+                    Task {
+                        await performFullReset()
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will delete ALL your projects, feedback, comments, and reset all local state. You will be signed out. This cannot be undone.")
             }
             .task {
                 // Auto-select first project if available
@@ -463,6 +528,88 @@ struct DeveloperCommandsView: View {
             details: ["Sign out to see the welcome screen again"]
         )
         showingResult = true
+    }
+
+    private func clearAuthToken() {
+        KeychainService.deleteToken()
+        generationResult = GenerationResult(
+            success: true,
+            message: "Auth token cleared",
+            details: ["You will need to sign in again"]
+        )
+        showingResult = true
+    }
+
+    private func clearUserDefaults() {
+        // Clear all UserDefaults for this app
+        if let bundleId = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleId)
+            UserDefaults.standard.synchronize()
+        }
+
+        generationResult = GenerationResult(
+            success: true,
+            message: "UserDefaults cleared",
+            details: ["All local preferences have been reset"]
+        )
+        showingResult = true
+    }
+
+    private func performFullReset() async {
+        isGenerating = true
+        AppLogger.view.info("Performing full database reset...")
+
+        var details: [String] = []
+
+        // 1. Delete all projects (which cascades to feedback, comments, etc.)
+        let projectsToDelete = projectViewModel.projects
+        var deletedProjects = 0
+        for project in projectsToDelete {
+            let success = await projectViewModel.deleteProject(id: project.id)
+            if success {
+                deletedProjects += 1
+            }
+        }
+        details.append("Deleted \(deletedProjects) project(s)")
+
+        // 2. Clear local state
+        OnboardingManager.shared.resetOnboarding()
+        details.append("Reset onboarding")
+
+        if let bundleId = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleId)
+            UserDefaults.standard.synchronize()
+        }
+        details.append("Cleared UserDefaults")
+
+        // 3. Clear auth token (this will trigger sign out)
+        KeychainService.deleteToken()
+        details.append("Cleared auth token")
+
+        isGenerating = false
+
+        generationResult = GenerationResult(
+            success: true,
+            message: "Full reset completed",
+            details: details + ["App will now sign out..."]
+        )
+        showingResult = true
+
+        // Dismiss the window after a short delay to let user see the result
+        try? await Task.sleep(for: .seconds(2))
+
+        // Close window on macOS
+        #if os(macOS)
+        if isStandaloneWindow {
+            await MainActor.run {
+                NSApplication.shared.keyWindow?.close()
+            }
+        } else {
+            dismiss()
+        }
+        #else
+        dismiss()
+        #endif
     }
 }
 

@@ -9,7 +9,9 @@ struct SettingsView: View {
     @State private var showingLogoutConfirmation = false
     @State private var showingChangePassword = false
     @State private var showingDeleteAccount = false
+    #if os(iOS)
     @State private var showingDeveloperCommands = false
+    #endif
     @State private var showingSubscription = false
     @State private var pendingLogout = false
 
@@ -34,14 +36,13 @@ struct SettingsView: View {
                 .presentationDragIndicator(.visible)
                 #endif
             }
+            #if os(iOS)
             .sheet(isPresented: $showingDeveloperCommands) {
                 if let projectViewModel = projectViewModel {
                     DeveloperCommandsView(projectViewModel: projectViewModel)
-                        #if os(macOS)
-                        .frame(minWidth: 500, minHeight: 500)
-                        #endif
                 }
             }
+            #endif
             .onChange(of: showingChangePassword) { _, isShowing in
                 if !isShowing && pendingLogout {
                     pendingLogout = false
@@ -93,10 +94,12 @@ struct SettingsView: View {
             // About Section
             aboutSection
 
-            // Developer Commands (DEBUG or TestFlight only)
+            // Developer Commands (DEBUG or TestFlight only, iOS only - macOS uses menu)
+            #if os(iOS)
             if AppEnvironment.isDeveloperMode, let projectViewModel = projectViewModel {
                 developerSection(projectViewModel: projectViewModel)
             }
+            #endif
 
             // Sign Out Section
             signOutSection
@@ -389,8 +392,9 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Developer Section
+    // MARK: - Developer Section (iOS only - macOS uses menu)
 
+    #if os(iOS)
     @ViewBuilder
     private func developerSection(projectViewModel: ProjectViewModel) -> some View {
         Section {
@@ -415,6 +419,7 @@ struct SettingsView: View {
             Text(AppEnvironment.isDebug ? "DEBUG build detected" : "TestFlight build detected")
         }
     }
+    #endif
 
     // MARK: - Helpers
 

@@ -31,10 +31,10 @@ struct OnboardingWelcomeView: View {
                             .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
                             .scaleEffect(animateLogo ? 1 : 0.8)
                             .opacity(animateLogo ? 1 : 0)
-                            .accessibilityLabel("SwiftlyFeedback app icon")
+                            .accessibilityLabel("Feedback Kit app icon")
 
                         VStack(spacing: 8) {
-                            Text("SwiftlyFeedback")
+                            Text("Feedback Kit")
                                 .font(titleFont)
                                 .fontWeight(.bold)
                                 .accessibilityAddTraits(.isHeader)

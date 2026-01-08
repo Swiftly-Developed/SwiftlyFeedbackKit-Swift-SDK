@@ -154,7 +154,7 @@ struct MacNavigationView: View {
                 .listStyle(.sidebar)
                 .frame(height: 80)
             }
-            .navigationTitle("SwiftlyFeedback")
+            .navigationTitle("Feedback Kit")
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 250)
         } detail: {
             switch selectedSection {

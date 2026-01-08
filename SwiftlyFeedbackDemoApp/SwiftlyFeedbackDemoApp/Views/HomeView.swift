@@ -12,7 +12,7 @@ struct HomeView: View {
             .padding()
         }
         .background(.background.secondary)
-        .navigationTitle("Swiftly Feedback")
+        .navigationTitle("Feedback Kit")
     }
 
     // MARK: - Hero Section
@@ -32,7 +32,7 @@ struct HomeView: View {
                 .bold()
                 .multilineTextAlignment(.center)
 
-            Text("SwiftlyFeedback helps you gather valuable insights from your users, prioritize features, and build better products together.")
+            Text("Feedback Kit helps you gather valuable insights from your users, prioritize features, and build better products together.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
