@@ -1,4 +1,4 @@
-# CLAUDE.md - SwiftlyFeedbackKit
+# CLAUDE.md - Feedback Kit SDK
 
 Swift client SDK with SwiftUI views for integrating feedback into iOS/macOS/visionOS apps.
 
