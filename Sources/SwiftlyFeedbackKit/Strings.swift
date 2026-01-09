@@ -217,12 +217,12 @@ public enum Strings {
         String(localized: "error.invalidApiKey.message", bundle: #bundle)
     }
 
-    public static var errorFeedbackLimitTitle: LocalizedStringResource {
-        LocalizedStringResource("error.feedbackLimit.title", bundle: .forClass(BundleToken.self))
+    public static var errorFeedbackLimitTitle: String {
+        String(localized: "error.feedbackLimit.title", bundle: #bundle)
     }
 
-    public static var errorFeedbackLimitMessage: LocalizedStringResource {
-        LocalizedStringResource("error.feedbackLimit.message", bundle: .forClass(BundleToken.self))
+    public static var errorFeedbackLimitMessage: String {
+        String(localized: "error.feedbackLimit.message", bundle: #bundle)
     }
 
     // MARK: - Feedback Submission Disabled
