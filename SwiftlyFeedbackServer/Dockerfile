@@ -45,13 +45,15 @@ WORKDIR /app
 # Copy built executable from build stage
 COPY --from=build --chown=vapor:vapor /build/.build/release/SwiftlyFeedbackServer /app/SwiftlyFeedbackServer
 
+# Copy startup script
+COPY --chown=vapor:vapor start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Switch to non-root user
 USER vapor
 
 # Expose port (Heroku will set $PORT dynamically)
 EXPOSE 8080
 
-# Start the server
-# Vapor automatically respects $PORT environment variable
-ENTRYPOINT ["./SwiftlyFeedbackServer"]
-CMD ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
+# Start the server using the startup script
+CMD ["/app/start.sh"]
