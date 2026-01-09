@@ -10,6 +10,7 @@ public enum SwiftlyFeedbackError: Error, LocalizedError, Equatable {
     case serverError(statusCode: Int)
     case networkError(underlying: Error)
     case decodingError(underlying: Error)
+    case feedbackLimitReached(message: String?)
 
     public var errorDescription: String? {
         switch self {
@@ -31,6 +32,8 @@ public enum SwiftlyFeedbackError: Error, LocalizedError, Equatable {
             return "Network error: \(error.localizedDescription)"
         case .decodingError(let error):
             return "Failed to decode response: \(error.localizedDescription)"
+        case .feedbackLimitReached(let message):
+            return message ?? String(localized: "error.feedbackLimit.message", bundle: .module)
         }
     }
 
@@ -50,6 +53,8 @@ public enum SwiftlyFeedbackError: Error, LocalizedError, Equatable {
             return lhsErr.localizedDescription == rhsErr.localizedDescription
         case let (.decodingError(lhsErr), .decodingError(rhsErr)):
             return lhsErr.localizedDescription == rhsErr.localizedDescription
+        case let (.feedbackLimitReached(lhsMsg), .feedbackLimitReached(rhsMsg)):
+            return lhsMsg == rhsMsg
         default:
             return false
         }

@@ -150,6 +150,15 @@ struct ProjectController: RouteCollection {
         try CreateProjectDTO.validate(content: req)
         let dto = try req.content.decode(CreateProjectDTO.self)
 
+        // Check subscription project limit
+        let currentProjectCount = try await Project.query(on: req.db)
+            .filter(\.$owner.$id == user.requireID())
+            .count()
+
+        if let maxProjects = user.subscriptionTier.maxProjects, currentProjectCount >= maxProjects {
+            throw Abort(.paymentRequired, reason: "Project limit reached. Upgrade to Pro for more projects. Current: \(currentProjectCount)/\(maxProjects)")
+        }
+
         let apiKey = generateApiKey()
         let colorIndex = Int.random(in: 0..<8)
         let project = Project(
@@ -312,6 +321,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func addMember(req: Request) async throws -> Response {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for team members
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Team members require Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         try AddMemberDTO.validate(content: req)
@@ -613,6 +628,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateSlackSettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Slack integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectSlackDTO.self)
@@ -700,6 +721,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateGitHubSettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "GitHub integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectGitHubDTO.self)
@@ -917,6 +944,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateClickUpSettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "ClickUp integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectClickUpDTO.self)
@@ -1241,6 +1274,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateNotionSettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Notion integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectNotionDTO.self)
@@ -1499,6 +1538,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateMondaySettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Monday.com integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectMondayDTO.self)
@@ -1795,6 +1840,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateLinearSettings(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Linear integration requires Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectLinearDTO.self)

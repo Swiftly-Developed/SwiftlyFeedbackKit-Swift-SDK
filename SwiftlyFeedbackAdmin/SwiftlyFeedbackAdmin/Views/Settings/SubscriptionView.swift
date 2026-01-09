@@ -11,11 +11,17 @@ struct SubscriptionView: View {
     @State private var subscriptionService = SubscriptionService.shared
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
+    @State private var showPaywall = false
 
     var body: some View {
         List {
             // Current Plan Section
             currentPlanSection
+
+            // Upgrade Section (for free users)
+            if !subscriptionService.isProSubscriber {
+                upgradeSection
+            }
 
             // Pro Features Section
             proFeaturesSection
@@ -23,11 +29,11 @@ struct SubscriptionView: View {
             // Team Features Section
             teamFeaturesSection
 
-            // Coming Soon Section (since RevenueCat is not yet integrated)
-            comingSoonSection
-
             // Restore Purchases Section
             restoreSection
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
         .navigationTitle("Subscription")
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
@@ -221,29 +227,39 @@ struct SubscriptionView: View {
         }
     }
 
-    // MARK: - Coming Soon Section
+    // MARK: - Upgrade Section
 
     @ViewBuilder
-    private var comingSoonSection: some View {
+    private var upgradeSection: some View {
         Section {
-            HStack {
-                Spacer()
-                VStack(spacing: 12) {
-                    Image(systemName: "clock.badge.checkmark")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.purple)
+            Button {
+                showPaywall = true
+            } label: {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.linearGradient(
+                                colors: [.purple, .pink],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
 
-                    Text("Subscriptions Coming Soon")
-                        .font(.headline)
+                        Text("Upgrade to Pro")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
 
-                    Text("Pro and Team subscriptions will be available in a future update.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                        Text("Unlock 2 projects and unlimited feedback")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, 16)
+                    Spacer()
                 }
-                .padding(.vertical, 16)
-                Spacer()
             }
+            .buttonStyle(.plain)
         }
     }
 

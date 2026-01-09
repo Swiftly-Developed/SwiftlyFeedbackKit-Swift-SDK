@@ -30,8 +30,23 @@ struct ProjectListView: View {
     @Bindable var viewModel: ProjectViewModel
     @State private var showingCreateSheet = false
     @State private var showingAcceptInviteSheet = false
+    @State private var showPaywall = false
+    @State private var subscriptionService = SubscriptionService.shared
     @AppStorage("projectViewMode") private var viewMode: ProjectViewMode = .list
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    /// Number of projects owned by the current user
+    private var ownedProjectCount: Int {
+        viewModel.projects.filter { $0.isOwner }.count
+    }
+
+    /// Whether the user can create a new project based on their subscription
+    private var canCreateProject: Bool {
+        guard let maxProjects = subscriptionService.currentTier.maxProjects else {
+            return true // Unlimited
+        }
+        return ownedProjectCount < maxProjects
+    }
 
     var body: some View {
         projectListContent
@@ -60,10 +75,30 @@ struct ProjectListView: View {
             }
             #endif
 
+            // Project count indicator
+            if let maxProjects = subscriptionService.currentTier.maxProjects {
+                ToolbarItem(placement: .automatic) {
+                    Text("\(ownedProjectCount)/\(maxProjects)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        #if os(iOS)
+                        .background(Color(UIColor.secondarySystemBackground), in: Capsule())
+                        #else
+                        .background(Color(NSColor.windowBackgroundColor), in: Capsule())
+                        #endif
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button {
-                        showingCreateSheet = true
+                        if canCreateProject {
+                            showingCreateSheet = true
+                        } else {
+                            showPaywall = true
+                        }
                     } label: {
                         Label("New Project", systemImage: "folder.badge.plus")
                     }
@@ -85,6 +120,9 @@ struct ProjectListView: View {
         }
         .sheet(isPresented: $showingAcceptInviteSheet) {
             AcceptInviteView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
         #if os(iOS)
         .refreshable {

@@ -396,6 +396,10 @@ actor AdminAPIClient {
         case 401:
             AppLogger.api.error("❌ \(path) - 401 Unauthorized")
             throw APIError.unauthorized
+        case 402:
+            let message = parseErrorMessage(data)
+            AppLogger.api.error("❌ \(path) - 402 Payment Required: \(message)")
+            throw APIError.paymentRequired(message)
         case 403:
             let message = parseErrorMessage(data)
             AppLogger.api.error("❌ \(path) - 403 Forbidden: \(message)")
@@ -1392,6 +1396,7 @@ actor AdminAPIClient {
 enum APIError: Error, LocalizedError {
     case invalidResponse
     case unauthorized
+    case paymentRequired(String)
     case forbidden(String)
     case notFound(String)
     case conflict(String)
@@ -1406,6 +1411,8 @@ enum APIError: Error, LocalizedError {
             return "Invalid response from server"
         case .unauthorized:
             return "Please log in to continue"
+        case .paymentRequired(let message):
+            return message
         case .forbidden(let message):
             return message
         case .notFound(let message):
@@ -1421,5 +1428,11 @@ enum APIError: Error, LocalizedError {
         case .decodingError(let error):
             return "Failed to parse response: \(error.localizedDescription)"
         }
+    }
+
+    /// Whether this error is a payment required error (subscription limit reached)
+    var isPaymentRequired: Bool {
+        if case .paymentRequired = self { return true }
+        return false
     }
 }
