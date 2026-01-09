@@ -16,7 +16,6 @@ func configure(_ app: Application) async throws {
 
     // Database configuration - PostgreSQL
     // Try to use DATABASE_URL first (Heroku standard), then fall back to individual vars
-    let config: SQLPostgresConfiguration
     if let databaseURL = Environment.get("DATABASE_URL") {
         // Parse DATABASE_URL (format: postgres://username:password@hostname:port/database)
         guard let url = URL(string: databaseURL),
@@ -28,10 +27,8 @@ func configure(_ app: Application) async throws {
         }
         let dbName = String(url.path.dropFirst()) // Remove leading "/"
 
-        config = try SQLPostgresConfiguration(
-            url: databaseURL,
-            tlsConfiguration: .disable
-        )
+        // Use URL-based configuration (simpler and handles TLS automatically)
+        try app.databases.use(.postgres(url: databaseURL), as: .psql)
         app.logger.info("Using DATABASE_URL: \(host):\(port)/\(dbName)")
     } else {
         // Fall back to individual environment variables (for local development)
@@ -41,7 +38,7 @@ func configure(_ app: Application) async throws {
         let password = Environment.get("DATABASE_PASSWORD") ?? "postgres"
         let database = Environment.get("DATABASE_NAME") ?? "swiftly_feedback"
 
-        config = SQLPostgresConfiguration(
+        let config = SQLPostgresConfiguration(
             hostname: hostname,
             port: port,
             username: username,
@@ -49,10 +46,9 @@ func configure(_ app: Application) async throws {
             database: database,
             tls: .disable
         )
+        app.databases.use(.postgres(configuration: config), as: .psql)
         app.logger.info("Using individual DB vars: \(hostname):\(port)/\(database)")
     }
-
-    app.databases.use(.postgres(configuration: config), as: .psql)
 
     // Migrations - order matters!
     app.migrations.add(CreateUser())
