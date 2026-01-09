@@ -173,6 +173,25 @@ All integrations map feedback status similarly:
 - API key via `X-API-Key` header
 - `req.auth.require(User.self)` for authenticated routes
 
+## Email Service
+
+`Services/EmailService.swift` handles all email notifications via Resend API.
+
+**Brand Colors:**
+- `primaryColor`: `#F7A50D` (FeedbackKit orange)
+- `gradientStart`: `#FFB830` (warm yellow-orange)
+- `gradientEnd`: `#E85D04` (deep orange-red)
+
+**Email Templates:**
+- Project invite, email verification, password reset
+- New feedback, new comment, status change notifications
+
+**Helpers:**
+- `emailHeader(title:)` - Gradient header with logo
+- `emailFooter(message:)` - Footer with "Powered by Feedback Kit"
+
+**Logo URL:** Hosted on Squarespace CDN (configured in `logoURL` constant).
+
 ## Password Reset
 
 `PasswordReset` model: 8-char token, 1-hour expiry, single-use, invalidates all sessions.

@@ -126,6 +126,14 @@ Via Resend API. User preferences in Settings:
 
 **Types:** New feedback, new comments, status changes, email verification, project invites, password reset.
 
+**Branding:**
+- Primary color: `#F7A50D` (FeedbackKit orange)
+- Header gradient: `#FFB830` → `#F7A50D` → `#E85D04` (warm yellow-orange to deep orange-red)
+- Logo: Hosted on Squarespace CDN, displayed in email header (60x60px)
+- Footer: "Powered by Feedback Kit" branding
+
+**Email templates** are defined in `SwiftlyFeedbackServer/Sources/App/Services/EmailService.swift` with reusable `emailHeader()` and `emailFooter()` helpers.
+
 ## Password Reset
 
 1. User requests reset via email
