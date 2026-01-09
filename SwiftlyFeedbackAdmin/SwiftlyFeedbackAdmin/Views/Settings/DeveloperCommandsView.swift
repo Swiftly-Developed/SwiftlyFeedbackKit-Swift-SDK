@@ -42,6 +42,11 @@ struct DeveloperCommandsView: View {
     @State private var feedbackCount = 10
     @State private var commentCount = 5
 
+    // Server environment
+    @State private var selectedEnvironment = ServerEnvironment.current
+    @State private var isTestingConnection = false
+    @State private var connectionTestResult: String?
+
     struct GenerationResult: Identifiable {
         let id = UUID()
         let success: Bool
@@ -73,6 +78,68 @@ struct DeveloperCommandsView: View {
                             .foregroundStyle(.green)
                     }
                     .padding(.vertical, 4)
+                }
+
+                // Server Environment
+                Section {
+                    // Current environment display
+                    HStack {
+                        Label("Current Server", systemImage: "server.rack")
+                        Spacer()
+                        Text(selectedEnvironment.displayName)
+                            .foregroundStyle(.secondary)
+                        Circle()
+                            .fill(colorForEnvironment(selectedEnvironment))
+                            .frame(width: 8, height: 8)
+                    }
+
+                    // Environment picker
+                    Picker("Server Environment", selection: $selectedEnvironment) {
+                        ForEach(ServerEnvironment.allCases) { env in
+                            HStack {
+                                Text(env.displayName)
+                                Spacer()
+                                Text(env.baseURL.host ?? "")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .tag(env)
+                        }
+                    }
+                    .onChange(of: selectedEnvironment) { oldValue, newValue in
+                        changeEnvironment(to: newValue)
+                    }
+
+                    // Test connection button
+                    Button {
+                        Task {
+                            await testConnection()
+                        }
+                    } label: {
+                        HStack {
+                            Label("Test Connection", systemImage: "network")
+                            if isTestingConnection {
+                                Spacer()
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(isTestingConnection || isGenerating)
+
+                    // Connection test result
+                    if let result = connectionTestResult {
+                        HStack {
+                            Image(systemName: result.contains("✅") ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundStyle(result.contains("✅") ? .green : .red)
+                            Text(result)
+                                .font(.caption)
+                        }
+                    }
+                } header: {
+                    Label("Server Environment", systemImage: "server.rack")
+                } footer: {
+                    Text("Switch between localhost, dev, staging, and production servers. Current: \(selectedEnvironment.baseURL.absoluteString)")
                 }
 
                 // Project Generation
@@ -610,6 +677,48 @@ struct DeveloperCommandsView: View {
         #else
         dismiss()
         #endif
+    }
+
+    // MARK: - Server Environment Functions
+
+    private func colorForEnvironment(_ env: ServerEnvironment) -> Color {
+        switch env.color {
+        case "blue": return .blue
+        case "orange": return .orange
+        case "red": return .red
+        default: return .gray
+        }
+    }
+
+    private func changeEnvironment(to newEnvironment: ServerEnvironment) {
+        ServerEnvironment.current = newEnvironment
+        Task {
+            await AdminAPIClient.shared.updateBaseURL()
+        }
+        connectionTestResult = nil
+        AppLogger.api.info("Changed server environment to: \(newEnvironment.displayName)")
+    }
+
+    private func testConnection() async {
+        isTestingConnection = true
+        connectionTestResult = nil
+        AppLogger.api.info("Testing connection to: \(selectedEnvironment.baseURL.absoluteString)")
+
+        do {
+            let success = try await AdminAPIClient.shared.testConnection()
+            if success {
+                connectionTestResult = "✅ Connected successfully"
+                AppLogger.api.info("Connection test successful")
+            } else {
+                connectionTestResult = "❌ Connection failed"
+                AppLogger.api.error("Connection test failed")
+            }
+        } catch {
+            connectionTestResult = "❌ Error: \(error.localizedDescription)"
+            AppLogger.api.error("Connection test error: \(error.localizedDescription)")
+        }
+
+        isTestingConnection = false
     }
 }
 

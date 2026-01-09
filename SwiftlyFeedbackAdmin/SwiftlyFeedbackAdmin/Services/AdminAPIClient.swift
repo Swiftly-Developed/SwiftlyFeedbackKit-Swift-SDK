@@ -3,14 +3,14 @@ import Foundation
 actor AdminAPIClient {
     static let shared = AdminAPIClient()
 
-    private let baseURL: URL
+    private var baseURL: URL
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
     private init() {
-        // Default to localhost for development
-        self.baseURL = URL(string: "http://localhost:8080/api/v1")!
+        // Use current server environment
+        self.baseURL = ServerEnvironment.current.baseURL
         self.session = URLSession.shared
 
         self.decoder = JSONDecoder()
@@ -22,6 +22,35 @@ actor AdminAPIClient {
         self.encoder.dateEncodingStrategy = .iso8601
 
         AppLogger.api.info("AdminAPIClient initialized with baseURL: \(self.baseURL.absoluteString)")
+    }
+
+    // Update base URL when server environment changes
+    func updateBaseURL() {
+        self.baseURL = ServerEnvironment.current.baseURL
+        AppLogger.api.info("AdminAPIClient baseURL updated to: \(self.baseURL.absoluteString)")
+    }
+
+    // Test connectivity to server (uses root /health endpoint, not /api/v1/health)
+    func testConnection() async throws -> Bool {
+        // Health endpoint is at root level: http://host:port/health (not /api/v1/health)
+        // baseURL is like http://localhost:8080/api/v1, we need http://localhost:8080/health
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
+        components.path = "/health"
+        let healthURL = components.url!
+
+        var request = URLRequest(url: healthURL)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+
+        do {
+            let (_, response) = try await session.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse {
+                return httpResponse.statusCode == 200
+            }
+            return false
+        } catch {
+            throw error
+        }
     }
 
     private func makeRequest(
