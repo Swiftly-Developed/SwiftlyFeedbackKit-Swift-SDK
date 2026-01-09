@@ -230,7 +230,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            errorMessage = message ?? Strings.errorFeedbackLimitMessage
             showingError = true
         } catch {
             errorMessage = error.localizedDescription
@@ -277,7 +277,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            errorMessage = message ?? Strings.errorFeedbackLimitMessage
             showingError = true
         } catch {
             errorMessage = error.localizedDescription
@@ -299,7 +299,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            errorMessage = message ?? Strings.errorFeedbackLimitMessage
             showingError = true
         } catch {
             errorMessage = error.localizedDescription
