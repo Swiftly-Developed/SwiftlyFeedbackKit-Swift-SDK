@@ -186,7 +186,7 @@ private final class BundleToken {}
 
 extension LocalizedStringResource.BundleDescription {
     /// Returns the bundle for the SwiftlyFeedbackKit module.
-    static func forClass(_ token: AnyClass.Type) -> Self {
-        .atURL(Bundle(for: token as AnyClass).bundleURL)
+    static func forClass(_: AnyClass.Type) -> Self {
+        .atURL(Bundle.module.bundleURL)
     }
 }
