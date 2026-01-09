@@ -19,9 +19,16 @@ struct DeveloperCommandsView: View {
     @State private var commentCount = 5
 
     // Server environment
-    @State private var selectedEnvironment = AppConfiguration.shared.environment
+    @State private var appConfiguration = AppConfiguration.shared
+    @State private var selectedEnvironment: AppEnvironment
     @State private var isTestingConnection = false
     @State private var connectionTestResult: String?
+
+    init(projectViewModel: ProjectViewModel, isStandaloneWindow: Bool = false) {
+        self.projectViewModel = projectViewModel
+        self.isStandaloneWindow = isStandaloneWindow
+        self.selectedEnvironment = AppConfiguration.shared.environment
+    }
 
     struct GenerationResult: Identifiable {
         let id = UUID()
@@ -73,7 +80,7 @@ struct DeveloperCommandsView: View {
                     HStack {
                         Label("Base URL", systemImage: "link")
                         Spacer()
-                        Text(AppConfiguration.shared.baseURL)
+                        Text(appConfiguration.baseURL)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -82,14 +89,14 @@ struct DeveloperCommandsView: View {
 
                     // Localhost toggle
                     Toggle(isOn: Binding(
-                        get: { AppConfiguration.shared.useLocalhost },
-                        set: { AppConfiguration.shared.useLocalhost = $0; Task { await testConnection() } }
+                        get: { appConfiguration.useLocalhost },
+                        set: { appConfiguration.useLocalhost = $0; Task { await testConnection() } }
                     )) {
                         Label("Use Localhost", systemImage: "house")
                     }
 
                     // Only show environment picker if allowed
-                    if AppConfiguration.shared.canSwitchEnvironment {
+                    if appConfiguration.canSwitchEnvironment {
                         Picker("Server Environment", selection: $selectedEnvironment) {
                             ForEach(AppEnvironment.allCases, id: \.self) { env in
                                 Text(env.displayName).tag(env)
@@ -100,8 +107,8 @@ struct DeveloperCommandsView: View {
                         }
 
                         Button("Reset to Default") {
-                            AppConfiguration.shared.resetToDefault()
-                            selectedEnvironment = AppConfiguration.shared.environment
+                            appConfiguration.resetToDefault()
+                            selectedEnvironment = appConfiguration.environment
                             Task { await testConnection() }
                         }
                     } else {
@@ -139,7 +146,7 @@ struct DeveloperCommandsView: View {
                 } header: {
                     Label("Server Environment", systemImage: "server.rack")
                 } footer: {
-                    if AppConfiguration.shared.canSwitchEnvironment {
+                    if appConfiguration.canSwitchEnvironment {
                         Text("Switch between environments in \(BuildEnvironment.displayName) builds. Production builds are locked to production.")
                     } else {
                         Text("Production builds automatically connect to the production server.")
@@ -694,7 +701,7 @@ struct DeveloperCommandsView: View {
     }
 
     private func changeEnvironment(to newEnvironment: AppEnvironment) {
-        AppConfiguration.shared.switchTo(newEnvironment)
+        appConfiguration.switchTo(newEnvironment)
         Task {
             await AdminAPIClient.shared.updateBaseURL()
         }
@@ -705,7 +712,7 @@ struct DeveloperCommandsView: View {
     private func testConnection() async {
         isTestingConnection = true
         connectionTestResult = nil
-        AppLogger.api.info("Testing connection to: \(AppConfiguration.shared.baseURL)")
+        AppLogger.api.info("Testing connection to: \(appConfiguration.baseURL)")
 
         do {
             let success = try await AdminAPIClient.shared.testConnection()

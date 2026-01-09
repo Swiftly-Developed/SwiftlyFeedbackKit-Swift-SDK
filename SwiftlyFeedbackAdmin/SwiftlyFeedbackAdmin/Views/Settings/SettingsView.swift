@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var subscriptionService = SubscriptionService.shared
+    @State private var appConfiguration = AppConfiguration.shared
     @State private var showingLogoutConfirmation = false
     @State private var showingChangePassword = false
     @State private var showingDeleteAccount = false
@@ -340,7 +341,7 @@ struct SettingsView: View {
                 icon: "server.rack",
                 iconColor: .purple,
                 title: "Server",
-                value: "localhost:8080"
+                value: appConfiguration.baseURL
             )
         }
     }
