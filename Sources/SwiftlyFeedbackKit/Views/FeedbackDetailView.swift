@@ -229,6 +229,9 @@ final class FeedbackDetailViewModel {
             comments = try await sf.getComments(for: currentFeedback.id)
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
+        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            showingError = true
         } catch {
             errorMessage = error.localizedDescription
             showingError = true
@@ -273,6 +276,9 @@ final class FeedbackDetailViewModel {
             )
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
+        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            showingError = true
         } catch {
             errorMessage = error.localizedDescription
             showingError = true
@@ -292,6 +298,9 @@ final class FeedbackDetailViewModel {
             newCommentText = ""
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
+        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            showingError = true
         } catch {
             errorMessage = error.localizedDescription
             showingError = true

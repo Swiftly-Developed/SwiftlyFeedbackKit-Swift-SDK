@@ -429,6 +429,28 @@
           }
         }
       }
+    },
+    "error.feedbackLimit.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback Limit Reached"
+          }
+        }
+      }
+    },
+    "error.feedbackLimit.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This project has reached its feedback limit. Contact the project owner to upgrade."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
