@@ -1,5 +1,7 @@
 build:
   docker:
-    web: Dockerfile
+    web:
+      dockerfile: SwiftlyFeedbackServer/Dockerfile
+      context: SwiftlyFeedbackServer
 run:
   web: ./SwiftlyFeedbackServer serve --env production --hostname 0.0.0.0 --port $PORT
