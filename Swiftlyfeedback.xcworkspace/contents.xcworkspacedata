@@ -31,4 +31,7 @@
    <FileRef
       location = "group:TODO_MONETIZATION.md">
    </FileRef>
+   <FileRef
+      location = "group:AUTO_ENVIRONMENT_DETECTION_PLAN.md">
+   </FileRef>
 </Workspace>
