@@ -17,7 +17,7 @@ struct SwiftlyFeedbackDemoAppApp: App {
         // DEBUG → localhost:8080
         // TestFlight → staging server
         // App Store → production server
-        SwiftlyFeedback.configureAuto(with: "sf_SoCZZ2mWzdUEPPvWUAXgE7iTUjEbs9PJ")
+        SwiftlyFeedback.configureAuto(with: "sf_G3VStALGZ3Ja8LhWPKJTRJk9S8RaZwMk")
 
         // Customize theme
         SwiftlyFeedback.theme.primaryColor = .color(.blue)

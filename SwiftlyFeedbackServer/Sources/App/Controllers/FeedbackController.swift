@@ -110,6 +110,21 @@ struct FeedbackController: RouteCollection {
         // Creating feedback requires active (non-archived) project
         let project = try await getProjectFromApiKey(req: req, requireActive: true)
 
+        // Check subscription feedback limit
+        try await project.$owner.load(on: req.db)
+        let ownerTier = project.owner.subscriptionTier
+
+        if let maxFeedback = ownerTier.maxFeedbackPerProject {
+            let currentFeedbackCount = try await Feedback.query(on: req.db)
+                .filter(\.$project.$id == project.id!)
+                .filter(\.$mergedIntoId == nil)  // Don't count merged feedback
+                .count()
+
+            if currentFeedbackCount >= maxFeedback {
+                throw Abort(.paymentRequired, reason: "Feedback limit reached for this project. The project owner needs to upgrade to Pro to receive more feedback. Current: \(currentFeedbackCount)/\(maxFeedback)")
+            }
+        }
+
         let dto = try req.content.decode(CreateFeedbackDTO.self)
 
         // Validate input

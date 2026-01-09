@@ -172,7 +172,7 @@ struct StatusBadge: View {
     }
 
     var body: some View {
-        Text(status.displayName)
+        Text(status.localizedDisplayName)
             .font(.caption2)
             .fontWeight(.medium)
             .padding(.horizontal, 6)
@@ -195,7 +195,7 @@ struct CategoryBadge: View {
     }
 
     var body: some View {
-        Text(category.displayName)
+        Text(category.localizedDisplayName)
             .font(.caption2)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)

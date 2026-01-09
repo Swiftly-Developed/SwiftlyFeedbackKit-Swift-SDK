@@ -30,13 +30,13 @@ public struct SubmitFeedbackView: View {
                     formContent
                 }
             }
-            .navigationTitle(String(localized: Strings.submitFeedbackTitle))
+            .navigationTitle(Strings.submitFeedbackTitle)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: Strings.cancelButton)) {
+                    Button(Strings.cancelButton) {
                         dismiss()
                         onDismiss()
                     }
@@ -47,10 +47,10 @@ public struct SubmitFeedbackView: View {
                     }
                 }
             }
-            .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
-                Button(String(localized: Strings.errorOK), role: .cancel) {}
+            .alert(Strings.errorTitle, isPresented: $viewModel.showingError) {
+                Button(Strings.errorOK, role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
+                Text(viewModel.errorMessage ?? Strings.errorGeneric)
             }
             .overlay {
                 if viewModel.isSubmitting {
@@ -88,20 +88,20 @@ public struct SubmitFeedbackView: View {
     private var iOSForm: some View {
         Form {
             Section {
-                TextField(String(localized: Strings.formTitle), text: $viewModel.title)
+                TextField(Strings.formTitle, text: $viewModel.title)
                     .focused($focusedField, equals: .title)
                     .submitLabel(.next)
                     .onSubmit { focusedField = .description }
 
-                Picker(String(localized: Strings.formCategory), selection: $viewModel.category) {
+                Picker(Strings.formCategory, selection: $viewModel.category) {
                     ForEach(FeedbackCategory.allCases, id: \.self) { category in
-                        Label(category.displayName, systemImage: category.iconName)
+                        Label(category.localizedDisplayName, systemImage: category.iconName)
                             .tag(category)
                     }
                 }
             }
 
-            Section(String(localized: Strings.formDescription)) {
+            Section(Strings.formDescription) {
                 TextEditor(text: $viewModel.description)
                     .focused($focusedField, equals: .description)
                     .frame(minHeight: 120)
@@ -109,7 +109,7 @@ public struct SubmitFeedbackView: View {
 
             if config.showEmailField {
                 Section {
-                    TextField(String(localized: Strings.formEmailPlaceholder), text: $viewModel.email)
+                    TextField(Strings.formEmailPlaceholder, text: $viewModel.email)
                         .focused($focusedField, equals: .email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
@@ -120,7 +120,7 @@ public struct SubmitFeedbackView: View {
                 } header: {
                     Text(Strings.formEmail)
                 } footer: {
-                    Text("Optional - for follow-up questions")
+                    Text(Strings.formEmailFooter)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -137,19 +137,19 @@ public struct SubmitFeedbackView: View {
         VStack(spacing: 0) {
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 16) {
                 GridRow {
-                    Text("Title:")
+                    Text("\(Strings.formTitle):")
                         .gridColumnAlignment(.trailing)
-                    TextField(String(localized: Strings.formTitlePlaceholder), text: $viewModel.title)
+                    TextField(Strings.formTitlePlaceholder, text: $viewModel.title)
                         .focused($focusedField, equals: .title)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit { focusedField = .description }
                 }
 
                 GridRow {
-                    Text("Category:")
+                    Text("\(Strings.formCategory):")
                     Picker("", selection: $viewModel.category) {
                         ForEach(FeedbackCategory.allCases, id: \.self) { category in
-                            Text(category.displayName).tag(category)
+                            Text(category.localizedDisplayName).tag(category)
                         }
                     }
                     .labelsHidden()
@@ -158,7 +158,7 @@ public struct SubmitFeedbackView: View {
                 }
 
                 GridRow(alignment: .top) {
-                    Text("Description:")
+                    Text("\(Strings.formDescription):")
                     TextEditor(text: $viewModel.description)
                         .focused($focusedField, equals: .description)
                         .font(.body)
@@ -175,14 +175,14 @@ public struct SubmitFeedbackView: View {
 
                 if config.showEmailField {
                     GridRow {
-                        Text("Email:")
+                        Text("\(Strings.formEmail):")
                         VStack(alignment: .leading, spacing: 4) {
-                            TextField(String(localized: Strings.formEmailPlaceholder), text: $viewModel.email)
+                            TextField(Strings.formEmailPlaceholder, text: $viewModel.email)
                                 .focused($focusedField, equals: .email)
                                 .textFieldStyle(.roundedBorder)
                                 .textContentType(.emailAddress)
                                 .onSubmit { submitIfValid() }
-                            Text("Optional - for follow-up questions")
+                            Text(Strings.formEmailFooter)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -269,6 +269,9 @@ final class SubmitFeedbackViewModel {
             isSubmitted = true
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
+        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            showingError = true
         } catch {
             errorMessage = error.localizedDescription
             showingError = true

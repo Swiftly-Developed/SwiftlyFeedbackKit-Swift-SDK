@@ -1,10 +1,12 @@
-# CLAUDE.md - Feedback Kit
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 > **Note**: See [AGENTS.md](./AGENTS.md) for Swift and SwiftUI coding guidelines.
 
 ## Project Overview
 
-Feedback Kit is a feedback collection platform with:
+Feedback Kit is a feedback collection platform with four subprojects:
 - **SwiftlyFeedbackServer** - Vapor backend with PostgreSQL
 - **SwiftlyFeedbackKit** - Swift SDK with SwiftUI views (iOS/macOS/visionOS)
 - **SwiftlyFeedbackAdmin** - Admin app for managing feedback
@@ -14,23 +16,84 @@ Each subproject has its own `CLAUDE.md` with detailed documentation.
 
 ## Tech Stack
 
-- **Language**: Swift 6.0
+- **Language**: Swift 6.2
 - **Backend**: Vapor 4, Fluent ORM, PostgreSQL
 - **Auth**: Token-based with bcrypt
-- **Platforms**: iOS 15+, macOS 12+, visionOS 1+
+- **Platforms**: iOS 26+, macOS 12+, visionOS 1+
 - **Testing**: Swift Testing (`@Test`) + XCTest
 
-## Quick Start
+## Build Commands
 
 ```bash
+# Open workspace
 open Swiftlyfeedback.xcworkspace
 
 # Database (Docker)
 docker run --name swiftly-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=swiftly_feedback -p 5432:5432 -d postgres
 
 # Server
-cd SwiftlyFeedbackServer && swift run
+cd SwiftlyFeedbackServer && swift build
+cd SwiftlyFeedbackServer && swift run          # http://localhost:8080
+cd SwiftlyFeedbackServer && swift test
+
+# SDK
+cd SwiftlyFeedbackKit && swift build
+cd SwiftlyFeedbackKit && swift test
+
+# Admin app
+xcodebuild -workspace Swiftlyfeedback.xcworkspace -scheme SwiftlyFeedbackAdmin -sdk iphonesimulator -configuration Debug
+xcodebuild -workspace Swiftlyfeedback.xcworkspace -scheme SwiftlyFeedbackAdmin test -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16'
+
+# Demo app
+xcodebuild -workspace Swiftlyfeedback.xcworkspace -scheme SwiftlyFeedbackDemoApp -sdk iphonesimulator -configuration Debug
 ```
+
+### Running Single Tests
+
+```bash
+# Server - single test file
+cd SwiftlyFeedbackServer && swift test --filter TestClassName
+
+# Server - single test method
+cd SwiftlyFeedbackServer && swift test --filter TestClassName/testMethodName
+
+# Xcode projects - single test
+xcodebuild test -workspace Swiftlyfeedback.xcworkspace -scheme SwiftlyFeedbackAdmin -only-testing:SwiftlyFeedbackAdminTests/TestClassName/testMethodName -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16'
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     SwiftlyFeedbackAdmin                         │
+│                    (Admin app - iOS/macOS)                       │
+│         Manages projects, members, feedback, analytics           │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ Bearer Token Auth
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    SwiftlyFeedbackServer                         │
+│                      (Vapor 4 Backend)                           │
+│  /api/v1 - Auth, Projects, Feedback, Votes, Comments, Events     │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ X-API-Key Auth
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    SwiftlyFeedbackKit                            │
+│                     (Swift SDK Package)                          │
+│    FeedbackListView, SubmitFeedbackView, FeedbackDetailView      │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ Embedded in
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   SwiftlyFeedbackDemoApp                         │
+│                  (Demo integration example)                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Auth Model:**
+- Admin app uses Bearer token auth (user accounts)
+- SDK uses X-API-Key auth (project API keys)
 
 ## Authorization Model
 

@@ -20,6 +20,9 @@
       location = "group:AGENTS.md">
    </FileRef>
    <FileRef
+      location = "group:2026-01-09_Monetization_Implementation.md">
+   </FileRef>
+   <FileRef
       location = "group:CLICKUP_INTEGRATION.md">
    </FileRef>
    <FileRef

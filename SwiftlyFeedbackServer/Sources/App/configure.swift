@@ -94,6 +94,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(AddProjectLinearIntegration())
     app.migrations.add(AddIntegrationActiveToggles())
     app.migrations.add(CreatePasswordReset())
+    app.migrations.add(AddUserSubscriptionFields())
 
     try await app.autoMigrate()
 

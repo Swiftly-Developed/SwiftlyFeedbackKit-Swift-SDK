@@ -29,6 +29,7 @@ struct FeedbackDashboardView: View {
     @State private var feedbackToOpen: Feedback?
     @AppStorage("dashboardViewMode") private var viewMode: DashboardViewMode = .kanban
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var subscriptionService = SubscriptionService.shared
 
     /// Uses the shared project filter from ProjectViewModel
     private var selectedProject: ProjectListItem? {
@@ -36,30 +37,80 @@ struct FeedbackDashboardView: View {
         nonmutating set { projectViewModel.selectedFilterProject = newValue }
     }
 
+    /// Shows feedback count for Free tier users (e.g., "5/10")
+    @ViewBuilder
+    private var feedbackCountIndicator: some View {
+        if subscriptionService.currentTier == .free,
+           let maxFeedback = subscriptionService.currentTier.maxFeedbackPerProject {
+            Text("\(feedbackViewModel.feedbacks.count)/\(maxFeedback)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(feedbackCountBackground, in: Capsule())
+        }
+    }
+
+    private var feedbackCountBackground: Color {
+        #if os(iOS)
+        Color(UIColor.secondarySystemBackground)
+        #else
+        Color(NSColor.windowBackgroundColor)
+        #endif
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             dashboardContent
                 .navigationTitle("Feedback")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.visible, for: .navigationBar)
+                #endif
                 .toolbar {
+                    #if os(iOS)
+                    // Top bar - left side: view mode picker
+                    ToolbarItem(placement: .topBarLeading) {
+                        viewModePicker
+                    }
+
+                    // Top bar - center: project picker
                     ToolbarItem(placement: .principal) {
                         projectPicker
                     }
 
-                    #if os(iOS)
-                    ToolbarItem(placement: .topBarLeading) {
-                        viewModePicker
+                    // Top bar - right side: filter menu
+                    ToolbarItem(placement: .topBarTrailing) {
+                        filterMenu
                     }
+
+                    // Bottom bar - iOS 26 Liquid Glass search (compact button that expands)
+                    DefaultToolbarItem(kind: .search, placement: .bottomBar)
+                    ToolbarSpacer(.flexible, placement: .bottomBar)
                     #else
+                    ToolbarItem(placement: .principal) {
+                        projectPicker
+                    }
+
                     ToolbarItem(placement: .automatic) {
                         viewModePicker
                     }
-                    #endif
+
+                    ToolbarItem(placement: .automatic) {
+                        feedbackCountIndicator
+                    }
 
                     ToolbarItem(placement: .primaryAction) {
                         filterMenu
                     }
+                    #endif
                 }
-                .searchable(text: $feedbackViewModel.searchText, prompt: "Search feedback...")
+                #if os(iOS)
+                .searchable(text: $feedbackViewModel.searchText, placement: .automatic, prompt: "Search feedback...")
+                .searchToolbarBehavior(.minimize)
+                #else
+                .searchable(text: $feedbackViewModel.searchText, placement: .toolbar, prompt: "Search feedback...")
+                #endif
                 .task(id: selectedProject?.id) {
                     // Auto-select first project if none selected
                     if selectedProject == nil, let first = projectViewModel.projects.first {
@@ -494,13 +545,15 @@ struct FeedbackDashboardView: View {
                     )
                 }
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.bottom)
+            .padding(.top, 8)
         }
         .scrollIndicators(.visible)
         #if os(macOS)
         .background(Color(nsColor: .windowBackgroundColor))
         #else
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        .background(Color(.systemGroupedBackground))
         #endif
     }
 

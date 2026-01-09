@@ -31,4 +31,7 @@ func routes(_ app: Application) throws {
 
     // Dashboard routes (home KPIs)
     try api.register(collection: DashboardController())
+
+    // Webhook routes (RevenueCat subscription events)
+    try api.register(collection: RevenueCatWebhookController())
 }

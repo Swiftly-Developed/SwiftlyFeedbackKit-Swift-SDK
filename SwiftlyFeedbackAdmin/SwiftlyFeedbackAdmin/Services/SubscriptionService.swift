@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 // MARK: - Subscription Tier
 
@@ -71,11 +72,9 @@ enum SubscriptionTier: String, Codable, Sendable, CaseIterable {
     }
 }
 
-// MARK: - Subscription Service (Stub)
+// MARK: - Subscription Service
 
-/// Service responsible for managing subscriptions.
-/// NOTE: RevenueCat integration is not yet complete. This is a stub that returns free tier.
-/// TODO: Re-enable RevenueCat when the SDK is properly configured.
+/// Service responsible for managing subscriptions via RevenueCat.
 @MainActor
 @Observable
 final class SubscriptionService: @unchecked Sendable {
@@ -86,19 +85,21 @@ final class SubscriptionService: @unchecked Sendable {
 
     // MARK: - Configuration
 
-    /// Entitlement identifiers (for future RevenueCat integration)
-    static let proEntitlementID = "Swiftly Pro"
-    static let teamEntitlementID = "Swiftly Team"
+    /// RevenueCat public API key - Replace with your actual key from RevenueCat dashboard
+    static let revenueCatAPIKey = "appl_qwlqUlehsPfFfhvmaWLAqfEKMGs"
 
-    /// Product identifiers (for future RevenueCat integration)
+    /// Entitlement identifier for Pro tier (must match RevenueCat dashboard)
+    static let proEntitlementID = "Swiftly Pro"
+
+    /// Product identifiers
     enum ProductID: String, CaseIterable {
-        case monthly = "monthly"
-        case yearly = "yearly"
-        case monthlyTeam = "monthlyTeam"
-        case yearlyTeam = "yearlyTeam"
+        case proMonthly = "swiftlyfeedback.pro.monthly"
+        case proYearly = "swiftlyfeedback.pro.yearly"
+        case teamMonthly = "swiftlyfeedback.team.monthly"
+        case teamYearly = "swiftlyfeedback.team.yearly"
     }
 
-    // MARK: - Published State
+    // MARK: - State
 
     /// Whether the service is currently loading data
     private(set) var isLoading = false
@@ -109,12 +110,23 @@ final class SubscriptionService: @unchecked Sendable {
     /// Whether an error should be shown
     var showError = false
 
+    /// Current customer info from RevenueCat
+    private(set) var customerInfo: CustomerInfo?
+
+    /// Available offerings from RevenueCat
+    private(set) var offerings: Offerings?
+
     // MARK: - Computed Properties - Tier
 
-    /// The user's current subscription tier
-    /// NOTE: Always returns .free until RevenueCat is integrated
+    /// The user's current subscription tier based on RevenueCat entitlements
     var currentTier: SubscriptionTier {
-        // TODO: Implement actual subscription checking with RevenueCat
+        guard let customerInfo else { return .free }
+
+        // Check for Pro entitlement
+        if customerInfo.entitlements[Self.proEntitlementID]?.isActive == true {
+            return .pro
+        }
+
         return .free
     }
 
@@ -135,80 +147,174 @@ final class SubscriptionService: @unchecked Sendable {
 
     /// The expiration date of the active subscription
     var subscriptionExpirationDate: Date? {
-        // TODO: Implement with RevenueCat
-        return nil
+        customerInfo?.entitlements[Self.proEntitlementID]?.expirationDate
     }
 
     /// Whether the subscription will renew
     var willRenew: Bool {
-        // TODO: Implement with RevenueCat
-        return false
+        customerInfo?.entitlements[Self.proEntitlementID]?.willRenew ?? false
     }
 
     /// Display name for the current subscription status
     var subscriptionStatusText: String {
-        switch currentTier {
-        case .free:
-            return "Free"
-        case .pro:
-            return "Pro"
-        case .team:
-            return "Team"
-        }
+        currentTier.displayName
     }
 
     // MARK: - Initialization
 
     private init() {
-        AppLogger.subscription.info("SubscriptionService initialized (stub mode)")
+        AppLogger.subscription.info("SubscriptionService initialized")
     }
 
-    // MARK: - Stub Methods
+    // MARK: - Configuration
 
     /// Configure the subscription service. Call this once at app launch.
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func configure(userId: UUID? = nil) {
-        AppLogger.subscription.info("🔧 SubscriptionService.configure() called (stub - RevenueCat not integrated)")
+        Purchases.logLevel = .debug
+        Purchases.configure(withAPIKey: Self.revenueCatAPIKey)
+        AppLogger.subscription.info("RevenueCat configured")
+
+        if let userId {
+            Task {
+                await login(userId: userId)
+            }
+        }
     }
 
+    // MARK: - Authentication
+
     /// Login with a user ID (call after user authentication)
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func login(userId: UUID) async {
-        AppLogger.subscription.info("🔐 SubscriptionService.login() called (stub - RevenueCat not integrated)")
+        AppLogger.subscription.info("Logging in to RevenueCat with user ID: \(userId)")
+
+        do {
+            let (customerInfo, _) = try await Purchases.shared.logIn(userId.uuidString)
+            self.customerInfo = customerInfo
+            AppLogger.subscription.info("RevenueCat login successful, tier: \(currentTier.displayName)")
+
+            // Sync with server
+            await syncWithServer()
+        } catch {
+            AppLogger.subscription.error("RevenueCat login failed: \(error)")
+        }
     }
 
     /// Logout (call after user logout)
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func logout() async {
-        AppLogger.subscription.info("🚪 SubscriptionService.logout() called (stub - RevenueCat not integrated)")
+        AppLogger.subscription.info("Logging out from RevenueCat")
+
+        do {
+            let customerInfo = try await Purchases.shared.logOut()
+            self.customerInfo = customerInfo
+            AppLogger.subscription.info("RevenueCat logout successful")
+        } catch {
+            AppLogger.subscription.error("RevenueCat logout failed: \(error)")
+        }
     }
 
+    // MARK: - Data Fetching
+
     /// Fetch the current customer info
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func fetchCustomerInfo() async {
-        AppLogger.subscription.info("📊 SubscriptionService.fetchCustomerInfo() called (stub)")
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            customerInfo = try await Purchases.shared.customerInfo()
+            AppLogger.subscription.info("Fetched customer info, tier: \(currentTier.displayName)")
+        } catch {
+            AppLogger.subscription.error("Failed to fetch customer info: \(error)")
+            showError(message: error.localizedDescription)
+        }
     }
 
     /// Fetch available offerings
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func fetchOfferings() async {
-        AppLogger.subscription.info("📦 SubscriptionService.fetchOfferings() called (stub)")
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            offerings = try await Purchases.shared.offerings()
+            AppLogger.subscription.info("Fetched offerings: \(offerings?.current?.availablePackages.count ?? 0) packages")
+        } catch {
+            AppLogger.subscription.error("Failed to fetch offerings: \(error)")
+            showError(message: error.localizedDescription)
+        }
+    }
+
+    // MARK: - Purchases
+
+    /// Purchase a subscription package
+    func purchase(package: Package) async throws {
+        isLoading = true
+        defer { isLoading = false }
+
+        AppLogger.subscription.info("Starting purchase for package: \(package.identifier)")
+
+        do {
+            let (_, customerInfo, _) = try await Purchases.shared.purchase(package: package)
+            self.customerInfo = customerInfo
+            AppLogger.subscription.info("Purchase successful, tier: \(currentTier.displayName)")
+
+            // Sync with server after purchase
+            await syncWithServer()
+        } catch let error as ErrorCode {
+            if error == .purchaseCancelledError {
+                AppLogger.subscription.info("Purchase cancelled by user")
+                throw SubscriptionError.purchaseCancelled
+            }
+            AppLogger.subscription.error("Purchase failed: \(error)")
+            throw SubscriptionError.purchaseFailed(error.localizedDescription)
+        } catch {
+            AppLogger.subscription.error("Purchase failed: \(error)")
+            throw SubscriptionError.purchaseFailed(error.localizedDescription)
+        }
     }
 
     /// Restore previous purchases
-    /// NOTE: This is a stub - RevenueCat is not yet integrated.
     func restorePurchases() async throws {
-        AppLogger.subscription.info("🔄 SubscriptionService.restorePurchases() called (stub)")
-        // In stub mode, just show a message that there's nothing to restore
-        throw SubscriptionError.notImplemented
+        isLoading = true
+        defer { isLoading = false }
+
+        AppLogger.subscription.info("Restoring purchases")
+
+        do {
+            customerInfo = try await Purchases.shared.restorePurchases()
+            AppLogger.subscription.info("Purchases restored, tier: \(currentTier.displayName)")
+
+            // Sync with server after restore
+            await syncWithServer()
+        } catch {
+            AppLogger.subscription.error("Restore failed: \(error)")
+            throw error
+        }
+    }
+
+    // MARK: - Server Sync
+
+    /// Sync subscription status with the server
+    private func syncWithServer() async {
+        AppLogger.subscription.info("Syncing subscription with server")
+
+        do {
+            // Call the server sync endpoint
+            let _: EmptyResponse = try await AdminAPIClient.shared.post(
+                path: "auth/subscription/sync",
+                body: ["revenuecat_app_user_id": Purchases.shared.appUserID],
+                requiresAuth: true
+            )
+            AppLogger.subscription.info("Subscription synced with server")
+        } catch {
+            AppLogger.subscription.error("Failed to sync subscription with server: \(error)")
+            // Don't throw - this is a best-effort sync
+        }
     }
 
     // MARK: - Entitlement Checking
 
     /// Check if the user has access to a specific entitlement
     func hasEntitlement(_ entitlementId: String) -> Bool {
-        // TODO: Implement with RevenueCat
-        return false
+        customerInfo?.entitlements[entitlementId]?.isActive == true
     }
 
     /// Check if the user has pro access (Pro or Team tier)
@@ -238,6 +344,10 @@ final class SubscriptionService: @unchecked Sendable {
         showError = false
     }
 }
+
+// MARK: - Empty Response
+
+private struct EmptyResponse: Codable {}
 
 // MARK: - Errors
 
