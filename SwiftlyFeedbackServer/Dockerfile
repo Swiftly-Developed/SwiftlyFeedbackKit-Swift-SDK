@@ -12,14 +12,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 
 # Copy Package.swift and Package.resolved first for better layer caching
-# Note: Heroku uses repository root as build context
-COPY SwiftlyFeedbackServer/Package.swift SwiftlyFeedbackServer/Package.resolved ./
+COPY Package.swift Package.resolved ./
 
 # Resolve dependencies
 RUN swift package resolve
 
 # Copy source code
-COPY SwiftlyFeedbackServer/Sources ./Sources
+COPY Sources ./Sources
 
 # Build the application in release mode
 RUN swift build -c release --static-swift-stdlib
