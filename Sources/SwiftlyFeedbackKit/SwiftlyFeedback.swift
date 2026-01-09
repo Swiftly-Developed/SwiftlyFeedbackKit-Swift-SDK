@@ -67,7 +67,36 @@ public final class SwiftlyFeedback: @unchecked Sendable {
 
     // MARK: - Configuration
 
-    /// Configure the SDK with your API key.
+    /// Configure the SDK with automatic server detection based on build type.
+    ///
+    /// The server URL is automatically selected based on your build configuration:
+    /// - DEBUG builds → localhost:8080
+    /// - TestFlight builds → staging server
+    /// - App Store builds → production server
+    ///
+    /// Call this early in your app lifecycle (e.g., in `App.init()` or `AppDelegate`).
+    ///
+    /// ```swift
+    /// SwiftlyFeedback.configureAuto(with: "your_api_key")
+    /// ```
+    ///
+    /// - Parameter apiKey: Your project's API key from the SwiftlyFeedback dashboard
+    public static func configureAuto(with apiKey: String) {
+        let baseURL = detectServerURL()
+        configure(with: apiKey, baseURL: baseURL)
+
+        #if DEBUG
+        SDKLogger.info("Auto-configured with localhost (DEBUG)")
+        #else
+        if BuildEnvironment.isTestFlight {
+            SDKLogger.info("Auto-configured with staging (TestFlight)")
+        } else {
+            SDKLogger.info("Auto-configured with production (App Store)")
+        }
+        #endif
+    }
+
+    /// Configure the SDK with your API key (defaults to localhost).
     ///
     /// Call this early in your app lifecycle (e.g., in `App.init()` or `AppDelegate`).
     ///
@@ -99,6 +128,22 @@ public final class SwiftlyFeedback: @unchecked Sendable {
             // Register user with server
             await instance.registerUser()
         }
+    }
+
+    /// Detect the appropriate server URL based on build environment
+    private static func detectServerURL() -> URL {
+        #if DEBUG
+        // DEBUG builds → localhost
+        return URL(string: "http://localhost:8080/api/v1")!
+        #else
+        if BuildEnvironment.isTestFlight {
+            // TestFlight builds → staging
+            return URL(string: "https://feedbackkit-testflight-2e08ccf13bc4.herokuapp.com/api/v1")!
+        } else {
+            // App Store builds → production
+            return URL(string: "https://feedbackkit-production-cbea7fa4b19d.herokuapp.com/api/v1")!
+        }
+        #endif
     }
 
     // MARK: - User Updates
