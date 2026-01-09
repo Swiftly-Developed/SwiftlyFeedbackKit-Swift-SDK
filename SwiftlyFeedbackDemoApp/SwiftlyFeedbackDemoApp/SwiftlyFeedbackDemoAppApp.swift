@@ -14,7 +14,7 @@ struct SwiftlyFeedbackDemoAppApp: App {
 
     init() {
         // Configure the SDK with your API key
-        SwiftlyFeedback.configure(with: "sf_SoCZZ2mWzdUEPPvWUAXgE7iTUjEbs9PJ")
+        SwiftlyFeedback.configure(with: "sf_G3VStALGZ3Ja8LhWPKJTRJk9S8RaZwMk")
 
         // Customize theme
         SwiftlyFeedback.theme.primaryColor = .color(.blue)

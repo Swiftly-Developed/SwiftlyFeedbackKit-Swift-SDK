@@ -34,7 +34,7 @@ public struct FeedbackDetailView: View {
                 }
             }
         }
-        .navigationTitle(String(localized: Strings.feedbackDetailTitle))
+        .navigationTitle(Strings.feedbackDetailTitle)
         #if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -48,10 +48,10 @@ public struct FeedbackDetailView: View {
                 SwiftlyFeedback.view(.feedbackDetail, properties: ["feedbackId": feedback.id.uuidString])
             }
         }
-        .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
-            Button(String(localized: Strings.errorOK), role: .cancel) {}
+        .alert(Strings.errorTitle, isPresented: $viewModel.showingError) {
+            Button(Strings.errorOK, role: .cancel) {}
         } message: {
-            Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
+            Text(viewModel.errorMessage ?? Strings.errorGeneric)
         }
     }
 }
@@ -82,7 +82,7 @@ struct FeedbackDetailHeaderView: View {
                 .foregroundStyle(.secondary)
 
             if let createdAt = feedback.createdAt {
-                Text("Submitted \(createdAt.formatted(date: .abbreviated, time: .shortened))")
+                Text(String(format: Strings.feedbackSubmitted, createdAt.formatted(date: .abbreviated, time: .shortened)))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -113,8 +113,8 @@ struct FeedbackDetailVoteView: View {
             }
 
             Text(viewModel.currentFeedback.hasVoted
-                 ? String(localized: Strings.votedButton)
-                 : String(localized: Strings.voteButton))
+                 ? Strings.votedButton
+                 : Strings.voteButton)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
@@ -134,7 +134,7 @@ struct FeedbackDetailCommentsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("\(String(localized: Strings.commentsTitle)) (\(viewModel.comments.count))")
+            Text("\(Strings.commentsTitle) (\(viewModel.comments.count))")
                 .font(.headline)
 
             if viewModel.isLoadingComments {
@@ -151,7 +151,7 @@ struct FeedbackDetailCommentsView: View {
             }
 
             HStack {
-                TextField(String(localized: Strings.addCommentPlaceholder), text: $viewModel.newCommentText)
+                TextField(Strings.addCommentPlaceholder, text: $viewModel.newCommentText)
                     .textFieldStyle(.roundedBorder)
 
                 Button {
@@ -178,7 +178,7 @@ struct CommentRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(comment.isAdmin ? "Team" : "User")
+                Text(comment.isAdmin ? Strings.commentAuthorTeam : Strings.commentAuthorUser)
                     .font(.caption)
                     .bold()
                     .foregroundStyle(comment.isAdmin ? theme.primaryColor.resolve(for: colorScheme) : .secondary)

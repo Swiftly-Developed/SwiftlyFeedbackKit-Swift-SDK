@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
     public let id: UUID
@@ -77,6 +78,18 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
         }
     }
 
+    /// Localized display name for the status
+    public var localizedDisplayName: String {
+        switch self {
+        case .pending: return Strings.statusPending
+        case .approved: return Strings.statusApproved
+        case .inProgress: return Strings.statusInProgress
+        case .testflight: return Strings.statusTestFlight
+        case .completed: return Strings.statusCompleted
+        case .rejected: return Strings.statusRejected
+        }
+    }
+
     public var canVote: Bool {
         switch self {
         case .completed, .rejected:
@@ -99,6 +112,16 @@ public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
         case .bugReport: return "Bug Report"
         case .improvement: return "Improvement"
         case .other: return "Other"
+        }
+    }
+
+    /// Localized display name for the category
+    public var localizedDisplayName: String {
+        switch self {
+        case .featureRequest: return Strings.categoryFeatureRequest
+        case .bugReport: return Strings.categoryBugReport
+        case .improvement: return Strings.categoryImprovement
+        case .other: return Strings.categoryOther
         }
     }
 

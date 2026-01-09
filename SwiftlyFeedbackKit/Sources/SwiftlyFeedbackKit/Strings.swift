@@ -2,160 +2,219 @@ import SwiftUI
 
 /// Localized strings for SwiftlyFeedback SDK.
 ///
-/// Uses String Catalogs for type-safe localization.
-/// Override strings via `SwiftlyFeedback.config.localization`.
+/// Uses String Catalogs for type-safe localization with the #bundle macro for automatic bundle resolution.
 public enum Strings {
 
     // MARK: - Feedback List
 
-    public static var feedbackListTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.list.title", bundle: .forClass(BundleToken.self))
+    public static var feedbackListTitle: String {
+        String(localized: "feedback.list.title", bundle: #bundle)
     }
 
-    public static var feedbackListEmpty: LocalizedStringResource {
-        LocalizedStringResource("feedback.list.empty", bundle: .forClass(BundleToken.self))
+    public static var feedbackListEmpty: String {
+        String(localized: "feedback.list.empty", bundle: #bundle)
     }
 
-    public static var feedbackListEmptyDescription: LocalizedStringResource {
-        LocalizedStringResource("feedback.list.empty.description", bundle: .forClass(BundleToken.self))
+    public static var feedbackListEmptyDescription: String {
+        String(localized: "feedback.list.empty.description", bundle: #bundle)
     }
 
     // MARK: - Submit Feedback
 
-    public static var submitFeedbackTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.submit.title", bundle: .forClass(BundleToken.self))
+    public static var submitFeedbackTitle: String {
+        String(localized: "feedback.submit.title", bundle: #bundle)
     }
 
-    public static var submitButton: LocalizedStringResource {
-        LocalizedStringResource("button.submit", bundle: .forClass(BundleToken.self))
+    public static var submitButton: String {
+        String(localized: "button.submit", bundle: #bundle)
     }
 
     // MARK: - Feedback Detail
 
-    public static var feedbackDetailTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.detail.title", bundle: .forClass(BundleToken.self))
+    public static var feedbackDetailTitle: String {
+        String(localized: "feedback.detail.title", bundle: #bundle)
     }
 
-    public static var commentsTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.detail.comments", bundle: .forClass(BundleToken.self))
+    public static var commentsTitle: String {
+        String(localized: "feedback.detail.comments", bundle: #bundle)
     }
 
-    public static var commentsEmpty: LocalizedStringResource {
-        LocalizedStringResource("feedback.detail.comments.empty", bundle: .forClass(BundleToken.self))
+    public static var commentsEmpty: String {
+        String(localized: "feedback.detail.comments.empty", bundle: #bundle)
     }
 
-    public static var addCommentPlaceholder: LocalizedStringResource {
-        LocalizedStringResource("feedback.detail.comments.add", bundle: .forClass(BundleToken.self))
+    public static var addCommentPlaceholder: String {
+        String(localized: "feedback.detail.comments.add", bundle: #bundle)
+    }
+
+    public static var feedbackSubmitted: String {
+        String(localized: "feedback.detail.submitted", bundle: #bundle)
     }
 
     // MARK: - Form Fields
 
-    public static var formTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.title", bundle: .forClass(BundleToken.self))
+    public static var formTitle: String {
+        String(localized: "feedback.form.title", bundle: #bundle)
     }
 
-    public static var formTitlePlaceholder: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.title.placeholder", bundle: .forClass(BundleToken.self))
+    public static var formTitlePlaceholder: String {
+        String(localized: "feedback.form.title.placeholder", bundle: #bundle)
     }
 
-    public static var formDescription: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.description", bundle: .forClass(BundleToken.self))
+    public static var formDescription: String {
+        String(localized: "feedback.form.description", bundle: #bundle)
     }
 
-    public static var formDescriptionPlaceholder: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.description.placeholder", bundle: .forClass(BundleToken.self))
+    public static var formDescriptionPlaceholder: String {
+        String(localized: "feedback.form.description.placeholder", bundle: #bundle)
     }
 
-    public static var formCategory: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.category", bundle: .forClass(BundleToken.self))
+    public static var formCategory: String {
+        String(localized: "feedback.form.category", bundle: #bundle)
     }
 
-    public static var formEmail: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.email", bundle: .forClass(BundleToken.self))
+    public static var formEmail: String {
+        String(localized: "feedback.form.email", bundle: #bundle)
     }
 
-    public static var formEmailPlaceholder: LocalizedStringResource {
-        LocalizedStringResource("feedback.form.email.placeholder", bundle: .forClass(BundleToken.self))
+    public static var formEmailPlaceholder: String {
+        String(localized: "feedback.form.email.placeholder", bundle: #bundle)
+    }
+
+    public static var formEmailFooter: String {
+        String(localized: "feedback.form.email.footer", bundle: #bundle)
     }
 
     // MARK: - Buttons
 
-    public static var cancelButton: LocalizedStringResource {
-        LocalizedStringResource("button.cancel", bundle: .forClass(BundleToken.self))
+    public static var cancelButton: String {
+        String(localized: "button.cancel", bundle: #bundle)
     }
 
-    public static var sendButton: LocalizedStringResource {
-        LocalizedStringResource("button.send", bundle: .forClass(BundleToken.self))
+    public static var sendButton: String {
+        String(localized: "button.send", bundle: #bundle)
     }
 
-    public static var voteButton: LocalizedStringResource {
-        LocalizedStringResource("button.vote", bundle: .forClass(BundleToken.self))
+    public static var voteButton: String {
+        String(localized: "button.vote", bundle: #bundle)
     }
 
-    public static var votedButton: LocalizedStringResource {
-        LocalizedStringResource("button.voted", bundle: .forClass(BundleToken.self))
+    public static var votedButton: String {
+        String(localized: "button.voted", bundle: #bundle)
+    }
+
+    // MARK: - Toolbar
+
+    public static var toolbarRefresh: String {
+        String(localized: "toolbar.refresh", bundle: #bundle)
+    }
+
+    public static var toolbarSort: String {
+        String(localized: "toolbar.sort", bundle: #bundle)
+    }
+
+    public static var toolbarFilter: String {
+        String(localized: "toolbar.filter", bundle: #bundle)
+    }
+
+    public static var toolbarStatus: String {
+        String(localized: "toolbar.status", bundle: #bundle)
+    }
+
+    // MARK: - Filter
+
+    public static var filterAll: String {
+        String(localized: "filter.all", bundle: #bundle)
+    }
+
+    // MARK: - Sort
+
+    public static var sortVotes: String {
+        String(localized: "sort.votes", bundle: #bundle)
+    }
+
+    public static var sortNewest: String {
+        String(localized: "sort.newest", bundle: #bundle)
+    }
+
+    public static var sortOldest: String {
+        String(localized: "sort.oldest", bundle: #bundle)
+    }
+
+    // MARK: - Comment Author
+
+    public static var commentAuthorTeam: String {
+        String(localized: "comment.author.team", bundle: #bundle)
+    }
+
+    public static var commentAuthorUser: String {
+        String(localized: "comment.author.user", bundle: #bundle)
     }
 
     // MARK: - Status
 
-    public static var statusPending: LocalizedStringResource {
-        LocalizedStringResource("status.pending", bundle: .forClass(BundleToken.self))
+    public static var statusPending: String {
+        String(localized: "status.pending", bundle: #bundle)
     }
 
-    public static var statusApproved: LocalizedStringResource {
-        LocalizedStringResource("status.approved", bundle: .forClass(BundleToken.self))
+    public static var statusApproved: String {
+        String(localized: "status.approved", bundle: #bundle)
     }
 
-    public static var statusInProgress: LocalizedStringResource {
-        LocalizedStringResource("status.inProgress", bundle: .forClass(BundleToken.self))
+    public static var statusInProgress: String {
+        String(localized: "status.inProgress", bundle: #bundle)
     }
 
-    public static var statusCompleted: LocalizedStringResource {
-        LocalizedStringResource("status.completed", bundle: .forClass(BundleToken.self))
+    public static var statusTestFlight: String {
+        String(localized: "status.testflight", bundle: #bundle)
     }
 
-    public static var statusRejected: LocalizedStringResource {
-        LocalizedStringResource("status.rejected", bundle: .forClass(BundleToken.self))
+    public static var statusCompleted: String {
+        String(localized: "status.completed", bundle: #bundle)
+    }
+
+    public static var statusRejected: String {
+        String(localized: "status.rejected", bundle: #bundle)
     }
 
     // MARK: - Categories
 
-    public static var categoryFeatureRequest: LocalizedStringResource {
-        LocalizedStringResource("category.featureRequest", bundle: .forClass(BundleToken.self))
+    public static var categoryFeatureRequest: String {
+        String(localized: "category.featureRequest", bundle: #bundle)
     }
 
-    public static var categoryBugReport: LocalizedStringResource {
-        LocalizedStringResource("category.bugReport", bundle: .forClass(BundleToken.self))
+    public static var categoryBugReport: String {
+        String(localized: "category.bugReport", bundle: #bundle)
     }
 
-    public static var categoryImprovement: LocalizedStringResource {
-        LocalizedStringResource("category.improvement", bundle: .forClass(BundleToken.self))
+    public static var categoryImprovement: String {
+        String(localized: "category.improvement", bundle: #bundle)
     }
 
-    public static var categoryOther: LocalizedStringResource {
-        LocalizedStringResource("category.other", bundle: .forClass(BundleToken.self))
+    public static var categoryOther: String {
+        String(localized: "category.other", bundle: #bundle)
     }
 
     // MARK: - Errors
 
-    public static var errorTitle: LocalizedStringResource {
-        LocalizedStringResource("error.title", bundle: .forClass(BundleToken.self))
+    public static var errorTitle: String {
+        String(localized: "error.title", bundle: #bundle)
     }
 
-    public static var errorOK: LocalizedStringResource {
-        LocalizedStringResource("error.ok", bundle: .forClass(BundleToken.self))
+    public static var errorOK: String {
+        String(localized: "error.ok", bundle: #bundle)
     }
 
-    public static var errorGeneric: LocalizedStringResource {
-        LocalizedStringResource("error.generic", bundle: .forClass(BundleToken.self))
+    public static var errorGeneric: String {
+        String(localized: "error.generic", bundle: #bundle)
     }
 
-    public static var errorInvalidApiKeyTitle: LocalizedStringResource {
-        LocalizedStringResource("error.invalidApiKey.title", bundle: .forClass(BundleToken.self))
+    public static var errorInvalidApiKeyTitle: String {
+        String(localized: "error.invalidApiKey.title", bundle: #bundle)
     }
 
-    public static var errorInvalidApiKeyMessage: LocalizedStringResource {
-        LocalizedStringResource("error.invalidApiKey.message", bundle: .forClass(BundleToken.self))
+    public static var errorInvalidApiKeyMessage: String {
+        String(localized: "error.invalidApiKey.message", bundle: #bundle)
     }
 
     public static var errorFeedbackLimitTitle: LocalizedStringResource {
@@ -168,33 +227,21 @@ public enum Strings {
 
     // MARK: - Feedback Submission Disabled
 
-    public static var feedbackSubmissionDisabledTitle: LocalizedStringResource {
-        LocalizedStringResource("feedback.submission.disabled.title", bundle: .forClass(BundleToken.self))
+    public static var feedbackSubmissionDisabledTitle: String {
+        String(localized: "feedback.submission.disabled.title", bundle: #bundle)
     }
 
-    public static var feedbackSubmissionDisabledMessage: LocalizedStringResource {
-        LocalizedStringResource("feedback.submission.disabled.message", bundle: .forClass(BundleToken.self))
+    public static var feedbackSubmissionDisabledMessage: String {
+        String(localized: "feedback.submission.disabled.message", bundle: #bundle)
     }
 
     // MARK: - Counts
 
-    public static func votesCount(_ count: Int) -> LocalizedStringResource {
-        LocalizedStringResource("votes.count", bundle: .forClass(BundleToken.self))
+    public static func votesCount(_ count: Int) -> String {
+        String(localized: "votes.count", bundle: #bundle)
     }
 
-    public static func commentsCount(_ count: Int) -> LocalizedStringResource {
-        LocalizedStringResource("comments.count", bundle: .forClass(BundleToken.self))
-    }
-}
-
-// MARK: - Bundle Token
-
-/// Token class used to locate the bundle for this Swift Package.
-private final class BundleToken {}
-
-extension LocalizedStringResource.BundleDescription {
-    /// Returns the bundle for the SwiftlyFeedbackKit module.
-    static func forClass(_: AnyClass.Type) -> Self {
-        .atURL(Bundle.module.bundleURL)
+    public static func commentsCount(_ count: Int) -> String {
+        String(localized: "comments.count", bundle: #bundle)
     }
 }

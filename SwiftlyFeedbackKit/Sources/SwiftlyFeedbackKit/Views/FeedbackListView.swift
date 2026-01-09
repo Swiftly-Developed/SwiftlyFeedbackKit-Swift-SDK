@@ -28,7 +28,7 @@ public struct FeedbackListView: View {
                     FeedbackListContentView(viewModel: viewModel)
                 }
             }
-            .navigationTitle(String(localized: Strings.feedbackListTitle))
+            .navigationTitle(Strings.feedbackListTitle)
             .toolbar {
                 if !viewModel.hasInvalidApiKey {
                     #if os(macOS)
@@ -40,7 +40,7 @@ public struct FeedbackListView: View {
                         }
                         .disabled(viewModel.isLoading)
                         .keyboardShortcut("r", modifiers: .command)
-                        .help("Refresh")
+                        .help(Strings.toolbarRefresh)
                     }
                     #endif
 
@@ -52,7 +52,7 @@ public struct FeedbackListView: View {
                                     Text(option.localizedName).tag(option)
                                 }
                             } label: {
-                                Label("Sort", systemImage: "arrow.up.arrow.down")
+                                Label(Strings.toolbarSort, systemImage: "arrow.up.arrow.down")
                             }
 
                             // Status filter (if enabled)
@@ -60,16 +60,16 @@ public struct FeedbackListView: View {
                                 Divider()
 
                                 Picker(selection: $viewModel.selectedStatus) {
-                                    Text("All").tag(FeedbackStatus?.none)
+                                    Text(Strings.filterAll).tag(FeedbackStatus?.none)
                                     ForEach(FeedbackStatus.allCases, id: \.self) { status in
-                                        Text(status.displayName).tag(FeedbackStatus?.some(status))
+                                        Text(status.localizedDisplayName).tag(FeedbackStatus?.some(status))
                                     }
                                 } label: {
-                                    Label("Status", systemImage: "line.3.horizontal.decrease.circle")
+                                    Label(Strings.toolbarStatus, systemImage: "line.3.horizontal.decrease.circle")
                                 }
                             }
                         } label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                            Label(Strings.toolbarFilter, systemImage: "line.3.horizontal.decrease.circle")
                         }
                     }
 
@@ -89,10 +89,10 @@ public struct FeedbackListView: View {
                     }
                 }
             }
-            .alert(String(localized: Strings.feedbackSubmissionDisabledTitle), isPresented: $viewModel.showingSubmissionDisabledAlert) {
-                Button(String(localized: Strings.errorOK), role: .cancel) {}
+            .alert(Strings.feedbackSubmissionDisabledTitle, isPresented: $viewModel.showingSubmissionDisabledAlert) {
+                Button(Strings.errorOK, role: .cancel) {}
             } message: {
-                Text(config.feedbackSubmissionDisabledMessage ?? String(localized: Strings.feedbackSubmissionDisabledMessage))
+                Text(config.feedbackSubmissionDisabledMessage ?? Strings.feedbackSubmissionDisabledMessage)
             }
             .sheet(isPresented: $viewModel.showingSubmitSheet) {
                 SubmitFeedbackView(swiftlyFeedback: viewModel.swiftlyFeedback) {
@@ -111,10 +111,10 @@ public struct FeedbackListView: View {
                     SwiftlyFeedback.view(.feedbackList)
                 }
             }
-            .alert(String(localized: Strings.errorTitle), isPresented: $viewModel.showingError) {
-                Button(String(localized: Strings.errorOK), role: .cancel) {}
+            .alert(Strings.errorTitle, isPresented: $viewModel.showingError) {
+                Button(Strings.errorOK, role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? String(localized: Strings.errorGeneric))
+                Text(viewModel.errorMessage ?? Strings.errorGeneric)
             }
         }
     }
@@ -130,11 +130,11 @@ struct FeedbackEmptyStateView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label(String(localized: Strings.feedbackListEmpty), systemImage: "bubble.left.and.bubble.right")
+            Label(Strings.feedbackListEmpty, systemImage: "bubble.left.and.bubble.right")
         } description: {
             Text(Strings.feedbackListEmptyDescription)
         } actions: {
-            Button(String(localized: Strings.submitFeedbackTitle)) {
+            Button(Strings.submitFeedbackTitle) {
                 if config.allowFeedbackSubmission {
                     onSubmit()
                 } else {
@@ -150,7 +150,7 @@ struct FeedbackEmptyStateView: View {
 struct InvalidApiKeyView: View {
     var body: some View {
         ContentUnavailableView {
-            Label(String(localized: Strings.errorInvalidApiKeyTitle), systemImage: "exclamationmark.triangle")
+            Label(Strings.errorInvalidApiKeyTitle, systemImage: "exclamationmark.triangle")
         } description: {
             Text(Strings.errorInvalidApiKeyMessage)
         }
@@ -192,9 +192,9 @@ public enum FeedbackSortOption: String, CaseIterable, Sendable {
 
     var localizedName: String {
         switch self {
-        case .votes: return String(localized: "Votes", bundle: .module)
-        case .newest: return String(localized: "Newest", bundle: .module)
-        case .oldest: return String(localized: "Oldest", bundle: .module)
+        case .votes: return Strings.sortVotes
+        case .newest: return Strings.sortNewest
+        case .oldest: return Strings.sortOldest
         }
     }
 }
