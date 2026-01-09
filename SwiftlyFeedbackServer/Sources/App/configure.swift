@@ -15,20 +15,43 @@ func configure(_ app: Application) async throws {
     ContentConfiguration.global.use(decoder: decoder, for: .json)
 
     // Database configuration - PostgreSQL
-    let hostname = Environment.get("DATABASE_HOST") ?? "localhost"
-    let port = Environment.get("DATABASE_PORT").flatMap(Int.init) ?? 5432
-    let username = Environment.get("DATABASE_USERNAME") ?? "postgres"
-    let password = Environment.get("DATABASE_PASSWORD") ?? "postgres"
-    let database = Environment.get("DATABASE_NAME") ?? "swiftly_feedback"
+    // Try to use DATABASE_URL first (Heroku standard), then fall back to individual vars
+    let config: SQLPostgresConfiguration
+    if let databaseURL = Environment.get("DATABASE_URL") {
+        // Parse DATABASE_URL (format: postgres://username:password@hostname:port/database)
+        guard let url = URL(string: databaseURL),
+              let host = url.host,
+              let user = url.user,
+              let pass = url.password,
+              let port = url.port else {
+            fatalError("Invalid DATABASE_URL format")
+        }
+        let dbName = String(url.path.dropFirst()) // Remove leading "/"
 
-    let config = SQLPostgresConfiguration(
-        hostname: hostname,
-        port: port,
-        username: username,
-        password: password,
-        database: database,
-        tls: .disable
-    )
+        config = try SQLPostgresConfiguration(
+            url: databaseURL,
+            tlsConfiguration: .disable
+        )
+        app.logger.info("Using DATABASE_URL: \(host):\(port)/\(dbName)")
+    } else {
+        // Fall back to individual environment variables (for local development)
+        let hostname = Environment.get("DATABASE_HOST") ?? "localhost"
+        let port = Environment.get("DATABASE_PORT").flatMap(Int.init) ?? 5432
+        let username = Environment.get("DATABASE_USERNAME") ?? "postgres"
+        let password = Environment.get("DATABASE_PASSWORD") ?? "postgres"
+        let database = Environment.get("DATABASE_NAME") ?? "swiftly_feedback"
+
+        config = SQLPostgresConfiguration(
+            hostname: hostname,
+            port: port,
+            username: username,
+            password: password,
+            database: database,
+            tls: .disable
+        )
+        app.logger.info("Using individual DB vars: \(hostname):\(port)/\(database)")
+    }
+
     app.databases.use(.postgres(configuration: config), as: .psql)
 
     // Migrations - order matters!
