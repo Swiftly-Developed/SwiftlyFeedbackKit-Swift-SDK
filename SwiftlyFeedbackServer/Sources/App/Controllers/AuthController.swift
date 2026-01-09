@@ -19,6 +19,10 @@ struct AuthController: RouteCollection {
         tokenProtected.delete("account", use: deleteAccount)
         tokenProtected.post("resend-verification", use: resendVerification)
         tokenProtected.patch("notifications", use: updateNotificationSettings)
+
+        // Subscription routes
+        tokenProtected.get("subscription", use: getSubscription)
+        tokenProtected.post("subscription", "sync", use: syncSubscription)
     }
 
     @Sendable
@@ -350,5 +354,76 @@ struct AuthController: RouteCollection {
             .delete()
 
         return MessageResponseDTO(message: "Password has been reset successfully. Please log in with your new password.")
+    }
+
+    // MARK: - Subscription Endpoints
+
+    /// Get current subscription info
+    /// GET /auth/subscription
+    @Sendable
+    func getSubscription(req: Request) async throws -> SubscriptionInfoDTO {
+        let user = try req.auth.require(User.self)
+
+        // Count user's owned projects
+        let projectCount = try await Project.query(on: req.db)
+            .filter(\.$owner.$id == user.requireID())
+            .count()
+
+        let tier = user.subscriptionTier
+        let canCreateProject: Bool
+        if let maxProjects = tier.maxProjects {
+            canCreateProject = projectCount < maxProjects
+        } else {
+            canCreateProject = true
+        }
+
+        return SubscriptionInfoDTO(
+            tier: tier,
+            status: user.subscriptionStatus,
+            productId: user.subscriptionProductId,
+            expiresAt: user.subscriptionExpiresAt,
+            limits: SubscriptionLimitsDTO(
+                maxProjects: tier.maxProjects,
+                maxFeedbackPerProject: tier.maxFeedbackPerProject,
+                currentProjectCount: projectCount,
+                canCreateProject: canCreateProject
+            )
+        )
+    }
+
+    /// Sync subscription status with RevenueCat
+    /// POST /auth/subscription/sync
+    @Sendable
+    func syncSubscription(req: Request) async throws -> SubscriptionInfoDTO {
+        let user = try req.auth.require(User.self)
+
+        // Optionally update the RevenueCat app user ID
+        if let dto = try? req.content.decode(SyncSubscriptionDTO.self),
+           let appUserId = dto.revenueCatAppUserId {
+            user.revenueCatAppUserId = appUserId
+        }
+
+        // If user has a RevenueCat app user ID, fetch latest subscription info
+        if let appUserId = user.revenueCatAppUserId {
+            do {
+                let subscriber = try await req.revenueCatService.getSubscriber(appUserId: appUserId)
+                let entitlements = subscriber.subscriber.entitlements
+
+                // Update user subscription fields
+                user.subscriptionTier = req.revenueCatService.mapEntitlementsToTier(entitlements: entitlements)
+                user.subscriptionStatus = req.revenueCatService.getSubscriptionStatus(entitlements: entitlements)
+                user.subscriptionExpiresAt = req.revenueCatService.getExpirationDate(entitlements: entitlements)
+                user.subscriptionProductId = req.revenueCatService.getProductId(entitlements: entitlements)
+                user.subscriptionUpdatedAt = Date()
+            } catch {
+                req.logger.error("Failed to sync subscription with RevenueCat: \(error)")
+                // Don't fail the request, just return current subscription info
+            }
+        }
+
+        try await user.save(on: req.db)
+
+        // Return updated subscription info
+        return try await getSubscription(req: req)
     }
 }

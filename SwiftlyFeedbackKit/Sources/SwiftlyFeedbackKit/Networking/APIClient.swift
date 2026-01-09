@@ -135,6 +135,10 @@ public actor APIClient {
             }
             SDKLogger.error("Unauthorized (401)")
             throw SwiftlyFeedbackError.unauthorized
+        case 402:
+            let errorMessage = parseErrorMessage(from: data)
+            SDKLogger.error("Payment required (402): \(errorMessage ?? "Feedback limit reached")")
+            throw SwiftlyFeedbackError.feedbackLimitReached(message: errorMessage)
         case 404:
             SDKLogger.error("Not found (404)")
             throw SwiftlyFeedbackError.notFound

@@ -1,0 +1,179 @@
+{
+  "identifier" : "E8F8A3B2-4C5D-4E6F-8A9B-1C2D3E4F5A6B",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6740537336",
+    "_developerTeamID" : "JQ5VW4AHGN",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 757522891.12345601,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21611571",
+      "localizations" : [
+
+      ],
+      "name" : "Feedback Kit Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "15.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740537337",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited feedback, 2 projects",
+              "displayName" : "Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "swiftlyfeedback.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "21611571",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "150.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740537338",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited feedback, 2 projects - Save $30/year",
+              "displayName" : "Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "swiftlyfeedback.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly",
+          "subscriptionGroupID" : "21611571",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.00",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6740537339",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited everything, team members, integrations",
+              "displayName" : "Team Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "swiftlyfeedback.team.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Team Monthly",
+          "subscriptionGroupID" : "21611571",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "390.00",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6740537340",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited everything, team members, integrations - Save $78/year",
+              "displayName" : "Team Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "swiftlyfeedback.team.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Team Yearly",
+          "subscriptionGroupID" : "21611571",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

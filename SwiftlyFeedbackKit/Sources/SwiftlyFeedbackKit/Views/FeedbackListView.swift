@@ -246,6 +246,9 @@ final class FeedbackListViewModel {
                 // Silently ignore cancellation - another request is taking over
             } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
                 hasInvalidApiKey = true
+            } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+                errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+                showingError = true
             } catch {
                 errorMessage = error.localizedDescription
                 showingError = true
@@ -295,6 +298,9 @@ final class FeedbackListViewModel {
             await loadFeedback()
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
+        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
+            errorMessage = message ?? String(localized: Strings.errorFeedbackLimitMessage)
+            showingError = true
         } catch {
             errorMessage = error.localizedDescription
             showingError = true

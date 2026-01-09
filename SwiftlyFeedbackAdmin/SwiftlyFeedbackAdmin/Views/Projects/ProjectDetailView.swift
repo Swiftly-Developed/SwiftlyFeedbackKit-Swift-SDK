@@ -19,6 +19,8 @@ struct ProjectDetailView: View {
     @State private var showingMondaySheet = false
     @State private var showingLinearSheet = false
     @State private var copiedToClipboard = false
+    @State private var showingPaywall = false
+    @State private var subscriptionService = SubscriptionService.shared
 
     private var isCompact: Bool {
         #if os(macOS)
@@ -64,10 +66,11 @@ struct ProjectDetailView: View {
                             Label("Edit Project", systemImage: "pencil")
                         }
 
-                        Button {
+                        SubscriptionGatedButton(requiredTier: .pro, action: {
                             showingMembersSheet = true
-                        } label: {
+                        }) {
                             Label("Manage Members", systemImage: "person.2")
+                                .tierBadge(.pro)
                         }
 
                         Button {
@@ -79,40 +82,46 @@ struct ProjectDetailView: View {
                         Divider()
 
                         Menu {
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingSlackSheet = true
-                            } label: {
+                            }) {
                                 Label("Slack", systemImage: "number")
+                                    .tierBadge(.pro)
                             }
 
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingGitHubSheet = true
-                            } label: {
+                            }) {
                                 Label("GitHub", systemImage: "arrow.triangle.branch")
+                                    .tierBadge(.pro)
                             }
 
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingClickUpSheet = true
-                            } label: {
+                            }) {
                                 Label("ClickUp", systemImage: "checklist")
+                                    .tierBadge(.pro)
                             }
 
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingNotionSheet = true
-                            } label: {
+                            }) {
                                 Label("Notion", systemImage: "doc.text")
+                                    .tierBadge(.pro)
                             }
 
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingMondaySheet = true
-                            } label: {
+                            }) {
                                 Label("Monday.com", systemImage: "calendar")
+                                    .tierBadge(.pro)
                             }
 
-                            Button {
+                            SubscriptionGatedButton(requiredTier: .pro, action: {
                                 showingLinearSheet = true
-                            } label: {
+                            }) {
                                 Label("Linear", systemImage: "arrow.triangle.branch")
+                                    .tierBadge(.pro)
                             }
                         } label: {
                             Label("Integrations", systemImage: "puzzlepiece.extension")
@@ -255,6 +264,9 @@ struct ProjectDetailView: View {
                     .frame(minWidth: 500, minHeight: 500)
                     #endif
             }
+        }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
         }
     }
 
@@ -651,7 +663,23 @@ struct ProjectDetailView: View {
                 title: "Manage Members",
                 subtitle: "\(project.memberCount) team members"
             ) {
-                showingMembersSheet = true
+                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                    showingMembersSheet = true
+                } else {
+                    showingPaywall = true
+                }
+            }
+            .overlay(alignment: .trailing) {
+                if !subscriptionService.currentTier.meetsRequirement(.pro) {
+                    Text("Pro")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.purple, in: Capsule())
+                        .padding(.trailing, 40)
+                }
             }
 
             Divider()
