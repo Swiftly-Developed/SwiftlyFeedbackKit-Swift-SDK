@@ -6,12 +6,37 @@
 //
 
 import Foundation
+import StoreKit
 
 #if os(macOS)
 import Security
 #endif
 
 enum BuildEnvironment {
+    /// Cached environment detection result (computed once at startup)
+    private static let cachedEnvironment: AppStore.Environment? = {
+        // Use synchronous approach with Task for initial detection
+        // This is safe because it's only called once during static initialization
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: AppStore.Environment?
+
+        Task {
+            do {
+                let verification = try await AppTransaction.shared
+                if case .verified(let transaction) = verification {
+                    result = transaction.environment
+                }
+            } catch {
+                // Fall back to nil if AppTransaction fails
+            }
+            semaphore.signal()
+        }
+
+        // Wait with a short timeout to avoid blocking indefinitely
+        _ = semaphore.wait(timeout: .now() + 1.0)
+        return result
+    }()
+
     /// Debug override to simulate TestFlight (for local testing)
     /// Set this to true in Debug Settings to test TestFlight behavior
     static var simulateTestFlight: Bool {
@@ -44,45 +69,31 @@ enum BuildEnvironment {
         // In DEBUG mode, check if we're simulating TestFlight
         return simulateTestFlight
         #else
-        #if os(macOS)
-        // macOS-specific: Check code signing certificate for TestFlight marker
-        var status = noErr
-        var code: SecStaticCode?
-
-        status = SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &code)
-        guard status == noErr, let code = code else { return false }
-
-        var requirement: SecRequirement?
-        // Check for TestFlight distribution certificate marker OID
-        status = SecRequirementCreateWithString(
-            "anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.25.1]" as CFString,
-            [],
-            &requirement
-        )
-        guard status == noErr, let requirement = requirement else { return false }
-
-        status = SecStaticCodeCheckValidity(code, [], requirement)
-        return status == errSecSuccess
-        #else
-        // iOS/tvOS/visionOS: Check for TestFlight receipt
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-            return false
+        // Use StoreKit AppTransaction environment (modern API)
+        if let environment = cachedEnvironment {
+            return environment == .sandbox
         }
 
-        // TestFlight apps have receipts at "sandboxReceipt"
-        return receiptURL.lastPathComponent == "sandboxReceipt"
+        // Fallback: Use platform-specific detection
+        #if os(macOS)
+        return detectTestFlightMacOS()
+        #else
+        return false
         #endif
         #endif
     }
 
     /// Check if the app is running from App Store (production)
     static var isAppStore: Bool {
-        guard let receiptURL = Bundle.main.appStoreReceiptURL else {
-            return false
+        #if DEBUG
+        return false
+        #else
+        // Use StoreKit AppTransaction environment (modern API)
+        if let environment = cachedEnvironment {
+            return environment == .production
         }
-
-        // App Store apps have receipts at "receipt"
-        return receiptURL.lastPathComponent == "receipt" && !isDebug
+        return false
+        #endif
     }
 
     /// Check if we should show internal testing features
@@ -102,4 +113,33 @@ enum BuildEnvironment {
             return "Unknown"
         }
     }
+
+    #if os(macOS)
+    /// macOS fallback: Check code signing certificate for TestFlight marker OID
+    private static func detectTestFlightMacOS() -> Bool {
+        var code: SecStaticCode?
+        let status = SecStaticCodeCreateWithPath(
+            Bundle.main.bundleURL as CFURL,
+            [],
+            &code
+        )
+
+        guard status == noErr, let code = code else {
+            return false
+        }
+
+        var requirement: SecRequirement?
+        let requirementStatus = SecRequirementCreateWithString(
+            "anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.25.1]" as CFString,
+            [],
+            &requirement
+        )
+
+        guard requirementStatus == noErr, let requirement = requirement else {
+            return false
+        }
+
+        return SecStaticCodeCheckValidity(code, [], requirement) == errSecSuccess
+    }
+    #endif
 }
