@@ -65,15 +65,34 @@ struct DeveloperCommandsView: View {
 
                 // Server Environment
                 Section {
-                    // Current environment display
-                    HStack {
-                        Label("Current Server", systemImage: "server.rack")
-                        Spacer()
-                        Text(selectedEnvironment.displayName)
-                            .foregroundStyle(.secondary)
-                        Circle()
-                            .fill(colorForEnvironment(selectedEnvironment))
-                            .frame(width: 8, height: 8)
+                    // Environment picker (if switching is allowed)
+                    if appConfiguration.canSwitchEnvironment {
+                        Picker("Server", selection: $selectedEnvironment) {
+                            ForEach(appConfiguration.availableEnvironments, id: \.self) { env in
+                                HStack {
+                                    Text(env.displayName)
+                                    Spacer()
+                                    Circle()
+                                        .fill(colorForEnvironment(env))
+                                        .frame(width: 8, height: 8)
+                                }
+                                .tag(env)
+                            }
+                        }
+                        .onChange(of: selectedEnvironment) { oldValue, newValue in
+                            changeEnvironment(to: newValue)
+                        }
+                    } else {
+                        // Show current environment (read-only)
+                        HStack {
+                            Label("Server", systemImage: "server.rack")
+                            Spacer()
+                            Text(selectedEnvironment.displayName)
+                                .foregroundStyle(.secondary)
+                            Circle()
+                                .fill(colorForEnvironment(selectedEnvironment))
+                                .frame(width: 8, height: 8)
+                        }
                     }
 
                     // Show current base URL
@@ -87,31 +106,8 @@ struct DeveloperCommandsView: View {
                             .truncationMode(.middle)
                     }
 
-                    // Localhost toggle
-                    Toggle(isOn: Binding(
-                        get: { appConfiguration.useLocalhost },
-                        set: { newValue in
-                            appConfiguration.useLocalhost = newValue
-                            Task {
-                                await AdminAPIClient.shared.updateBaseURL()
-                                await testConnection()
-                            }
-                        }
-                    )) {
-                        Label("Use Localhost", systemImage: "house")
-                    }
-
-                    // Only show environment picker if allowed
+                    // Reset and test buttons (only if switching is allowed)
                     if appConfiguration.canSwitchEnvironment {
-                        Picker("Server Environment", selection: $selectedEnvironment) {
-                            ForEach(AppEnvironment.allCases, id: \.self) { env in
-                                Text(env.displayName).tag(env)
-                            }
-                        }
-                        .onChange(of: selectedEnvironment) { oldValue, newValue in
-                            changeEnvironment(to: newValue)
-                        }
-
                         Button("Reset to Default") {
                             appConfiguration.resetToDefault()
                             selectedEnvironment = appConfiguration.environment
@@ -120,10 +116,6 @@ struct DeveloperCommandsView: View {
                                 await testConnection()
                             }
                         }
-                    } else {
-                        Text("Environment switching disabled in \(BuildEnvironment.displayName) builds")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
 
                     // Test connection button
@@ -156,7 +148,7 @@ struct DeveloperCommandsView: View {
                     Label("Server Environment", systemImage: "server.rack")
                 } footer: {
                     if appConfiguration.canSwitchEnvironment {
-                        Text("Switch between environments in \(BuildEnvironment.displayName) builds. Production builds are locked to production.")
+                        Text("Select the server environment. Localhost is for local backend testing.")
                     } else {
                         Text("Production builds automatically connect to the production server.")
                     }
@@ -703,8 +695,9 @@ struct DeveloperCommandsView: View {
 
     private func colorForEnvironment(_ env: AppEnvironment) -> Color {
         switch env {
+        case .localhost: return .purple
         case .development: return .blue
-        case .staging: return .orange
+        case .testflight: return .orange
         case .production: return .red
         }
     }

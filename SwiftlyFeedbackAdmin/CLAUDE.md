@@ -95,10 +95,41 @@ Uses `nonisolated` + `@unchecked Sendable` for Swift 6 compatibility.
 
 ## Developer Commands (DEBUG/TestFlight)
 
-Available in Settings:
+Available in Settings (iOS) or Menu bar (macOS ⌘⇧D):
+- Server environment switching
 - Generate dummy projects/feedback/comments
-- Reset onboarding
+- Reset onboarding, auth token, UserDefaults
 - Clear feedback / Delete all projects
+- Full database reset (DEBUG only)
+
+## Server Environments
+
+`AppEnvironment` enum in `Configuration/AppConfiguration.swift`:
+
+| Environment | Color | Available In |
+|-------------|-------|--------------|
+| `.localhost` | Purple | DEBUG only |
+| `.development` | Blue | DEBUG only |
+| `.testflight` | Orange | DEBUG, TestFlight builds |
+| `.production` | Red | All builds |
+
+```swift
+// Access current environment
+AppConfiguration.shared.environment
+AppConfiguration.shared.baseURL
+AppConfiguration.shared.apiV1URL
+
+// Switch environment (auto-reconfigures SDK)
+AppConfiguration.shared.switchTo(.development)
+
+// Check environment
+AppConfiguration.isLocalhost
+AppConfiguration.isDevelopmentMode
+AppConfiguration.isTestFlightMode
+AppConfiguration.isProductionMode
+```
+
+**SDK API Keys** per environment are configured in `AppEnvironment.sdkAPIKey`.
 
 ## Subscription (Stub)
 
@@ -117,7 +148,24 @@ Available in Settings:
 
 Dog-fooding: Admin app uses SwiftlyFeedbackKit for its own feature requests.
 
+SDK is configured automatically at app launch via `AppConfiguration.shared.configureSDK()`:
+- Uses environment-specific API key from `AppEnvironment.sdkAPIKey`
+- Reconfigures automatically when switching environments
+- Theme: Blue primary color
+
+## Build Environment Detection
+
+`BuildEnvironment` in `Utilities/BuildEnvironment.swift` detects distribution channel:
+
 ```swift
-SwiftlyFeedback.configure(with: "sf_api_key")
-SwiftlyFeedback.theme.primaryColor = .color(.blue)
+BuildEnvironment.isDebug              // Xcode DEBUG build
+BuildEnvironment.isTestFlight         // TestFlight distribution
+BuildEnvironment.isAppStore           // App Store distribution
+BuildEnvironment.canShowTestingFeatures  // DEBUG || TestFlight
+BuildEnvironment.displayName          // "Debug", "TestFlight", or "App Store"
+
+// Simulate TestFlight in DEBUG
+BuildEnvironment.simulateTestFlight = true
 ```
+
+**Compile-time:** Add `TESTFLIGHT` to Active Compilation Conditions for reliable detection.

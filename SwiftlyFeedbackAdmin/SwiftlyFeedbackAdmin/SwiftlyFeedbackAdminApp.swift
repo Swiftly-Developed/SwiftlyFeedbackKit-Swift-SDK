@@ -52,8 +52,8 @@ struct SwiftlyFeedbackAdminApp: App {
         SubscriptionService.shared.configure()
 
         // Configure SwiftlyFeedbackKit SDK for in-app feature requests
-        SwiftlyFeedback.configure(with: "sf_G3VStALGZ3Ja8LhWPKJTRJk9S8RaZwMk")
-        SwiftlyFeedback.theme.primaryColor = .color(.blue)
+        // Uses environment-specific API key from AppConfiguration
+        AppConfiguration.shared.configureSDK()
     }
 
     var body: some Scene {

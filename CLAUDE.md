@@ -225,12 +225,57 @@ Available in DEBUG and TestFlight builds only. Access via:
 - **iOS**: Settings → Developer section
 
 **Features:**
+- Server environment switching (Localhost, Development, TestFlight, Production)
 - Generate dummy projects, feedback, and comments
 - Reset onboarding, auth token, UserDefaults
 - Clear project feedback, delete all projects
 - Full database reset (DEBUG only - not available in TestFlight)
 
-Controlled by `AppEnvironment.isDeveloperMode` (DEBUG || TestFlight) and `AppEnvironment.isDebug`.
+Controlled by `BuildEnvironment.canShowTestingFeatures` (DEBUG || TestFlight) and `BuildEnvironment.isDebug`.
+
+## Server Environments (Admin App)
+
+The Admin app supports multiple server environments configured via `AppEnvironment` enum:
+
+| Environment | URL | Color | Available In |
+|-------------|-----|-------|--------------|
+| Localhost | `http://localhost:8080` | Purple | DEBUG only |
+| Development | `feedbackkit-dev-*.herokuapp.com` | Blue | DEBUG only |
+| TestFlight | `feedbackkit-testflight-*.herokuapp.com` | Orange | DEBUG, TestFlight builds |
+| Production | `feedbackkit-production-*.herokuapp.com` | Red | All builds |
+
+**Build type restrictions:**
+- **DEBUG**: All environments available, defaults to Development
+- **TestFlight build**: TestFlight and Production only, defaults to TestFlight
+- **App Store build**: Locked to Production
+
+**Command line arguments** (DEBUG only):
+- `--localhost` → Localhost
+- `--dev-mode` → Development
+- `--testflight-mode` → TestFlight
+- `--prod-mode` → Production
+
+**Configuration:** `SwiftlyFeedbackAdmin/Configuration/AppConfiguration.swift`
+
+## Build Environment Detection
+
+`BuildEnvironment` detects the current distribution channel:
+
+```swift
+BuildEnvironment.isDebug        // Xcode DEBUG build
+BuildEnvironment.isTestFlight   // TestFlight distribution
+BuildEnvironment.isAppStore     // App Store distribution
+BuildEnvironment.displayName    // "Debug", "TestFlight", or "App Store"
+BuildEnvironment.canShowTestingFeatures  // true for DEBUG or TestFlight
+```
+
+**Compile-time detection:** Add `TESTFLIGHT` to Active Compilation Conditions for TestFlight builds.
+
+**Runtime detection fallback:**
+- iOS: Checks `appStoreReceiptURL` for `sandboxReceipt`
+- macOS: Checks code signing certificate for TestFlight marker OID
+
+**Configuration:** `SwiftlyFeedbackAdmin/Utilities/BuildEnvironment.swift`
 
 ## Analytics
 

@@ -66,9 +66,13 @@ struct ProjectDetailView: View {
                             Label("Edit Project", systemImage: "pencil")
                         }
 
-                        SubscriptionGatedButton(requiredTier: .pro, action: {
-                            showingMembersSheet = true
-                        }) {
+                        Button {
+                            if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                showingMembersSheet = true
+                            } else {
+                                showingPaywall = true
+                            }
+                        } label: {
                             Label("Manage Members", systemImage: "person.2")
                                 .tierBadge(.pro)
                         }
@@ -82,44 +86,68 @@ struct ProjectDetailView: View {
                         Divider()
 
                         Menu {
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingSlackSheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingSlackSheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("Slack", systemImage: "number")
                                     .tierBadge(.pro)
                             }
 
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingGitHubSheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingGitHubSheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("GitHub", systemImage: "arrow.triangle.branch")
                                     .tierBadge(.pro)
                             }
 
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingClickUpSheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingClickUpSheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("ClickUp", systemImage: "checklist")
                                     .tierBadge(.pro)
                             }
 
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingNotionSheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingNotionSheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("Notion", systemImage: "doc.text")
                                     .tierBadge(.pro)
                             }
 
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingMondaySheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingMondaySheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("Monday.com", systemImage: "calendar")
                                     .tierBadge(.pro)
                             }
 
-                            SubscriptionGatedButton(requiredTier: .pro, action: {
-                                showingLinearSheet = true
-                            }) {
+                            Button {
+                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                    showingLinearSheet = true
+                                } else {
+                                    showingPaywall = true
+                                }
+                            } label: {
                                 Label("Linear", systemImage: "arrow.triangle.branch")
                                     .tierBadge(.pro)
                             }
