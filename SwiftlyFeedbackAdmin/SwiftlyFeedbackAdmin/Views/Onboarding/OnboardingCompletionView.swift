@@ -106,6 +106,17 @@ struct OnboardingCompletionView: View {
                         .offset(y: animateContent ? 0 : 20)
                         .animation(.easeOut(duration: 0.5).delay(0.3), value: animateContent)
 
+                    // Environment Note (for non-production environments)
+                    if AppConfiguration.currentEnvironment != .production {
+                        EnvironmentNoteSection(
+                            environment: AppConfiguration.currentEnvironment,
+                            isCompact: isCompactWidth
+                        )
+                        .opacity(animateContent ? 1 : 0)
+                        .offset(y: animateContent ? 0 : 20)
+                        .animation(.easeOut(duration: 0.5).delay(0.4), value: animateContent)
+                    }
+
                     Spacer(minLength: 20)
 
                     // Get Started Button
@@ -409,6 +420,80 @@ private struct NextStepsSection: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.secondary.opacity(0.05))
+        )
+    }
+}
+
+// MARK: - Environment Note Section
+
+/// Shows important notes about the current environment (DEV/TestFlight)
+private struct EnvironmentNoteSection: View {
+    let environment: AppEnvironment
+    let isCompact: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Circle()
+                    .fill(environment.color)
+                    .frame(width: 8, height: 8)
+                Text("\(environment.displayName) Environment")
+                    .font(.headline)
+                Spacer()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(environment.displayName) environment active")
+
+            VStack(alignment: .leading, spacing: isCompact ? 10 : 12) {
+                // All features unlocked
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                        .frame(width: 20)
+                        .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("All Features Unlocked")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text("Pro and Team features are enabled for testing.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+
+                // Data retention warning
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "clock.badge.exclamationmark.fill")
+                        .foregroundStyle(.orange)
+                        .frame(width: 20)
+                        .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("7-Day Data Retention")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text("Test data is automatically deleted after 7 days.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(isCompact ? 16 : 20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(environment.color.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(environment.color.opacity(0.3), lineWidth: 1)
         )
     }
 }

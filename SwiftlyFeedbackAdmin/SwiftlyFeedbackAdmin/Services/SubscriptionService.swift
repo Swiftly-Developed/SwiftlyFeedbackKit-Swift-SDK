@@ -130,14 +130,37 @@ final class SubscriptionService: @unchecked Sendable {
         return .free
     }
 
+    // MARK: - Environment Override
+
+    /// Whether the current environment grants free access to all features
+    /// DEV, localhost, and TestFlight environments unlock all features for testing
+    var hasEnvironmentOverride: Bool {
+        let env = AppConfiguration.currentEnvironment
+        return env == .localhost || env == .development || env == .testflight
+    }
+
+    /// Effective tier considering environment override
+    /// Returns .team (full access) when environment override is active
+    var effectiveTier: SubscriptionTier {
+        if hasEnvironmentOverride {
+            return .team  // Full access in non-production environments
+        }
+        return currentTier
+    }
+
+    /// Check if user meets tier requirement (considering environment override)
+    func meetsRequirement(_ required: SubscriptionTier) -> Bool {
+        effectiveTier.meetsRequirement(required)
+    }
+
     /// Whether the user has an active Team subscription
     var isTeamSubscriber: Bool {
-        currentTier == .team
+        effectiveTier == .team
     }
 
     /// Whether the user has an active Pro subscription (or higher)
     var isProSubscriber: Bool {
-        currentTier == .pro || currentTier == .team
+        effectiveTier == .pro || effectiveTier == .team
     }
 
     /// Whether the user has any paid subscription

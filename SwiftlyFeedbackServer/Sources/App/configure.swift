@@ -106,6 +106,10 @@ func configure(_ app: Application) async throws {
     )
     app.middleware.use(CORSMiddleware(configuration: corsConfiguration))
 
+    // Schedule feedback cleanup (runs daily at startup and every 24 hours)
+    // Only runs on non-production environments (dev, testflight)
+    FeedbackCleanupScheduler.start(app: app)
+
     // Routes
     try routes(app)
 }

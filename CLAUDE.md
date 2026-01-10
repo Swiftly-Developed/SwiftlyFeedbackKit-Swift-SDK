@@ -218,10 +218,14 @@ Select 2+ feedback items → Merge. Primary keeps title/description, votes are d
 
 `OnboardingManager` singleton tracks state in `UserDefaults`.
 
-## Developer Commands (Admin App)
+**Environment Note (non-production):** The completion screen shows an `EnvironmentNoteSection` for DEV/TestFlight environments informing users about:
+- All features being unlocked for testing
+- 7-day data retention policy
+
+## Developer Center (Admin App)
 
 Available in DEBUG and TestFlight builds only. Access via:
-- **macOS**: Menu bar → Feedback Kit → Developer Commands... (⌘⇧D)
+- **macOS**: Menu bar → Feedback Kit → Developer Center... (⌘⇧D)
 - **iOS**: Settings → Developer section
 
 **Features:**
@@ -255,7 +259,81 @@ The Admin app supports multiple server environments configured via `AppEnvironme
 - `--testflight-mode` → TestFlight
 - `--prod-mode` → Production
 
+**Environment switching behavior:**
+- Switching environments logs out the user (tokens are environment-specific)
+- Clears cached project data
+- Updates API client base URL
+- Shows confirmation dialog before switching
+- `RootView` listens for `.environmentDidChange` notification
+
+**Visual indicators:**
+- Settings → About section shows current environment with color indicator
+- `EnvironmentIndicator` component available for use throughout the app
+- Non-production environments display colored capsule badges
+
 **Configuration:** `SwiftlyFeedbackAdmin/Configuration/AppConfiguration.swift`
+
+## Automatic Feedback Cleanup (Server)
+
+Non-production environments (Localhost, Development, TestFlight) automatically delete feedback older than 7 days to keep test databases clean.
+
+| Environment | Cleanup | Schedule |
+|-------------|---------|----------|
+| Localhost | Enabled | Every 24 hours (starting 30s after boot) |
+| Development | Enabled | Every 24 hours (starting 30s after boot) |
+| TestFlight (staging) | Enabled | Every 24 hours (starting 30s after boot) |
+| Production | **Disabled** | N/A |
+
+**What gets deleted:**
+- Feedback items older than 7 days
+- Associated comments and votes
+- Merged feedback is preserved (items with `mergedIntoId` are skipped)
+
+**Implementation:**
+- `FeedbackCleanupScheduler` in `SwiftlyFeedbackServer/Sources/App/Jobs/FeedbackCleanupJob.swift`
+- Uses Swift Concurrency (`Task`) for scheduling - no external dependencies
+- Runs initial cleanup 30 seconds after server start, then every 24 hours
+- Environment check uses `AppEnvironment.shared.isProduction`
+- Called from `configure.swift` via `FeedbackCleanupScheduler.start(app:)`
+
+**Warning in Admin App:**
+- Developer Center shows a "7-Day Data Retention" warning banner for non-production environments
+- Users are informed that their test data will be automatically cleaned up
+
+## Environment Feature Override (Admin App)
+
+Non-production environments (Localhost, Development, TestFlight) automatically unlock all subscription features for testing:
+
+| Environment | Features | Behavior |
+|-------------|----------|----------|
+| Localhost | All unlocked | Team tier access |
+| Development | All unlocked | Team tier access |
+| TestFlight | All unlocked | Team tier access |
+| Production | Subscription-based | Normal paywall |
+
+**How it works:**
+- `SubscriptionService.hasEnvironmentOverride` returns `true` for non-production environments
+- `SubscriptionService.effectiveTier` returns `.team` when override is active
+- `SubscriptionService.meetsRequirement(_:)` checks `effectiveTier`, not `currentTier`
+
+**Visual indicators:**
+- "DEV" badge shown on features unlocked via environment override (orange capsule)
+- PaywallView shows "All Features Unlocked" screen instead of purchase options
+- Developer Center shows Feature Access section with override status
+
+**Usage in code:**
+```swift
+// Check if user has access (respects environment override)
+if subscriptionService.meetsRequirement(.pro) { ... }
+
+// Check actual subscription tier (ignores environment override)
+if subscriptionService.currentTier == .pro { ... }
+
+// Check if override is active
+if subscriptionService.hasEnvironmentOverride { ... }
+```
+
+**Configuration:** `SwiftlyFeedbackAdmin/Services/SubscriptionService.swift`
 
 ## Build Environment Detection
 

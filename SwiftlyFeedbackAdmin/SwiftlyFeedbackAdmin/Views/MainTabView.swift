@@ -1,6 +1,32 @@
 import SwiftUI
 import SwiftlyFeedbackKit
 
+// MARK: - Environment Indicator
+
+/// A compact indicator showing the current environment for non-production builds
+struct EnvironmentIndicator: View {
+    @State private var appConfiguration = AppConfiguration.shared
+
+    var body: some View {
+        if appConfiguration.environment != .production {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(appConfiguration.environment.color)
+                    .frame(width: 6, height: 6)
+                Text(appConfiguration.environment.displayName.uppercased())
+                    .font(.caption2)
+                    .fontWeight(.bold)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(appConfiguration.environment.color.opacity(0.15))
+            .clipShape(Capsule())
+        }
+    }
+}
+
+// MARK: - Main Tab View
+
 struct MainTabView: View {
     @Bindable var authViewModel: AuthViewModel
     @State private var projectViewModel = ProjectViewModel()

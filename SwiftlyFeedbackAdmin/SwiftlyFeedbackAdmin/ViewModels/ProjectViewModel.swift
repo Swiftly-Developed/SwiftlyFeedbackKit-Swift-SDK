@@ -741,6 +741,22 @@ final class ProjectViewModel {
         newMemberEmail = ""
         newMemberRole = .member
     }
+
+    // MARK: - Cache Management
+
+    /// Clears all cached project data. Called when environment changes.
+    func clearCache() {
+        AppLogger.viewModel.info("🧹 Clearing project cache")
+        projects = []
+        selectedProject = nil
+        projectMembers = []
+        selectedFilterProject = nil
+        pendingInvites = []
+        invitePreview = nil
+        clearCreateProjectFields()
+        clearAddMemberFields()
+        clearInviteFields()
+    }
 }
 
 private struct EmptyBody: Encodable {}

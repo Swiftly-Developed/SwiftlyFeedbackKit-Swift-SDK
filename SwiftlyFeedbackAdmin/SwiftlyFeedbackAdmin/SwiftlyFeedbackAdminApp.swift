@@ -66,21 +66,21 @@ struct SwiftlyFeedbackAdminApp: App {
         }
         #if os(macOS)
         .commands {
-            DeveloperCommands()
+            DeveloperCenterCommands()
         }
         #endif
     }
 }
 
-// MARK: - Developer Commands Menu (macOS)
+// MARK: - Developer Center Menu (macOS)
 
 #if os(macOS)
-struct DeveloperCommands: Commands {
+struct DeveloperCenterCommands: Commands {
     var body: some Commands {
         if BuildEnvironment.canShowTestingFeatures {
             CommandGroup(after: .appSettings) {
-                Button("Developer Commands...") {
-                    DeveloperCommandsWindowController.shared.showWindow()
+                Button("Developer Center...") {
+                    DeveloperCenterWindowController.shared.showWindow()
                 }
                 .keyboardShortcut("D", modifiers: [.command, .shift])
             }
@@ -89,8 +89,8 @@ struct DeveloperCommands: Commands {
 }
 
 @MainActor
-final class DeveloperCommandsWindowController {
-    static let shared = DeveloperCommandsWindowController()
+final class DeveloperCenterWindowController {
+    static let shared = DeveloperCenterWindowController()
 
     private var window: NSWindow?
 
@@ -104,12 +104,12 @@ final class DeveloperCommandsWindowController {
 
         let projectViewModel = ProjectViewModel()
 
-        let contentView = DeveloperCommandsView(projectViewModel: projectViewModel, isStandaloneWindow: true)
+        let contentView = DeveloperCenterView(projectViewModel: projectViewModel, isStandaloneWindow: true)
             .frame(minWidth: 500, minHeight: 600)
 
         let hostingController = NSHostingController(rootView: contentView)
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "Developer Commands"
+        window.title = "Developer Center"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.setContentSize(NSSize(width: 550, height: 650))
         window.center()

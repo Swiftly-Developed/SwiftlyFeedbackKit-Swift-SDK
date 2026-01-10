@@ -37,4 +37,10 @@
    <FileRef
       location = "group:AUTO_ENVIRONMENT_DETECTION_PLAN.md">
    </FileRef>
+   <FileRef
+      location = "group:PLAN-SDK-Configuration.md">
+   </FileRef>
+   <FileRef
+      location = "group:PLAN-Environment-And-Developer-Center.md">
+   </FileRef>
 </Workspace>

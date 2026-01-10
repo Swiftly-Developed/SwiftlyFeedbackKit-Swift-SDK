@@ -1,8 +1,8 @@
 import SwiftUI
 
-// MARK: - Developer Commands View
+// MARK: - Developer Center View
 
-struct DeveloperCommandsView: View {
+struct DeveloperCenterView: View {
     @Bindable var projectViewModel: ProjectViewModel
     @Environment(\.dismiss) private var dismiss
     var isStandaloneWindow: Bool = false
@@ -21,8 +21,13 @@ struct DeveloperCommandsView: View {
     // Server environment
     @State private var appConfiguration = AppConfiguration.shared
     @State private var selectedEnvironment: AppEnvironment
+    @State private var pendingEnvironment: AppEnvironment?
+    @State private var showingEnvironmentChangeConfirmation = false
     @State private var isTestingConnection = false
     @State private var connectionTestResult: String?
+
+    // Subscription
+    @State private var subscriptionService = SubscriptionService.shared
 
     init(projectViewModel: ProjectViewModel, isStandaloneWindow: Bool = false) {
         self.projectViewModel = projectViewModel
@@ -63,6 +68,26 @@ struct DeveloperCommandsView: View {
                     .padding(.vertical, 4)
                 }
 
+                // Data Retention Warning (non-production only)
+                if selectedEnvironment != .production {
+                    Section {
+                        HStack(spacing: 12) {
+                            Image(systemName: "clock.badge.exclamationmark.fill")
+                                .font(.title2)
+                                .foregroundStyle(.orange)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("7-Day Data Retention")
+                                    .font(.headline)
+                                Text("Feedback on \(selectedEnvironment.displayName) is automatically deleted after 7 days.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+
                 // Server Environment
                 Section {
                     // Environment picker (if switching is allowed)
@@ -73,14 +98,19 @@ struct DeveloperCommandsView: View {
                                     Text(env.displayName)
                                     Spacer()
                                     Circle()
-                                        .fill(colorForEnvironment(env))
+                                        .fill(env.color)
                                         .frame(width: 8, height: 8)
                                 }
                                 .tag(env)
                             }
                         }
                         .onChange(of: selectedEnvironment) { oldValue, newValue in
-                            changeEnvironment(to: newValue)
+                            guard oldValue != newValue else { return }
+                            // Revert the picker selection immediately
+                            selectedEnvironment = oldValue
+                            // Store the pending environment and show confirmation
+                            pendingEnvironment = newValue
+                            showingEnvironmentChangeConfirmation = true
                         }
                     } else {
                         // Show current environment (read-only)
@@ -90,7 +120,7 @@ struct DeveloperCommandsView: View {
                             Text(selectedEnvironment.displayName)
                                 .foregroundStyle(.secondary)
                             Circle()
-                                .fill(colorForEnvironment(selectedEnvironment))
+                                .fill(selectedEnvironment.color)
                                 .frame(width: 8, height: 8)
                         }
                     }
@@ -153,6 +183,9 @@ struct DeveloperCommandsView: View {
                         Text("Production builds automatically connect to the production server.")
                     }
                 }
+
+                // Feature Access (only shown in non-production environments)
+                featureAccessSection
 
                 // Project Generation
                 Section {
@@ -315,7 +348,7 @@ struct DeveloperCommandsView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("Developer Commands")
+            .navigationTitle("Developer Center")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -370,6 +403,25 @@ struct DeveloperCommandsView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will delete ALL your projects, feedback, comments, and reset all local state. You will be signed out. This cannot be undone.")
+            }
+            .confirmationDialog(
+                "Switch Server Environment",
+                isPresented: $showingEnvironmentChangeConfirmation,
+                titleVisibility: .visible
+            ) {
+                if let pending = pendingEnvironment {
+                    Button("Switch to \(pending.displayName)", role: .destructive) {
+                        changeEnvironment(to: pending)
+                        pendingEnvironment = nil
+                    }
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingEnvironment = nil
+                }
+            } message: {
+                if let pending = pendingEnvironment {
+                    Text("Switching to \(pending.displayName) will sign you out. Auth tokens are environment-specific and cannot be transferred.")
+                }
             }
             .task {
                 // Auto-select first project if available
@@ -691,24 +743,68 @@ struct DeveloperCommandsView: View {
         #endif
     }
 
-    // MARK: - Server Environment Functions
+    // MARK: - Feature Access Section
 
-    private func colorForEnvironment(_ env: AppEnvironment) -> Color {
-        switch env {
-        case .localhost: return .purple
-        case .development: return .blue
-        case .testflight: return .orange
-        case .production: return .red
+    @ViewBuilder
+    private var featureAccessSection: some View {
+        Section {
+            // Current subscription tier
+            HStack {
+                Label("Subscription Tier", systemImage: "crown.fill")
+                Spacer()
+                Text(subscriptionService.currentTier.displayName)
+                    .foregroundStyle(.secondary)
+            }
+
+            // Effective tier (with override)
+            HStack {
+                Label("Effective Tier", systemImage: "sparkles")
+                Spacer()
+                HStack(spacing: 6) {
+                    Text(subscriptionService.effectiveTier.displayName)
+                        .foregroundStyle(.secondary)
+                    if subscriptionService.hasEnvironmentOverride {
+                        Text("DEV")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.orange, in: Capsule())
+                    }
+                }
+            }
+
+            // Environment override status
+            HStack {
+                Label("All Features Unlocked", systemImage: "lock.open.fill")
+                Spacer()
+                Image(systemName: subscriptionService.hasEnvironmentOverride ? "checkmark.circle.fill" : "xmark.circle")
+                    .foregroundStyle(subscriptionService.hasEnvironmentOverride ? .green : .secondary)
+            }
+        } header: {
+            Label("Feature Access", systemImage: "star.fill")
+        } footer: {
+            if subscriptionService.hasEnvironmentOverride {
+                Text("All features are unlocked in \(selectedEnvironment.displayName) environment for testing. Switch to Production to test paywall behavior.")
+            } else {
+                Text("Production environment uses actual subscription tiers. Features require a valid subscription.")
+            }
         }
     }
 
+    // MARK: - Server Environment Functions
+
     private func changeEnvironment(to newEnvironment: AppEnvironment) {
+        // Update the picker to reflect the new environment
+        selectedEnvironment = newEnvironment
         appConfiguration.switchTo(newEnvironment)
         connectionTestResult = nil
         Task {
             await AdminAPIClient.shared.updateBaseURL()
             AppLogger.api.info("Changed server environment to: \(newEnvironment.displayName)")
             AppLogger.api.info("AdminAPIClient now pointing to: \(newEnvironment.baseURL)")
+            // Note: The environmentDidChange notification triggers logout in RootView
         }
     }
 
@@ -856,6 +952,6 @@ enum DummyDataGenerator {
 
 // MARK: - Preview
 
-#Preview("Developer Commands") {
-    DeveloperCommandsView(projectViewModel: ProjectViewModel())
+#Preview("Developer Center") {
+    DeveloperCenterView(projectViewModel: ProjectViewModel())
 }

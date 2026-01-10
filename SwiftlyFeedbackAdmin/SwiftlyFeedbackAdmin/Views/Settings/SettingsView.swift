@@ -11,7 +11,7 @@ struct SettingsView: View {
     @State private var showingChangePassword = false
     @State private var showingDeleteAccount = false
     #if os(iOS)
-    @State private var showingDeveloperCommands = false
+    @State private var showingDeveloperCenter = false
     #endif
     @State private var showingSubscription = false
     @State private var pendingLogout = false
@@ -38,9 +38,9 @@ struct SettingsView: View {
                 #endif
             }
             #if os(iOS)
-            .sheet(isPresented: $showingDeveloperCommands) {
+            .sheet(isPresented: $showingDeveloperCenter) {
                 if let projectViewModel = projectViewModel {
-                    DeveloperCommandsView(projectViewModel: projectViewModel)
+                    DeveloperCenterView(projectViewModel: projectViewModel)
                 }
             }
             #endif
@@ -95,7 +95,7 @@ struct SettingsView: View {
             // About Section
             aboutSection
 
-            // Developer Commands (DEBUG or TestFlight only, iOS only - macOS uses menu)
+            // Developer Center (DEBUG or TestFlight only, iOS only - macOS uses menu)
             #if os(iOS)
             if BuildEnvironment.canShowTestingFeatures, let projectViewModel = projectViewModel {
                 developerSection(projectViewModel: projectViewModel)
@@ -337,12 +337,27 @@ struct SettingsView: View {
                 value: appBuild
             )
 
-            SettingsInfoRowView(
-                icon: "server.rack",
-                iconColor: .purple,
-                title: "Server",
-                value: appConfiguration.baseURL
-            )
+            // Environment row with color indicator
+            HStack(spacing: 12) {
+                Image(systemName: "server.rack")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(appConfiguration.environment.color, in: RoundedRectangle(cornerRadius: 6))
+
+                Text("Environment")
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(appConfiguration.environment.color)
+                        .frame(width: 8, height: 8)
+                    Text(appConfiguration.environment.displayName)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Link(destination: URL(string: "https://swiftly-developed.com/feedbackkit-privacypolicy")!) {
                 SettingsRowView(
@@ -420,12 +435,12 @@ struct SettingsView: View {
     private func developerSection(projectViewModel: ProjectViewModel) -> some View {
         Section {
             Button {
-                showingDeveloperCommands = true
+                showingDeveloperCenter = true
             } label: {
                 SettingsRowView(
                     icon: "hammer.fill",
                     iconColor: .orange,
-                    title: "Developer Commands",
+                    title: "Developer Center",
                     showChevron: true
                 )
             }

@@ -43,6 +43,20 @@ struct RootView: View {
             // Initialize AdminAPIClient with the correct baseURL from AppConfiguration
             await AdminAPIClient.shared.initializeBaseURL()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .environmentDidChange)) { notification in
+            // Environment changed - tokens are environment-specific, so log out the user
+            guard let newEnvironment = notification.object as? AppEnvironment else { return }
+            AppLogger.viewModel.info("🔄 Environment changed to \(newEnvironment.displayName) - logging out user")
+
+            // Clear auth token (environment-specific)
+            KeychainService.deleteToken()
+
+            // Force logout to reset auth state
+            authViewModel.forceLogout()
+
+            // Clear project cache
+            projectViewModel.clearCache()
+        }
     }
 }
 

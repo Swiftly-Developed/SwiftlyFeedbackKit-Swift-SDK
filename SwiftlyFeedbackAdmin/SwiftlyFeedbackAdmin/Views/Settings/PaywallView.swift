@@ -23,6 +23,11 @@ struct PaywallView: View {
         self.requiredTier = requiredTier
     }
 
+    /// Whether the environment override is active (DEV/TestFlight)
+    private var hasEnvironmentOverride: Bool {
+        subscriptionService.hasEnvironmentOverride
+    }
+
     /// Filter packages to show only relevant tiers based on the required tier
     private func filteredPackages(from offering: Offering) -> [Package] {
         offering.availablePackages.filter { package in
@@ -69,49 +74,124 @@ struct PaywallView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Hero section
-                    heroSection
-
-                    // Package selection
-                    if let offerings = subscriptionService.offerings,
-                       let current = offerings.current {
-                        packageSelectionSection(offering: current)
-                    } else if subscriptionService.isLoading {
-                        ProgressView()
-                            .padding()
-                    } else {
-                        Text("Unable to load subscription options")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                    }
-
-                    // Subscribe button
-                    subscribeButton
-
-                    // Restore & Terms
-                    footerSection
+            Group {
+                if hasEnvironmentOverride {
+                    // Environment override is active - show unlocked message
+                    environmentOverrideView
+                } else {
+                    // Normal paywall
+                    paywallContent
                 }
-                .padding()
             }
-            .navigationTitle(navigationTitle)
+            .navigationTitle(hasEnvironmentOverride ? "Features Unlocked" : navigationTitle)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(hasEnvironmentOverride ? "Done" : "Cancel") { dismiss() }
                 }
             }
             .task {
-                await subscriptionService.fetchOfferings()
+                if !hasEnvironmentOverride {
+                    await subscriptionService.fetchOfferings()
+                }
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK") {}
             } message: {
                 Text(errorMessage)
             }
+        }
+    }
+
+    // MARK: - Environment Override View
+
+    @ViewBuilder
+    private var environmentOverrideView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 80))
+                .foregroundStyle(.linearGradient(
+                    colors: [.orange, .yellow],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+
+            VStack(spacing: 8) {
+                Text("All Features Unlocked")
+                    .font(.title)
+                    .fontWeight(.bold)
+
+                Text("You're using \(AppConfiguration.currentEnvironment.displayName) environment")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureCheckRow(text: "Unlimited Projects")
+                FeatureCheckRow(text: "Unlimited Feedback")
+                FeatureCheckRow(text: "Team Members")
+                FeatureCheckRow(text: "All Integrations")
+                FeatureCheckRow(text: "Advanced Analytics")
+            }
+            .padding()
+            .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+
+            Text("DEV/TestFlight environments have all features enabled for testing purposes.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Spacer()
+
+            Button {
+                dismiss()
+            } label: {
+                Text("Got It")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.orange)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .padding()
+    }
+
+    // MARK: - Paywall Content
+
+    @ViewBuilder
+    private var paywallContent: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Hero section
+                heroSection
+
+                // Package selection
+                if let offerings = subscriptionService.offerings,
+                   let current = offerings.current {
+                    packageSelectionSection(offering: current)
+                } else if subscriptionService.isLoading {
+                    ProgressView()
+                        .padding()
+                } else {
+                    Text("Unable to load subscription options")
+                        .foregroundStyle(.secondary)
+                        .padding()
+                }
+
+                // Subscribe button
+                subscribeButton
+
+                // Restore & Terms
+                footerSection
+            }
+            .padding()
         }
     }
 

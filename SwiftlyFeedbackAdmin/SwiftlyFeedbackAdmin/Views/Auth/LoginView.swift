@@ -10,14 +10,14 @@ struct LoginView: View {
     }
 
     @FocusState private var focusedField: LoginField?
+    @State private var selectedEnvironment = AppConfiguration.shared.environment
 
     var body: some View {
         VStack(spacing: 24) {
             // Header
             VStack(spacing: 8) {
-                Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.blue)
+                // FeedbackKit Logo
+                FeedbackKitLogo(size: 80)
 
                 Text("Feedback Kit")
                     .font(.largeTitle)
@@ -26,6 +26,12 @@ struct LoginView: View {
                 Text("Admin Dashboard")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+
+                // Environment picker (only shown when multiple environments available)
+                if AppEnvironment.availableEnvironments.count > 1 {
+                    environmentPicker
+                        .padding(.top, 4)
+                }
             }
             .padding(.bottom, 20)
 
@@ -93,8 +99,68 @@ struct LoginView: View {
             focusedField = .email
         }
     }
+
+    // MARK: - Environment Picker
+
+    @ViewBuilder
+    private var environmentPicker: some View {
+        Menu {
+            ForEach(AppEnvironment.availableEnvironments, id: \.self) { env in
+                Button {
+                    selectedEnvironment = env
+                    AppConfiguration.shared.switchTo(env)
+                } label: {
+                    HStack {
+                        Text(env.displayName)
+                        if env == selectedEnvironment {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(selectedEnvironment.color)
+                    .frame(width: 8, height: 8)
+                Text(selectedEnvironment.displayName)
+                    .font(.caption)
+                Image(systemName: "chevron.down")
+                    .font(.caption2)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+        }
+    }
+}
+
+// MARK: - FeedbackKit Logo
+
+/// App logo using the FeedbackKit image asset
+struct FeedbackKitLogo: View {
+    let size: CGFloat
+
+    var body: some View {
+        Image("FeedbackKit")
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.22))
+    }
 }
 
 #Preview {
     LoginView(viewModel: AuthViewModel(), onSwitchToSignup: {}, onForgotPassword: {})
+}
+
+#Preview("FeedbackKit Logo") {
+    VStack(spacing: 20) {
+        FeedbackKitLogo(size: 40)
+        FeedbackKitLogo(size: 60)
+        FeedbackKitLogo(size: 80)
+        FeedbackKitLogo(size: 120)
+    }
+    .padding()
 }

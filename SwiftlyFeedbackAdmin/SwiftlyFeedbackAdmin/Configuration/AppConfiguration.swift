@@ -6,6 +6,15 @@
 //
 
 import Foundation
+import SwiftUI
+
+// MARK: - Environment Change Notification
+
+extension Notification.Name {
+    /// Posted when the app environment changes
+    /// The notification object is the new `AppEnvironment` value
+    static let environmentDidChange = Notification.Name("environmentDidChange")
+}
 
 /// Environment configuration options
 enum AppEnvironment: String, Codable, CaseIterable {
@@ -21,6 +30,33 @@ enum AppEnvironment: String, Codable, CaseIterable {
         case .testflight: return "TestFlight"
         case .production: return "Production"
         }
+    }
+
+    /// Color associated with this environment for visual identification
+    var color: Color {
+        switch self {
+        case .localhost: return .purple
+        case .development: return .blue
+        case .testflight: return .orange
+        case .production: return .red
+        }
+    }
+
+    /// Whether this environment is available for the current build type
+    var isAvailable: Bool {
+        switch self {
+        case .localhost, .development:
+            return BuildEnvironment.isDebug
+        case .testflight:
+            return BuildEnvironment.isDebug || BuildEnvironment.isTestFlight
+        case .production:
+            return true
+        }
+    }
+
+    /// Environments available for selection in current build
+    static var availableEnvironments: [AppEnvironment] {
+        allCases.filter { $0.isAvailable }
     }
 
     var baseURL: String {
@@ -272,6 +308,8 @@ extension AppConfiguration {
     /// - Parameter reconfigureSDK: Whether to reconfigure the SwiftlyFeedbackKit SDK (default: true)
     /// - Note: DEBUG allows all environments, TestFlight build allows testflight/production, Production is locked
     func switchTo(_ environment: AppEnvironment, reconfigureSDK: Bool = true) {
+        let previousEnvironment = self.environment
+
         #if DEBUG
         self.environment = environment
         print("🔄 Switched to \(environment.displayName) environment")
@@ -293,6 +331,11 @@ extension AppConfiguration {
             self.environment = .production
         }
         #endif
+
+        // Post notification if environment actually changed
+        if self.environment != previousEnvironment {
+            NotificationCenter.default.post(name: .environmentDidChange, object: self.environment)
+        }
 
         // Reconfigure SDK with new environment's API key
         if reconfigureSDK {

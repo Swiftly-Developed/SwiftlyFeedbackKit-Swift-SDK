@@ -11,6 +11,9 @@ import SwiftUI
 /// A view that wraps content and gates it based on subscription tier requirements.
 /// If the user doesn't have the required tier, shows a lock overlay and presents
 /// the paywall when tapped.
+///
+/// When running in DEV/TestFlight environments, all features are unlocked and a
+/// "DEV MODE" badge is shown to indicate the override is active.
 struct FeatureGatedView<Content: View>: View {
     let requiredTier: SubscriptionTier
     let featureName: String
@@ -19,9 +22,21 @@ struct FeatureGatedView<Content: View>: View {
     @State private var subscriptionService = SubscriptionService.shared
     @State private var showPaywall = false
 
+    /// Whether access is granted via environment override (not actual subscription)
+    private var isEnvironmentOverrideActive: Bool {
+        subscriptionService.hasEnvironmentOverride &&
+        !subscriptionService.currentTier.meetsRequirement(requiredTier)
+    }
+
     var body: some View {
-        if subscriptionService.currentTier.meetsRequirement(requiredTier) {
+        if subscriptionService.meetsRequirement(requiredTier) {
             content()
+                .overlay(alignment: .topTrailing) {
+                    // Show DEV MODE badge if access is via environment override
+                    if isEnvironmentOverrideActive {
+                        devModeBadge
+                    }
+                }
         } else {
             Button {
                 showPaywall = true
@@ -47,10 +62,22 @@ struct FeatureGatedView<Content: View>: View {
             }
         }
     }
+
+    /// Badge indicating feature is unlocked via environment override
+    private var devModeBadge: some View {
+        Text("DEV")
+            .font(.system(size: 8, weight: .bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+            .background(.orange, in: Capsule())
+            .padding(4)
+    }
 }
 
 /// A button that checks subscription tier before executing action.
 /// If tier requirement is not met, shows the paywall instead.
+/// Respects environment override for DEV/TestFlight environments.
 struct SubscriptionGatedButton<Label: View>: View {
     let requiredTier: SubscriptionTier
     let action: () -> Void
@@ -61,7 +88,7 @@ struct SubscriptionGatedButton<Label: View>: View {
 
     var body: some View {
         Button {
-            if subscriptionService.currentTier.meetsRequirement(requiredTier) {
+            if subscriptionService.meetsRequirement(requiredTier) {
                 action()
             } else {
                 showPaywall = true
@@ -76,16 +103,24 @@ struct SubscriptionGatedButton<Label: View>: View {
 }
 
 /// A view modifier that adds a "Pro" or "Team" badge to indicate tier requirement.
+/// Shows "DEV" badge instead when environment override is active.
 struct TierBadgeModifier: ViewModifier {
     let tier: SubscriptionTier
 
     @State private var subscriptionService = SubscriptionService.shared
 
+    /// Whether access is granted via environment override (not actual subscription)
+    private var isEnvironmentOverrideActive: Bool {
+        subscriptionService.hasEnvironmentOverride &&
+        !subscriptionService.currentTier.meetsRequirement(tier)
+    }
+
     func body(content: Content) -> some View {
         HStack(spacing: 6) {
             content
 
-            if !subscriptionService.currentTier.meetsRequirement(tier) {
+            if !subscriptionService.meetsRequirement(tier) {
+                // User doesn't have access even with environment override
                 Text(tier.displayName)
                     .font(.caption2)
                     .fontWeight(.semibold)
@@ -93,6 +128,15 @@ struct TierBadgeModifier: ViewModifier {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(tier == .team ? .blue : .purple, in: Capsule())
+            } else if isEnvironmentOverrideActive {
+                // User has access via environment override - show DEV badge
+                Text("DEV")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.orange, in: Capsule())
             }
         }
     }
