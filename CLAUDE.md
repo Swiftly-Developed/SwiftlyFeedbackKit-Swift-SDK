@@ -310,12 +310,30 @@ The Admin app supports the `feedbackkit://` URL scheme for deep linking.
 - Models: `Codable`, `Sendable`, `Equatable`
 - Platform: `#if os(macOS)` / `#if os(iOS)`
 
-## Monetization (Planned)
+## Monetization
 
-RevenueCat integration not yet complete. All users on Free tier.
+RevenueCat integration for subscription management.
 
-| Tier | Projects | Feedback | Members | Integrations |
-|------|----------|----------|---------|--------------|
-| Free | 1 | 10/project | No | No |
-| Pro | 2 | Unlimited | No | No |
-| Team | Unlimited | Unlimited | Yes | Yes |
+| Tier | Projects | Feedback | Members | Integrations | Analytics |
+|------|----------|----------|---------|--------------|-----------|
+| Free | 1 | 10/project | No | No | Basic |
+| Pro | 2 | Unlimited | No | No | Advanced + MRR |
+| Team | Unlimited | Unlimited | Yes | Yes | Advanced + MRR |
+
+**Feature Gating:**
+- Use `subscriptionService.currentTier.meetsRequirement(.tier)` to check access
+- Use `.tierBadge(.tier)` modifier to show tier badge on locked features
+- Paywall accepts `requiredTier` parameter to show relevant packages only:
+  ```swift
+  PaywallView(requiredTier: .team)  // Shows only Team packages
+  PaywallView(requiredTier: .pro)   // Shows only Pro packages (default)
+  ```
+
+**Feature → Tier Mapping:**
+- Team Members: `.team`
+- All Integrations (Slack, GitHub, Notion, etc.): `.team`
+- More than 1 project: `.pro`
+- More than 2 projects: `.team`
+- Unlimited feedback: `.pro`
+- Advanced analytics: `.pro`
+- Configurable statuses: `.pro`

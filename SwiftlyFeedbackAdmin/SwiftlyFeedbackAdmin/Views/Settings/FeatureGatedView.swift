@@ -43,7 +43,7 @@ struct FeatureGatedView<Content: View>: View {
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $showPaywall) {
-                PaywallView()
+                PaywallView(requiredTier: requiredTier)
             }
         }
     }
@@ -70,7 +70,7 @@ struct SubscriptionGatedButton<Label: View>: View {
             label()
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(requiredTier: requiredTier)
         }
     }
 }

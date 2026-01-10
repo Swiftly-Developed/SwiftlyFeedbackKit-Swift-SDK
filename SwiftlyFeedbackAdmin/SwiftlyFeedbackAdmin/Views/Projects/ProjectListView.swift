@@ -48,6 +48,21 @@ struct ProjectListView: View {
         return ownedProjectCount < maxProjects
     }
 
+    /// The minimum tier required to create another project
+    private var tierRequiredForMoreProjects: SubscriptionTier {
+        switch subscriptionService.currentTier {
+        case .free:
+            // Free users need Pro to get more than 1 project
+            return .pro
+        case .pro:
+            // Pro users need Team for unlimited projects
+            return .team
+        case .team:
+            // Team has unlimited, shouldn't show paywall
+            return .team
+        }
+    }
+
     var body: some View {
         projectListContent
     }
@@ -122,7 +137,7 @@ struct ProjectListView: View {
             AcceptInviteView(viewModel: viewModel)
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(requiredTier: tierRequiredForMoreProjects)
         }
         #if os(iOS)
         .refreshable {

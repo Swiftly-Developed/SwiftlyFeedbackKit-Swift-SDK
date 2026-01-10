@@ -20,6 +20,7 @@ struct ProjectDetailView: View {
     @State private var showingLinearSheet = false
     @State private var copiedToClipboard = false
     @State private var showingPaywall = false
+    @State private var paywallRequiredTier: SubscriptionTier = .pro
     @State private var subscriptionService = SubscriptionService.shared
 
     private var isCompact: Bool {
@@ -67,14 +68,15 @@ struct ProjectDetailView: View {
                         }
 
                         Button {
-                            if subscriptionService.currentTier.meetsRequirement(.pro) {
+                            if subscriptionService.currentTier.meetsRequirement(.team) {
                                 showingMembersSheet = true
                             } else {
+                                paywallRequiredTier = .team
                                 showingPaywall = true
                             }
                         } label: {
                             Label("Manage Members", systemImage: "person.2")
-                                .tierBadge(.pro)
+                                .tierBadge(.team)
                         }
 
                         Button {
@@ -87,69 +89,75 @@ struct ProjectDetailView: View {
 
                         Menu {
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingSlackSheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("Slack", systemImage: "number")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
 
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingGitHubSheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("GitHub", systemImage: "arrow.triangle.branch")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
 
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingClickUpSheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("ClickUp", systemImage: "checklist")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
 
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingNotionSheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("Notion", systemImage: "doc.text")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
 
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingMondaySheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("Monday.com", systemImage: "calendar")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
 
                             Button {
-                                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                                if subscriptionService.currentTier.meetsRequirement(.team) {
                                     showingLinearSheet = true
                                 } else {
+                                    paywallRequiredTier = .team
                                     showingPaywall = true
                                 }
                             } label: {
                                 Label("Linear", systemImage: "arrow.triangle.branch")
-                                    .tierBadge(.pro)
+                                    .tierBadge(.team)
                             }
                         } label: {
                             Label("Integrations", systemImage: "puzzlepiece.extension")
@@ -294,7 +302,7 @@ struct ProjectDetailView: View {
             }
         }
         .sheet(isPresented: $showingPaywall) {
-            PaywallView()
+            PaywallView(requiredTier: paywallRequiredTier)
         }
     }
 
@@ -691,21 +699,22 @@ struct ProjectDetailView: View {
                 title: "Manage Members",
                 subtitle: "\(project.memberCount) team members"
             ) {
-                if subscriptionService.currentTier.meetsRequirement(.pro) {
+                if subscriptionService.currentTier.meetsRequirement(.team) {
                     showingMembersSheet = true
                 } else {
+                    paywallRequiredTier = .team
                     showingPaywall = true
                 }
             }
             .overlay(alignment: .trailing) {
-                if !subscriptionService.currentTier.meetsRequirement(.pro) {
-                    Text("Pro")
+                if !subscriptionService.currentTier.meetsRequirement(.team) {
+                    Text("Team")
                         .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundStyle(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(.purple, in: Capsule())
+                        .background(.blue, in: Capsule())
                         .padding(.trailing, 40)
                 }
             }

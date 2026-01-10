@@ -33,7 +33,7 @@ struct SubscriptionView: View {
             restoreSection
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(requiredTier: .pro)
         }
         .navigationTitle("Subscription")
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
