@@ -1,4 +1,6 @@
-# FeedbackKit
+![FeedbackKit Banner](docs/images/banner.png)
+
+# <img src="docs/images/logo.png" width="32" height="32" alt="FeedbackKit Logo" style="vertical-align: middle;"> FeedbackKit
 
 In-app feedback collection for iOS, macOS, and visionOS.
 
@@ -7,8 +9,6 @@ In-app feedback collection for iOS, macOS, and visionOS.
 ![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)
 
 FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user feedback directly within your app. Users can submit feature requests, report bugs, vote on ideas, and see what's being worked on—all without leaving your app.
-
-![FeedbackKit Overview](docs/images/banner.png)
 
 ## Features
 
@@ -97,7 +97,7 @@ struct ContentView: View {
 
 Your users can now browse existing feedback, submit new ideas, and vote on what matters most.
 
-![Feedback List](docs/images/feedback-list-ios.png)
+<img src="docs/images/feedback-list-ios.png" width="300" alt="Feedback List">
 
 ## Configuration
 
@@ -176,9 +176,12 @@ SubmitFeedbackView {
 - Loading state during submission
 - Keyboard shortcut on macOS (⌘Return to submit)
 
-| iOS | macOS |
-|-----|-------|
-| ![Submit Feedback iOS](docs/images/submit-feedback-ios.png) | ![Submit Feedback macOS](docs/images/submit-feedback-mac.png) |
+<table>
+<tr>
+<td><img src="docs/images/submit-feedback-ios.png" width="300" alt="Submit Feedback iOS"></td>
+<td><img src="docs/images/submit-feedback-mac.png" width="400" alt="Submit Feedback macOS"></td>
+</tr>
+</table>
 
 ### FeedbackDetailView
 
@@ -278,13 +281,18 @@ SwiftlyFeedback.theme.categoryColors.other = .gray
 
 #### Theme Examples
 
-| Orange | Green | Pink |
-|--------|-------|------|
-| ![Orange Theme](docs/images/orange.png) | ![Green Theme](docs/images/green.png) | ![Pink Theme](docs/images/pink.png) |
-
-| Purple | Red |
-|--------|-----|
-| ![Purple Theme](docs/images/purple.png) | ![Red Theme](docs/images/red.png) |
+<table>
+<tr>
+<td><img src="docs/images/orange.png" width="200" alt="Orange Theme"></td>
+<td><img src="docs/images/green.png" width="200" alt="Green Theme"></td>
+<td><img src="docs/images/pink.png" width="200" alt="Pink Theme"></td>
+</tr>
+<tr>
+<td><img src="docs/images/purple.png" width="200" alt="Purple Theme"></td>
+<td><img src="docs/images/red.png" width="200" alt="Red Theme"></td>
+<td><img src="docs/images/mint.png" width="200" alt="Mint Theme"></td>
+</tr>
+</table>
 
 ### Dark Mode
 
@@ -297,9 +305,12 @@ SwiftlyFeedback.theme.primaryColor = .adaptive(
 )
 ```
 
-| Light | Dark |
-|-------|------|
-| ![Light Mode](docs/images/light.png) | ![Dark Mode](docs/images/dark.png) |
+<table>
+<tr>
+<td><img src="docs/images/light.png" width="300" alt="Light Mode"></td>
+<td><img src="docs/images/dark.png" width="300" alt="Dark Mode"></td>
+</tr>
+</table>
 
 ## Direct API Access
 
