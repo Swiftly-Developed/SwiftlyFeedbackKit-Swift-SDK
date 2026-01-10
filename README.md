@@ -38,7 +38,7 @@ Add FeedbackKit to your project using Xcode:
 1. Go to **File → Add Package Dependencies...**
 2. Enter the repository URL:
    ```
-   https://github.com/anthropics/feedbackkit-swift
+   https://github.com/Swiftly-Developed/SwiftlyFeedbackKit
    ```
 3. Select the version and click **Add Package**
 
@@ -46,7 +46,7 @@ Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/anthropics/feedbackkit-swift", from: "1.0.0")
+    .package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit", from: "1.0.0")
 ]
 ```
 
@@ -589,7 +589,7 @@ Manage your feedback from the [FeedbackKit Admin app](https://feedbackkit.app):
 ## Support
 
 - **Documentation:** [feedbackkit.app/docs](https://feedbackkit.app/docs)
-- **Issues:** [GitHub Issues](https://github.com/anthropics/feedbackkit-swift/issues)
+- **Issues:** [GitHub Issues](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/issues)
 - **Email:** support@feedbackkit.app
 
 ## License
