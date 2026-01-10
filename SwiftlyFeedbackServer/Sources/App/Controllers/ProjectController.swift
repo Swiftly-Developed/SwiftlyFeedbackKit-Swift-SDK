@@ -185,7 +185,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -217,7 +217,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -253,7 +253,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -278,7 +278,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -298,7 +298,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -673,7 +673,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -711,7 +711,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -759,7 +759,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -991,7 +991,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -1318,7 +1318,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -1588,7 +1588,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
@@ -1887,7 +1887,7 @@ struct ProjectController: RouteCollection {
         return ProjectResponseDTO(
             project: project,
             feedbackCount: project.feedbacks.count,
-            memberCount: project.members.count,
+            memberCount: project.members.count + 1,  // +1 for owner
             ownerEmail: project.owner.email
         )
     }
