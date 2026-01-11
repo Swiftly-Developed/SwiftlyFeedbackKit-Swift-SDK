@@ -40,8 +40,8 @@ struct FeedbackDashboardView: View {
 
     /// Whether the Free tier user has reached their feedback limit
     private var isAtFeedbackLimit: Bool {
-        guard subscriptionService.currentTier == .free,
-              let maxFeedback = subscriptionService.currentTier.maxFeedbackPerProject else {
+        guard subscriptionService.effectiveTier == .free,
+              let maxFeedback = subscriptionService.effectiveTier.maxFeedbackPerProject else {
             return false
         }
         return feedbackViewModel.feedbacks.count >= maxFeedback
@@ -50,8 +50,8 @@ struct FeedbackDashboardView: View {
     /// Shows feedback count for Free tier users (e.g., "5/10")
     @ViewBuilder
     private var feedbackCountIndicator: some View {
-        if subscriptionService.currentTier == .free,
-           let maxFeedback = subscriptionService.currentTier.maxFeedbackPerProject {
+        if subscriptionService.effectiveTier == .free,
+           let maxFeedback = subscriptionService.effectiveTier.maxFeedbackPerProject {
             Text("\(feedbackViewModel.feedbacks.count)/\(maxFeedback)")
                 .font(.caption)
                 .foregroundStyle(isAtFeedbackLimit ? .red : .secondary)

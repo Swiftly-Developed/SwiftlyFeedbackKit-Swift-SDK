@@ -335,17 +335,17 @@ Non-production environments (Localhost, Development, TestFlight) automatically d
 
 ## Environment Feature Override (Admin App)
 
-Non-production environments (Localhost, Development, TestFlight) automatically unlock all subscription features for testing:
+Environment override only applies in **DEBUG builds**. TestFlight and App Store builds always use real subscriptions from RevenueCat.
 
-| Environment | Features | Behavior |
-|-------------|----------|----------|
-| Localhost | All unlocked | Team tier access |
-| Development | All unlocked | Team tier access |
-| TestFlight | All unlocked | Team tier access |
-| Production | Subscription-based | Normal paywall |
+| Build Type | Environment | Features |
+|------------|-------------|----------|
+| DEBUG | localhost/dev/testflight | All unlocked (Team tier) |
+| DEBUG | production | Subscription-based |
+| **TestFlight** | **Any** | **Subscription-based** |
+| App Store | production | Subscription-based |
 
 **How it works:**
-- `SubscriptionService.hasEnvironmentOverride` returns `true` for non-production environments
+- `SubscriptionService.hasEnvironmentOverride` returns `true` only in DEBUG builds for non-production environments
 - `SubscriptionService.effectiveTier` returns `.team` when override is active
 - `SubscriptionService.meetsRequirement(_:)` checks `effectiveTier`, not `currentTier`
 
@@ -365,6 +365,50 @@ if subscriptionService.currentTier == .pro { ... }
 // Check if override is active
 if subscriptionService.hasEnvironmentOverride { ... }
 ```
+
+## Tier Simulation (DEBUG Only)
+
+DEBUG builds can simulate specific subscription tiers for testing tier-specific behavior:
+
+```swift
+#if DEBUG
+// Set a simulated tier
+subscriptionService.simulatedTier = .pro
+
+// Clear simulation (returns to actual tier or environment override)
+subscriptionService.clearSimulatedTier()
+#endif
+```
+
+**Priority order for `effectiveTier`:**
+1. Simulated tier (if set, DEBUG only)
+2. Environment override (`.team` if active, DEBUG only)
+3. Actual RevenueCat tier
+
+**Access via Developer Center:**
+- Settings → Developer Center → "Subscription Simulation" section
+- Pick from None/Free/Pro/Team
+- Shows "Currently simulating: [Tier]" indicator when active
+
+**Note:** Tier simulation only affects the client. Server-side tier checks still use the actual subscription.
+
+**Server 402 Handling:**
+
+The server enforces subscription limits independently of client-side environment overrides. When the server returns a 402 Payment Required response, the client must show the actual paywall (not the "All Features Unlocked" screen).
+
+```swift
+// API calls that require subscription may return 402
+catch let error as APIError where error.isPaymentRequired {
+    // Show paywall with forceShowPaywall: true to bypass environment override
+    PaywallView(requiredTier: .team, forceShowPaywall: true)
+}
+```
+
+**Pattern for handling 402 in sheets:**
+1. User attempts action → API returns 402
+2. Dismiss current sheet with flag set (`shouldShowPaywallAfterAddMember = true`)
+3. On sheet dismiss, check flag and show PaywallView with `forceShowPaywall: true`
+4. After paywall dismisses, optionally re-open original sheet to retry
 
 **Configuration:** `SwiftlyFeedbackAdmin/Services/SubscriptionService.swift`
 
@@ -428,7 +472,7 @@ RevenueCat integration for subscription management.
 | Tier | Projects | Feedback | Members | Integrations | Analytics |
 |------|----------|----------|---------|--------------|-----------|
 | Free | 1 | 10/project | No | No | Basic |
-| Pro | 2 | Unlimited | No | No | Advanced + MRR |
+| Pro | 2 | Unlimited | No | Yes | Advanced + MRR |
 | Team | Unlimited | Unlimited | Yes | Yes | Advanced + MRR |
 
 **Feature Gating:**
@@ -441,10 +485,38 @@ RevenueCat integration for subscription management.
   ```
 
 **Feature → Tier Mapping:**
-- Team Members: `.team`
-- All Integrations (Slack, GitHub, Notion, etc.): `.team`
+- Team Members: `.team` (both owner and invitee need Team tier)
+- All Integrations (Slack, GitHub, Notion, etc.): `.pro`
 - More than 1 project: `.pro`
 - More than 2 projects: `.team`
 - Unlimited feedback: `.pro`
 - Advanced analytics: `.pro`
 - Configurable statuses: `.pro`
+- New comment notifications: `.pro`
+- Voter email notifications: `.team`
+
+## Server-Side Tier Enforcement
+
+The server independently enforces subscription limits and returns 402 Payment Required errors. This is separate from client-side checks.
+
+**Enforced Server-Side:**
+
+| Feature | Tier | Enforcement |
+|---------|------|-------------|
+| Project limit | Pro/Team | `POST /projects` - max 1 (Free), 2 (Pro), unlimited (Team) |
+| Feedback limit | Pro | `POST /feedbacks` - max 10 per project (Free) |
+| Team member invite | Team | `POST /projects/:id/members` - owner must have Team |
+| Team member accept | Team | `POST /projects/invites/:code/accept` - both parties need Team |
+| Configurable statuses | Pro | `PATCH /projects/:id/statuses` |
+| Integrations | Pro | All integration endpoints (Slack, GitHub, etc.) |
+| Comment notifications | Pro | Server only sends to Pro+ users, silently enforces on settings update |
+| Voter notifications | Team | Server only sends if project owner has Team tier |
+
+**Silent Enforcement (no 402):**
+- Comment notifications: Free users with `notifyNewComments=true` in DB don't receive emails
+- Voter notifications: Silently disabled if project owner isn't Team tier
+
+**Team Member Rules:**
+- Project owner must have Team tier to send invites
+- Invitee must have Team tier to accept
+- If owner downgrades after sending invite, accept fails with 402

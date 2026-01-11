@@ -705,7 +705,7 @@ struct ProjectDetailView: View {
                 title: "Manage Members",
                 subtitle: "\(project.memberCount) team members"
             ) {
-                if subscriptionService.currentTier.meetsRequirement(.team) {
+                if subscriptionService.meetsRequirement(.team) {
                     showingMembersSheet = true
                 } else {
                     paywallRequiredTier = .team
@@ -713,7 +713,7 @@ struct ProjectDetailView: View {
                 }
             }
             .overlay(alignment: .trailing) {
-                if !subscriptionService.currentTier.meetsRequirement(.team) {
+                if !subscriptionService.meetsRequirement(.team) {
                     Text("Team")
                         .font(.caption2)
                         .fontWeight(.semibold)

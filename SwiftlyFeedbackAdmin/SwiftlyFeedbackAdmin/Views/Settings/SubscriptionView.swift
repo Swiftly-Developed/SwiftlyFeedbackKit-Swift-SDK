@@ -12,28 +12,31 @@ struct SubscriptionView: View {
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
     @State private var showPaywall = false
+    @State private var paywallRequiredTier: SubscriptionTier = .pro
 
     var body: some View {
         List {
             // Current Plan Section
             currentPlanSection
 
-            // Upgrade Section (for free users)
-            if !subscriptionService.isProSubscriber {
+            // Upgrade Section (for users who can upgrade)
+            if canShowUpgradeSection {
                 upgradeSection
             }
 
-            // Pro Features Section
-            proFeaturesSection
+            // Feature Comparison Table
+            featureComparisonSection
 
-            // Team Features Section
-            teamFeaturesSection
+            // Manage Subscription Section (for paid subscribers)
+            if subscriptionService.isPaidSubscriber && !subscriptionService.hasEnvironmentOverride {
+                manageSubscriptionSection
+            }
 
             // Restore Purchases Section
             restoreSection
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView(requiredTier: .pro)
+            PaywallView(requiredTier: paywallRequiredTier)
         }
         .navigationTitle("Subscription")
         .alert("Restore Purchases", isPresented: $showRestoreAlert) {
@@ -50,7 +53,22 @@ struct SubscriptionView: View {
         }
     }
 
+    /// Whether to show the upgrade section
+    /// Shows for free users, and Pro users who might want Team
+    private var canShowUpgradeSection: Bool {
+        if subscriptionService.hasEnvironmentOverride {
+            return false
+        }
+        // Show if user is not at max tier (Team)
+        return displayTier != .team
+    }
+
     // MARK: - Current Plan Section
+
+    /// The tier to display (uses effectiveTier to respect environment override)
+    private var displayTier: SubscriptionTier {
+        subscriptionService.effectiveTier
+    }
 
     @ViewBuilder
     private var currentPlanSection: some View {
@@ -58,22 +76,38 @@ struct SubscriptionView: View {
             HStack(spacing: 16) {
                 // Plan Icon
                 ZStack {
-                    tierGradient(for: subscriptionService.currentTier)
+                    tierGradient(for: displayTier)
                 }
                 .frame(width: 56, height: 56)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay {
-                    Image(systemName: tierIcon(for: subscriptionService.currentTier))
+                    Image(systemName: tierIcon(for: displayTier))
                         .font(.title2)
-                        .foregroundStyle(subscriptionService.isPaidSubscriber ? .white : .gray)
+                        .foregroundStyle(displayTier != .free ? .white : .gray)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(subscriptionService.subscriptionStatusText)
-                        .font(.title3)
-                        .fontWeight(.semibold)
+                    HStack(spacing: 6) {
+                        Text(displayTier.displayName)
+                            .font(.title3)
+                            .fontWeight(.semibold)
 
-                    if subscriptionService.isPaidSubscriber {
+                        if subscriptionService.hasEnvironmentOverride {
+                            Text("DEV")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.orange, in: Capsule())
+                        }
+                    }
+
+                    if subscriptionService.hasEnvironmentOverride {
+                        Text("All features unlocked for testing")
+                            .font(.subheadline)
+                            .foregroundStyle(.orange)
+                    } else if subscriptionService.isPaidSubscriber {
                         if let expirationDate = subscriptionService.subscriptionExpirationDate {
                             if subscriptionService.willRenew {
                                 Text("Renews \(expirationDate.formatted(date: .abbreviated, time: .omitted))")
@@ -94,10 +128,10 @@ struct SubscriptionView: View {
 
                 Spacer()
 
-                if subscriptionService.isPaidSubscriber {
+                if displayTier != .free {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.title2)
-                        .foregroundStyle(.green)
+                        .foregroundStyle(subscriptionService.hasEnvironmentOverride ? .orange : .green)
                 }
             }
             .padding(.vertical, 8)
@@ -106,151 +140,193 @@ struct SubscriptionView: View {
         }
     }
 
-    // MARK: - Pro Features Section
+    // MARK: - Feature Comparison Section
 
     @ViewBuilder
-    private var proFeaturesSection: some View {
+    private var featureComparisonSection: some View {
         Section {
-            FeatureRow(
-                icon: "folder.fill",
-                iconColor: .blue,
-                title: "2 Projects",
-                description: "Create up to 2 projects",
-                isIncluded: subscriptionService.currentTier.meetsRequirement(.pro),
-                tierBadge: "Pro"
-            )
-
-            FeatureRow(
-                icon: "bubble.left.and.bubble.right.fill",
-                iconColor: .green,
-                title: "Unlimited Feedback",
-                description: "No limits on feedback items per project",
-                isIncluded: subscriptionService.currentTier.meetsRequirement(.pro),
-                tierBadge: "Pro"
-            )
-
-            FeatureRow(
-                icon: "chart.bar.fill",
-                iconColor: .cyan,
-                title: "Advanced Analytics",
-                description: "MRR tracking and detailed insights",
-                isIncluded: subscriptionService.currentTier.meetsRequirement(.pro),
-                tierBadge: "Pro"
-            )
-
-            FeatureRow(
-                icon: "slider.horizontal.3",
-                iconColor: .orange,
-                title: "Configurable Statuses",
-                description: "Customize feedback workflow stages",
-                isIncluded: subscriptionService.currentTier.meetsRequirement(.pro),
-                tierBadge: "Pro"
-            )
+            featureComparisonTable
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
         } header: {
-            HStack {
-                Text("Pro Features")
-                Spacer()
-                if subscriptionService.currentTier == .pro {
-                    Text("Current Plan")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(.purple, in: Capsule())
-                }
-            }
+            Text("Compare Plans")
+        } footer: {
+            Text("Upgrade anytime to unlock more features. All plans include core feedback collection.")
         }
     }
 
-    // MARK: - Team Features Section
+    @ViewBuilder
+    private var featureComparisonTable: some View {
+        VStack(spacing: 0) {
+            // Header row
+            HStack(spacing: 0) {
+                Text("")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                tierHeaderCell(tier: .free, label: "FREE")
+                tierHeaderCell(tier: .pro, label: "PRO")
+                tierHeaderCell(tier: .team, label: "TEAM")
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider()
+
+            // Feature rows
+            SubscriptionFeatureRow(
+                feature: "Projects",
+                freeValue: .text("1"),
+                proValue: .text("2"),
+                teamValue: .text("∞"),
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Feedback per Project",
+                freeValue: .text("10"),
+                proValue: .text("∞"),
+                teamValue: .text("∞"),
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Integrations",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available,
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Advanced Analytics",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available,
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Custom Statuses",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available,
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Comment Notifications",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available,
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Team Members",
+                freeValue: .unavailable,
+                proValue: .unavailable,
+                teamValue: .available,
+                currentTier: displayTier
+            )
+
+            SubscriptionFeatureRow(
+                feature: "Voter Notifications",
+                freeValue: .unavailable,
+                proValue: .unavailable,
+                teamValue: .available,
+                currentTier: displayTier,
+                isLast: true
+            )
+        }
+        #if os(iOS)
+        .background(Color(UIColor.secondarySystemBackground))
+        #else
+        .background(Color(NSColor.controlBackgroundColor))
+        #endif
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, 8)
+    }
 
     @ViewBuilder
-    private var teamFeaturesSection: some View {
-        Section {
-            FeatureRow(
-                icon: "folder.fill.badge.plus",
-                iconColor: .indigo,
-                title: "Unlimited Projects",
-                description: "Create as many projects as you need",
-                isIncluded: subscriptionService.isTeamSubscriber,
-                tierBadge: "Team"
-            )
+    private func tierHeaderCell(tier: SubscriptionTier, label: String) -> some View {
+        let isCurrentTier = displayTier == tier
+        let color: Color = {
+            switch tier {
+            case .free: return .secondary
+            case .pro: return .purple
+            case .team: return .blue
+            }
+        }()
 
-            FeatureRow(
-                icon: "person.2.fill",
-                iconColor: .orange,
-                title: "Team Members",
-                description: "Invite unlimited team members",
-                isIncluded: subscriptionService.isTeamSubscriber,
-                tierBadge: "Team"
-            )
+        VStack(spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(color)
 
-            FeatureRow(
-                icon: "link",
-                iconColor: .purple,
-                title: "Slack Integration",
-                description: "Get notifications in Slack channels",
-                isIncluded: subscriptionService.isTeamSubscriber,
-                tierBadge: "Team"
-            )
-
-            FeatureRow(
-                icon: "arrow.triangle.branch",
-                iconColor: .gray,
-                title: "GitHub Integration",
-                description: "Push feedback to GitHub issues",
-                isIncluded: subscriptionService.isTeamSubscriber,
-                tierBadge: "Team"
-            )
-
-            FeatureRow(
-                icon: "envelope.fill",
-                iconColor: .red,
-                title: "Email Notifications",
-                description: "Automatic email alerts for updates",
-                isIncluded: subscriptionService.isTeamSubscriber,
-                tierBadge: "Team"
-            )
-        } header: {
-            HStack {
-                Text("Team Features")
-                Spacer()
-                if subscriptionService.isTeamSubscriber {
-                    Text("Current Plan")
-                        .font(.caption)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(.blue, in: Capsule())
-                }
+            if isCurrentTier {
+                Circle()
+                    .fill(color)
+                    .frame(width: 6, height: 6)
             }
         }
+        .frame(width: 55)
     }
 
     // MARK: - Upgrade Section
+
+    /// The next tier to upgrade to
+    private var upgradeTier: SubscriptionTier {
+        displayTier == .free ? .pro : .team
+    }
+
+    /// Upgrade section icon and colors based on target tier
+    private var upgradeIcon: String {
+        upgradeTier == .pro ? "crown.fill" : "person.3.fill"
+    }
+
+    private var upgradeGradientColors: [Color] {
+        upgradeTier == .pro ? [.purple, .pink] : [.blue, .cyan]
+    }
+
+    private var upgradeTitle: String {
+        "Upgrade to \(upgradeTier.displayName)"
+    }
+
+    private var upgradeSubtitle: String {
+        switch upgradeTier {
+        case .pro:
+            return "Unlock 2 projects, unlimited feedback, and integrations"
+        case .team:
+            return "Unlock unlimited projects and team collaboration"
+        case .free:
+            return ""
+        }
+    }
 
     @ViewBuilder
     private var upgradeSection: some View {
         Section {
             Button {
+                paywallRequiredTier = upgradeTier
                 showPaywall = true
             } label: {
                 HStack {
                     Spacer()
                     VStack(spacing: 12) {
-                        Image(systemName: "crown.fill")
+                        Image(systemName: upgradeIcon)
                             .font(.system(size: 40))
                             .foregroundStyle(.linearGradient(
-                                colors: [.purple, .pink],
+                                colors: upgradeGradientColors,
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ))
 
-                        Text("Upgrade to Pro")
+                        Text(upgradeTitle)
                             .font(.headline)
                             .foregroundStyle(.primary)
 
-                        Text("Unlock 2 projects and unlimited feedback")
+                        Text(upgradeSubtitle)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -260,6 +336,53 @@ struct SubscriptionView: View {
                 }
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Manage Subscription Section
+
+    /// URL to open App Store subscriptions management
+    private var manageSubscriptionsURL: URL {
+        #if os(iOS)
+        URL(string: "https://apps.apple.com/account/subscriptions")!
+        #else
+        // macOS uses a different URL scheme for subscription management
+        URL(string: "macappstores://apps.apple.com/account/subscriptions")!
+        #endif
+    }
+
+    @ViewBuilder
+    private var manageSubscriptionSection: some View {
+        Section {
+            Link(destination: manageSubscriptionsURL) {
+                HStack {
+                    Image(systemName: "creditcard.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(.blue, in: RoundedRectangle(cornerRadius: 6))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Manage Subscription")
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+
+                        Text("Change plan or cancel in App Store")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "arrow.up.forward")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("Subscription Management")
+        } footer: {
+            Text("You can change your plan, update payment method, or cancel your subscription through the App Store.")
         }
     }
 
@@ -285,17 +408,6 @@ struct SubscriptionView: View {
                 }
             }
             .disabled(subscriptionService.isLoading)
-
-            #if os(iOS)
-            Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
-                HStack {
-                    Spacer()
-                    Text("Manage in App Store")
-                        .foregroundStyle(.blue)
-                    Spacer()
-                }
-            }
-            #endif
         } footer: {
             Text("Restore purchases if you've previously subscribed on another device.")
         }
@@ -355,52 +467,79 @@ struct SubscriptionView: View {
     }
 }
 
-// MARK: - Feature Row
+// MARK: - Subscription Feature Row
 
-struct FeatureRow: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    let description: String
-    let isIncluded: Bool
-    var tierBadge: String? = nil
+/// A row in the feature comparison table that highlights the current tier
+struct SubscriptionFeatureRow: View {
+    let feature: String
+    let freeValue: FeatureValue
+    let proValue: FeatureValue
+    let teamValue: FeatureValue
+    let currentTier: SubscriptionTier
+    var isLast: Bool = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(iconColor, in: RoundedRectangle(cornerRadius: 6))
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Text(feature)
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(title)
-                        .fontWeight(.medium)
+                featureCell(freeValue, tier: .free)
+                    .frame(width: 55)
 
-                    if let badge = tierBadge, !isIncluded {
-                        Text(badge)
-                            .font(.caption2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(badge == "Team" ? .blue : .purple, in: Capsule())
-                    }
-                }
+                featureCell(proValue, tier: .pro)
+                    .frame(width: 55)
 
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                featureCell(teamValue, tier: .team)
+                    .frame(width: 55)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
 
-            Spacer()
-
-            Image(systemName: isIncluded ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(isIncluded ? .green : .secondary)
-                .font(.title3)
+            if !isLast {
+                Divider()
+                    .padding(.leading, 16)
+            }
         }
-        .opacity(isIncluded ? 1 : 0.6)
+    }
+
+    @ViewBuilder
+    private func featureCell(_ value: FeatureValue, tier: SubscriptionTier) -> some View {
+        let isCurrentTier = currentTier == tier
+        let color: Color = {
+            switch tier {
+            case .free: return .secondary
+            case .pro: return .purple
+            case .team: return .blue
+            }
+        }()
+
+        Group {
+            switch value {
+            case .available:
+                Image(systemName: "checkmark")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(color)
+            case .unavailable:
+                Image(systemName: "xmark")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary.opacity(0.4))
+            case .text(let text):
+                Text(text)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(color)
+            }
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .background(
+            isCurrentTier ? color.opacity(0.15) : Color.clear,
+            in: RoundedRectangle(cornerRadius: 6)
+        )
     }
 }
 

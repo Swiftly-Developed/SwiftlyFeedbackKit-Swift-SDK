@@ -12,107 +12,78 @@ struct PaywallView: View {
     /// The minimum tier required for the feature that triggered the paywall
     let requiredTier: SubscriptionTier
 
+    /// When true, forces showing the actual paywall even if environment override is active.
+    /// Use this when triggered by a server 402 response (server doesn't respect client-side override).
+    let forceShowPaywall: Bool
+
     @State private var subscriptionService = SubscriptionService.shared
-    @State private var selectedPackage: Package?
+    @State private var selectedTier: SubscriptionTier = .pro
+    @State private var isYearly = true
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var isOverridingTier = false
     @Environment(\.dismiss) private var dismiss
 
     /// Initialize with a required tier (defaults to .pro for backwards compatibility)
-    init(requiredTier: SubscriptionTier = .pro) {
+    init(requiredTier: SubscriptionTier = .pro, forceShowPaywall: Bool = false) {
         self.requiredTier = requiredTier
+        self.forceShowPaywall = forceShowPaywall
     }
 
     /// Whether the environment override is active (DEV/TestFlight)
+    /// Returns false if forceShowPaywall is true (e.g., triggered by server 402)
     private var hasEnvironmentOverride: Bool {
-        subscriptionService.hasEnvironmentOverride
+        if forceShowPaywall {
+            return false
+        }
+        return subscriptionService.hasEnvironmentOverride
     }
 
-    /// Filter packages to show only relevant tiers based on the required tier
-    /// Returns packages sorted with Monthly first, then Yearly
-    private func filteredPackages(from offering: Offering) -> [Package] {
-        // Define exact product IDs for each tier
-        let proProductIds = [
-            SubscriptionService.ProductID.proMonthly.rawValue,
-            SubscriptionService.ProductID.proYearly.rawValue
-        ]
-        let teamProductIds = [
-            SubscriptionService.ProductID.teamMonthly.rawValue,
-            SubscriptionService.ProductID.teamYearly.rawValue
-        ]
-
-        // Debug: Log all available packages and required tier
-        print("🔍 PaywallView - Required tier: \(requiredTier)")
-        print("🔍 PaywallView - Pro product IDs: \(proProductIds)")
-        print("🔍 PaywallView - Team product IDs: \(teamProductIds)")
-        for package in offering.availablePackages {
-            print("🔍 PaywallView - Available package: \(package.storeProduct.productIdentifier) (type: \(package.packageType))")
-        }
-
-        let filtered = offering.availablePackages.filter { package in
-            let productId = package.storeProduct.productIdentifier
-            let shouldInclude: Bool
-            switch requiredTier {
-            case .free:
-                // Free tier doesn't need paywall, but if shown, show all
-                shouldInclude = true
-            case .pro:
-                // For Pro requirement, show only Pro packages
-                shouldInclude = proProductIds.contains(productId)
-            case .team:
-                // For Team requirement, show only Team packages
-                shouldInclude = teamProductIds.contains(productId)
-            }
-            print("🔍 PaywallView - Filter \(productId): \(shouldInclude ? "INCLUDE" : "EXCLUDE")")
-            return shouldInclude
-        }
-
-        print("🔍 PaywallView - Filtered packages count: \(filtered.count)")
-
-        // Sort: Monthly first, then Yearly
-        return filtered.sorted { pkg1, pkg2 in
-            pkg1.packageType == .monthly && pkg2.packageType != .monthly
-        }
-    }
-
-    private var navigationTitle: String {
-        switch requiredTier {
-        case .free:
-            return "Upgrade"
+    /// Get the package for a specific tier and billing period
+    private func package(for tier: SubscriptionTier, yearly: Bool, from offering: Offering) -> Package? {
+        let productId: String
+        switch tier {
         case .pro:
-            return "Upgrade to Pro"
+            productId = yearly ? SubscriptionService.ProductID.proYearly.rawValue : SubscriptionService.ProductID.proMonthly.rawValue
         case .team:
-            return "Upgrade to Team"
-        }
-    }
-
-    private var heroTitle: String {
-        switch requiredTier {
+            productId = yearly ? SubscriptionService.ProductID.teamYearly.rawValue : SubscriptionService.ProductID.teamMonthly.rawValue
         case .free:
-            return "Upgrade Your Plan"
-        case .pro:
-            return "Unlock Pro Features"
+            return nil
+        }
+        return offering.availablePackages.first { $0.storeProduct.productIdentifier == productId }
+    }
+
+    /// The currently selected package based on tier and billing period
+    private func selectedPackage(from offering: Offering) -> Package? {
+        package(for: selectedTier, yearly: isYearly, from: offering)
+    }
+
+    /// Available tiers to show based on requiredTier
+    private var availableTiers: [SubscriptionTier] {
+        switch requiredTier {
+        case .free, .pro:
+            return [.pro, .team]
         case .team:
-            return "Unlock Team Features"
+            return [.team]
         }
     }
 
-    private var accentColor: Color {
-        requiredTier == .team ? .blue : .purple
+    /// Whether we're in a non-production environment where server tier override is available
+    private var canUseServerOverride: Bool {
+        let env = AppConfiguration.currentEnvironment
+        return env == .localhost || env == .development || env == .testflight
     }
 
     var body: some View {
         NavigationStack {
             Group {
                 if hasEnvironmentOverride {
-                    // Environment override is active - show unlocked message
                     environmentOverrideView
                 } else {
-                    // Normal paywall
                     paywallContent
                 }
             }
-            .navigationTitle(hasEnvironmentOverride ? "Features Unlocked" : navigationTitle)
+            .navigationTitle(hasEnvironmentOverride ? "Features Unlocked" : "")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -124,6 +95,10 @@ struct PaywallView: View {
             .task {
                 if !hasEnvironmentOverride {
                     await subscriptionService.fetchOfferings()
+                    // Pre-select required tier if it's Team
+                    if requiredTier == .team {
+                        selectedTier = .team
+                    }
                 }
             }
             .alert("Error", isPresented: $showError) {
@@ -198,13 +173,22 @@ struct PaywallView: View {
     private var paywallContent: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Hero section
-                heroSection
+                // Logo with blur background
+                logoSection
 
-                // Package selection
+                // Billing period toggle
+                billingPeriodToggle
+
+                // Feature comparison table
+                featureComparisonTable
+
+                // Tier selection cards (with pricing)
                 if let offerings = subscriptionService.offerings,
                    let current = offerings.current {
-                    packageSelectionSection(offering: current)
+                    tierSelectionSection(offering: current)
+
+                    // Subscribe button
+                    subscribeButton(offering: current)
                 } else if subscriptionService.isLoading {
                     ProgressView()
                         .padding()
@@ -214,9 +198,6 @@ struct PaywallView: View {
                         .padding()
                 }
 
-                // Subscribe button
-                subscribeButton
-
                 // Restore & Terms
                 footerSection
             }
@@ -224,63 +205,202 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Hero Section
+    // MARK: - Logo Section
 
     @ViewBuilder
-    private var heroSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: requiredTier == .team ? "person.3.fill" : "crown.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.linearGradient(
-                    colors: requiredTier == .team ? [.blue, .cyan] : [.purple, .pink],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
+    private var logoSection: some View {
+        ZStack {
+            // Dynamic blur background
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.orange.opacity(0.4), Color.orange.opacity(0.1), Color.clear],
+                        center: .center,
+                        startRadius: 20,
+                        endRadius: 80
+                    )
+                )
+                .frame(width: 160, height: 160)
+                .blur(radius: 20)
 
-            Text(heroTitle)
-                .font(.title)
-                .fontWeight(.bold)
+            VStack(spacing: 8) {
+                Image(.feedbackKit)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
 
-            VStack(alignment: .leading, spacing: 12) {
-                if requiredTier == .team {
-                    // Team features
-                    FeatureCheckRow(text: "Unlimited Projects")
-                    FeatureCheckRow(text: "Invite Team Members")
-                    FeatureCheckRow(text: "All Integrations (Slack, GitHub, etc.)")
-                    FeatureCheckRow(text: "Everything in Pro")
-                } else {
-                    // Pro features
-                    FeatureCheckRow(text: "2 Projects (up from 1)")
-                    FeatureCheckRow(text: "Unlimited Feedback per Project")
-                    FeatureCheckRow(text: "Advanced Analytics & MRR Tracking")
-                    FeatureCheckRow(text: "Configurable Status Workflow")
-                }
+                Text("PREMIUM")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .tracking(2)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.top, 8)
         }
-        .padding(.vertical, 20)
+        .padding(.top, 8)
     }
 
-    // MARK: - Package Selection
+    // MARK: - Billing Period Toggle
 
     @ViewBuilder
-    private func packageSelectionSection(offering: Offering) -> some View {
-        let packages = filteredPackages(from: offering)
-        VStack(spacing: 12) {
-            ForEach(packages, id: \.identifier) { package in
-                PackageOptionView(
-                    package: package,
-                    isSelected: selectedPackage?.identifier == package.identifier,
-                    accentColor: accentColor
-                ) {
-                    selectedPackage = package
+    private var billingPeriodToggle: some View {
+        HStack(spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isYearly = false
                 }
+            } label: {
+                Text("Monthly")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(isYearly ? Color.clear : Color.accentColor)
+                    .foregroundStyle(isYearly ? Color.secondary : Color.white)
             }
+            .buttonStyle(.plain)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isYearly = true
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Yearly")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    Text("-17%")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(isYearly ? Color.white.opacity(0.2) : Color.green.opacity(0.2))
+                        .foregroundStyle(isYearly ? .white : .green)
+                        .clipShape(Capsule())
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(isYearly ? Color.accentColor : Color.clear)
+                .foregroundStyle(isYearly ? .white : .secondary)
+            }
+            .buttonStyle(.plain)
         }
-        .onAppear {
-            // Auto-select the first package (Monthly) if none selected
-            if selectedPackage == nil, let first = packages.first {
-                selectedPackage = first
+        #if os(iOS)
+        .background(Color(UIColor.secondarySystemBackground))
+        #else
+        .background(Color(NSColor.controlBackgroundColor))
+        #endif
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - Feature Comparison Table
+
+    @ViewBuilder
+    private var featureComparisonTable: some View {
+        VStack(spacing: 0) {
+            // Header row
+            HStack(spacing: 0) {
+                Text("")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("FREE")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 50)
+
+                Text("PRO")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.purple)
+                    .frame(width: 50)
+
+                Text("TEAM")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.blue)
+                    .frame(width: 50)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider()
+
+            // Feature rows
+            FeatureComparisonRow(
+                feature: "Projects",
+                freeValue: .text("1"),
+                proValue: .text("2"),
+                teamValue: .text("∞")
+            )
+
+            FeatureComparisonRow(
+                feature: "Feedback Requests",
+                freeValue: .text("10"),
+                proValue: .text("∞"),
+                teamValue: .text("∞")
+            )
+
+            FeatureComparisonRow(
+                feature: "Integrations",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available
+            )
+
+            FeatureComparisonRow(
+                feature: "Advanced Analytics",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available
+            )
+
+            FeatureComparisonRow(
+                feature: "Custom Statuses",
+                freeValue: .unavailable,
+                proValue: .available,
+                teamValue: .available
+            )
+
+            FeatureComparisonRow(
+                feature: "Team Members",
+                freeValue: .unavailable,
+                proValue: .unavailable,
+                teamValue: .available
+            )
+
+            FeatureComparisonRow(
+                feature: "Voter Notifications",
+                freeValue: .unavailable,
+                proValue: .unavailable,
+                teamValue: .available,
+                isLast: true
+            )
+        }
+        #if os(iOS)
+        .background(Color(UIColor.secondarySystemBackground))
+        #else
+        .background(Color(NSColor.controlBackgroundColor))
+        #endif
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Tier Selection Section
+
+    @ViewBuilder
+    private func tierSelectionSection(offering: Offering) -> some View {
+        HStack(spacing: 12) {
+            ForEach(availableTiers, id: \.self) { tier in
+                TierSelectionCard(
+                    tier: tier,
+                    package: package(for: tier, yearly: isYearly, from: offering),
+                    isSelected: selectedTier == tier,
+                    isRecommended: tier == .pro && availableTiers.count > 1
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        selectedTier = tier
+                    }
+                }
             }
         }
     }
@@ -288,29 +408,74 @@ struct PaywallView: View {
     // MARK: - Subscribe Button
 
     @ViewBuilder
-    private var subscribeButton: some View {
-        Button {
-            Task {
-                await purchaseSelectedPackage()
-            }
-        } label: {
-            HStack {
-                if subscriptionService.isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(.white)
-                } else {
-                    Text("Subscribe")
-                        .fontWeight(.semibold)
+    private func subscribeButton(offering: Offering) -> some View {
+        let currentPackage = selectedPackage(from: offering)
+        let tierColor: Color = selectedTier == .team ? .blue : .purple
+
+        VStack(spacing: 12) {
+            // DEV-only: Server override button for non-production environments
+            if canUseServerOverride {
+                Button {
+                    Task {
+                        await overrideTierOnServer()
+                    }
+                } label: {
+                    HStack {
+                        if isOverridingTier {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "hammer.fill")
+                            Text("DEV: Unlock \(selectedTier.displayName) on Server")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.orange)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                .disabled(subscriptionService.isLoading || isOverridingTier)
+
+                Text("This bypasses StoreKit and updates your server-side subscription tier for testing.")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                    .multilineTextAlignment(.center)
+
+                Divider()
+                    .padding(.vertical, 4)
+
+                Text("Or subscribe via App Store:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(selectedPackage == nil ? Color.gray : accentColor)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // Regular subscribe button
+            Button {
+                Task {
+                    await purchasePackage(currentPackage)
+                }
+            } label: {
+                HStack {
+                    if subscriptionService.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                            .tint(.white)
+                    } else {
+                        Text("Subscribe to \(selectedTier.displayName)")
+                            .fontWeight(.semibold)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(currentPackage == nil ? Color.gray : tierColor)
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(currentPackage == nil || subscriptionService.isLoading || isOverridingTier)
         }
-        .disabled(selectedPackage == nil || subscriptionService.isLoading)
     }
 
     // MARK: - Footer Section
@@ -342,8 +507,8 @@ struct PaywallView: View {
 
     // MARK: - Actions
 
-    private func purchaseSelectedPackage() async {
-        guard let package = selectedPackage else { return }
+    private func purchasePackage(_ package: Package?) async {
+        guard let package else { return }
 
         do {
             try await subscriptionService.purchase(package: package)
@@ -370,64 +535,173 @@ struct PaywallView: View {
             showError = true
         }
     }
+
+    /// DEV-only: Override subscription tier on the server for testing
+    private func overrideTierOnServer() async {
+        isOverridingTier = true
+        defer { isOverridingTier = false }
+
+        do {
+            _ = try await AdminAPIClient.shared.overrideSubscriptionTier(selectedTier)
+            // Update client-side tier to match the server override
+            #if DEBUG
+            subscriptionService.simulatedTier = selectedTier
+            #endif
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
 }
 
-// MARK: - Package Option View
+// MARK: - Feature Comparison Row
 
-struct PackageOptionView: View {
-    let package: Package
+enum FeatureValue {
+    case available
+    case unavailable
+    case text(String)
+}
+
+struct FeatureComparisonRow: View {
+    let feature: String
+    let freeValue: FeatureValue
+    let proValue: FeatureValue
+    let teamValue: FeatureValue
+    var isLast: Bool = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Text(feature)
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                featureCell(freeValue, color: .secondary)
+                    .frame(width: 50)
+
+                featureCell(proValue, color: .purple)
+                    .frame(width: 50)
+
+                featureCell(teamValue, color: .blue)
+                    .frame(width: 50)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            if !isLast {
+                Divider()
+                    .padding(.leading, 16)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func featureCell(_ value: FeatureValue, color: Color) -> some View {
+        switch value {
+        case .available:
+            Image(systemName: "checkmark")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(color)
+        case .unavailable:
+            Image(systemName: "xmark")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundStyle(.secondary.opacity(0.4))
+        case .text(let text):
+            Text(text)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(color)
+        }
+    }
+}
+
+// MARK: - Tier Selection Card
+
+struct TierSelectionCard: View {
+    let tier: SubscriptionTier
+    let package: Package?
     let isSelected: Bool
-    var accentColor: Color = .purple
+    let isRecommended: Bool
     let onTap: () -> Void
+
+    private var tierColor: Color {
+        tier == .team ? .blue : .purple
+    }
+
+    private var tierIcon: String {
+        tier == .team ? "person.3.fill" : "crown.fill"
+    }
 
     var body: some View {
         Button(action: onTap) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(package.storeProduct.localizedTitle)
-                            .fontWeight(.semibold)
+            VStack(spacing: 8) {
+                // Recommended badge or spacer
+                if isRecommended {
+                    Text("Popular")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(tierColor.opacity(0.2))
+                        .foregroundStyle(tierColor)
+                        .clipShape(Capsule())
+                } else {
+                    Text(" ")
+                        .font(.caption2)
+                        .padding(.vertical, 3)
+                }
 
-                        if package.packageType == .annual {
-                            Text("Save 17%")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color.green.opacity(0.2))
-                                .foregroundStyle(.green)
-                                .clipShape(Capsule())
-                        }
-                    }
+                Image(systemName: tierIcon)
+                    .font(.title)
+                    .foregroundStyle(tierColor)
 
-                    Text(priceText)
+                Text(tier.displayName)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+
+                if let package {
+                    Text(priceText(for: package))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
-                Spacer()
+                Spacer(minLength: 0)
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(isSelected ? accentColor : .secondary)
+                    .foregroundStyle(isSelected ? tierColor : .secondary.opacity(0.4))
             }
+            .frame(maxWidth: .infinity)
             .padding()
             #if os(iOS)
-            .background(isSelected ? accentColor.opacity(0.1) : Color(UIColor.secondarySystemBackground))
+            .background(isSelected ? tierColor.opacity(0.08) : Color(UIColor.secondarySystemBackground))
             #else
-            .background(isSelected ? accentColor.opacity(0.1) : Color(NSColor.windowBackgroundColor))
+            .background(isSelected ? tierColor.opacity(0.08) : Color(NSColor.controlBackgroundColor))
             #endif
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? accentColor : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? tierColor : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)
     }
 
-    private var priceText: String {
+    private func priceText(for package: Package) -> String {
         let price = package.storeProduct.localizedPriceString
+        let productId = package.storeProduct.productIdentifier
+
+        // Check product ID for billing period since packageType may not be set correctly for all packages
+        if productId.contains(".monthly") {
+            return "\(price)/month"
+        } else if productId.contains(".yearly") {
+            return "\(price)/year"
+        }
+
+        // Fallback to packageType
         switch package.packageType {
         case .monthly:
             return "\(price)/month"
@@ -454,6 +728,10 @@ struct FeatureCheckRow: View {
     }
 }
 
-#Preview {
-    PaywallView()
+#Preview("Pro Required") {
+    PaywallView(requiredTier: .pro)
+}
+
+#Preview("Team Required") {
+    PaywallView(requiredTier: .team)
 }

@@ -42,7 +42,7 @@ struct ProjectListView: View {
 
     /// Whether the user can create a new project based on their subscription
     private var canCreateProject: Bool {
-        guard let maxProjects = subscriptionService.currentTier.maxProjects else {
+        guard let maxProjects = subscriptionService.effectiveTier.maxProjects else {
             return true // Unlimited
         }
         return ownedProjectCount < maxProjects
@@ -50,7 +50,7 @@ struct ProjectListView: View {
 
     /// The minimum tier required to create another project
     private var tierRequiredForMoreProjects: SubscriptionTier {
-        switch subscriptionService.currentTier {
+        switch subscriptionService.effectiveTier {
         case .free:
             // Free users need Pro to get more than 1 project
             return .pro
@@ -91,7 +91,7 @@ struct ProjectListView: View {
             #endif
 
             // Project count indicator
-            if let maxProjects = subscriptionService.currentTier.maxProjects {
+            if let maxProjects = subscriptionService.effectiveTier.maxProjects {
                 ToolbarItem(placement: .automatic) {
                     Text("\(ownedProjectCount)/\(maxProjects)")
                         .font(.caption)
