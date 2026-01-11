@@ -91,6 +91,9 @@ final class SubscriptionService: @unchecked Sendable {
     /// Entitlement identifier for Pro tier (must match RevenueCat dashboard)
     static let proEntitlementID = "Swiftly Pro"
 
+    /// Entitlement identifier for Team tier (must match RevenueCat dashboard)
+    static let teamEntitlementID = "Swiftly Team"
+
     /// Product identifiers
     enum ProductID: String, CaseIterable {
         case proMonthly = "swiftlyfeedback.pro.monthly"
@@ -98,6 +101,36 @@ final class SubscriptionService: @unchecked Sendable {
         case teamMonthly = "swiftlyfeedback.team.monthly"
         case teamYearly = "swiftlyfeedback.team.yearly"
     }
+
+    // MARK: - DEBUG Tier Simulation
+
+    #if DEBUG
+    /// DEBUG only: Simulated tier for testing specific tier behaviors
+    /// Set via Developer Center. nil = use environment override or actual tier
+    private static let simulatedTierKey = "debug.simulatedSubscriptionTier"
+
+    /// Backing storage for simulatedTier - @Observable tracks this property
+    private var _simulatedTier: SubscriptionTier? = {
+        guard let raw = UserDefaults.standard.string(forKey: simulatedTierKey) else { return nil }
+        return SubscriptionTier(rawValue: raw)
+    }()
+
+    var simulatedTier: SubscriptionTier? {
+        get { _simulatedTier }
+        set {
+            _simulatedTier = newValue
+            if let tier = newValue {
+                UserDefaults.standard.set(tier.rawValue, forKey: Self.simulatedTierKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: Self.simulatedTierKey)
+            }
+        }
+    }
+
+    func clearSimulatedTier() {
+        simulatedTier = nil
+    }
+    #endif
 
     // MARK: - State
 
@@ -122,6 +155,11 @@ final class SubscriptionService: @unchecked Sendable {
     var currentTier: SubscriptionTier {
         guard let customerInfo else { return .free }
 
+        // Check Team first (higher tier)
+        if customerInfo.entitlements[Self.teamEntitlementID]?.isActive == true {
+            return .team
+        }
+
         // Check for Pro entitlement
         if customerInfo.entitlements[Self.proEntitlementID]?.isActive == true {
             return .pro
@@ -143,22 +181,36 @@ final class SubscriptionService: @unchecked Sendable {
     }
 
     /// Whether the current environment grants free access to all features
-    /// DEV, localhost, and TestFlight environments unlock all features for testing
+    /// Only applies in DEBUG builds - TestFlight and App Store use real subscriptions
     /// Can be disabled via `disableEnvironmentOverrideForTesting` for testing gating behavior
     var hasEnvironmentOverride: Bool {
+        #if DEBUG
         if disableEnvironmentOverrideForTesting {
             return false
         }
         let env = AppConfiguration.currentEnvironment
+        // Only override in DEBUG builds for non-production environments
         return env == .localhost || env == .development || env == .testflight
+        #else
+        // RELEASE builds (TestFlight, App Store) never override - use real subscription
+        return false
+        #endif
     }
 
-    /// Effective tier considering environment override
-    /// Returns .team (full access) when environment override is active
+    /// Effective tier considering environment override and simulation
+    /// Priority: 1. Simulated tier (DEBUG only), 2. Environment override (DEBUG only), 3. Actual tier
     var effectiveTier: SubscriptionTier {
-        if hasEnvironmentOverride {
-            return .team  // Full access in non-production environments
+        #if DEBUG
+        // 1. If a specific tier is being simulated, use it
+        if let simulated = simulatedTier {
+            return simulated
         }
+        // 2. If environment override is active, return .team (full access)
+        if hasEnvironmentOverride {
+            return .team
+        }
+        #endif
+        // 3. Otherwise use actual RevenueCat tier
         return currentTier
     }
 

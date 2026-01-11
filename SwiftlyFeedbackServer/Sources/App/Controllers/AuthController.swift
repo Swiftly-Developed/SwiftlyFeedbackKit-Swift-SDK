@@ -273,7 +273,9 @@ struct AuthController: RouteCollection {
             user.notifyNewFeedback = notifyNewFeedback
         }
         if let notifyNewComments = dto.notifyNewComments {
-            user.notifyNewComments = notifyNewComments
+            // Only Pro+ users can enable comment notifications
+            // Free users silently stay OFF (preserves intent if they upgrade)
+            user.notifyNewComments = user.subscriptionTier.meetsRequirement(.pro) ? notifyNewComments : false
         }
 
         try await user.save(on: req.db)

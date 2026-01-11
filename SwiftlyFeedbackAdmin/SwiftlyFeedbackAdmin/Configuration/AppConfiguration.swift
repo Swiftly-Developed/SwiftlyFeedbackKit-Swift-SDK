@@ -100,8 +100,7 @@ enum AppEnvironment: String, Codable, CaseIterable {
     var sdkAPIKey: String {
         switch self {
         case .localhost:
-            // Localhost uses the same key as development
-            return "sf_G3VStALGZ3Ja8LhWPKJTRJk9S8RaZwMk"
+            return "sf_80OfWg1185nExqUsc8ivmBo84GMRL5fs"
         case .development:
             return "sf_67xRwr4qxTwaIQOFyXq9uyuSOrtS2uvy"
         case .testflight:

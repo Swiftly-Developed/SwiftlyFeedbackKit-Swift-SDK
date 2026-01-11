@@ -10,6 +10,7 @@ struct SlackSettingsView: View {
     @State private var notifyNewComments: Bool
     @State private var notifyStatusChanges: Bool
     @State private var isActive: Bool
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -124,13 +125,16 @@ struct SlackSettingsView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "An error occurred")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
         }
     }
 
     private func saveSettings() {
         Task {
             let trimmedURL = webhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
-            let success = await viewModel.updateSlackSettings(
+            let result = await viewModel.updateSlackSettings(
                 projectId: project.id,
                 slackWebhookUrl: trimmedURL.isEmpty ? "" : trimmedURL,
                 slackNotifyNewFeedback: notifyNewFeedback,
@@ -138,8 +142,13 @@ struct SlackSettingsView: View {
                 slackNotifyStatusChanges: notifyStatusChanges,
                 slackIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

@@ -32,6 +32,7 @@ struct ClickUpSettingsView: View {
 
     @State private var isLoadingHierarchy = false
     @State private var hierarchyError: String?
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -324,6 +325,9 @@ struct ClickUpSettingsView: View {
             } message: {
                 Text("Go to ClickUp Settings > Apps > API Token. Copy your personal API token.")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
             .task {
                 // Load workspaces if token exists
                 if hasToken {
@@ -341,7 +345,7 @@ struct ClickUpSettingsView: View {
 
         Task {
             // First save the token so the API can use it
-            let success = await viewModel.updateClickUpSettings(
+            let result = await viewModel.updateClickUpSettings(
                 projectId: project.id,
                 clickupToken: token.trimmingCharacters(in: .whitespacesAndNewlines),
                 clickupListId: nil,
@@ -354,11 +358,13 @@ struct ClickUpSettingsView: View {
                 clickupIsActive: nil
             )
 
-            if success {
+            if result == .success {
                 workspaces = await viewModel.loadClickUpWorkspaces(projectId: project.id)
                 if workspaces.isEmpty {
                     hierarchyError = "No workspaces found. Check your API token."
                 }
+            } else if result == .paymentRequired {
+                showPaywall = true
             } else {
                 hierarchyError = viewModel.errorMessage ?? "Failed to verify token"
             }
@@ -407,7 +413,7 @@ struct ClickUpSettingsView: View {
         Task {
             let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let success = await viewModel.updateClickUpSettings(
+            let result = await viewModel.updateClickUpSettings(
                 projectId: project.id,
                 clickupToken: trimmedToken.isEmpty ? "" : trimmedToken,
                 clickupListId: listId.isEmpty ? "" : listId,
@@ -419,8 +425,13 @@ struct ClickUpSettingsView: View {
                 clickupVotesFieldId: votesFieldId.isEmpty ? "" : votesFieldId,
                 clickupIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

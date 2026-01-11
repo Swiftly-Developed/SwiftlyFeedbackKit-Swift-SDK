@@ -12,6 +12,7 @@ struct GitHubSettingsView: View {
     @State private var syncStatus: Bool
     @State private var isActive: Bool
     @State private var showingTokenInfo = false
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -170,6 +171,9 @@ struct GitHubSettingsView: View {
             } message: {
                 Text("Go to GitHub Settings > Developer Settings > Personal Access Tokens > Tokens (classic). Create a token with 'repo' scope for private repos or 'public_repo' for public repos.")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
         }
     }
 
@@ -179,7 +183,7 @@ struct GitHubSettingsView: View {
             let trimmedRepo = repo.trimmingCharacters(in: .whitespacesAndNewlines)
             let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let success = await viewModel.updateGitHubSettings(
+            let result = await viewModel.updateGitHubSettings(
                 projectId: project.id,
                 githubOwner: trimmedOwner.isEmpty ? "" : trimmedOwner,
                 githubRepo: trimmedRepo.isEmpty ? "" : trimmedRepo,
@@ -188,8 +192,13 @@ struct GitHubSettingsView: View {
                 githubSyncStatus: syncStatus,
                 githubIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

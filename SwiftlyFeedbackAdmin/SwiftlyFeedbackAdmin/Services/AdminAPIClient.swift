@@ -1467,4 +1467,24 @@ enum APIError: Error, LocalizedError {
         if case .paymentRequired = self { return true }
         return false
     }
+
+    /// The error message for payment required errors
+    var errorMessage: String {
+        switch self {
+        case .paymentRequired(let message):
+            return message
+        default:
+            return errorDescription ?? "Unknown error"
+        }
+    }
+
+    /// Determines the required subscription tier from a 402 error message
+    var requiredSubscriptionTier: SubscriptionTier {
+        guard isPaymentRequired else { return .pro }
+        let message = errorMessage.lowercased()
+        if message.contains("team") {
+            return .team
+        }
+        return .pro
+    }
 }

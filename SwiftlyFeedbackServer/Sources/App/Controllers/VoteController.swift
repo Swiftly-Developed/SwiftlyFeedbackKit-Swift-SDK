@@ -61,8 +61,18 @@ struct VoteController: RouteCollection {
             throw Abort(.conflict, reason: "User has already voted for this feedback")
         }
 
-        let notifyStatusChange = dto.notifyStatusChange ?? false
+        var notifyStatusChange = dto.notifyStatusChange ?? false
         let validEmail = (email?.isEmpty == false) ? email : nil
+
+        // Only allow notification opt-in if project owner has Team tier
+        // Voter notifications are a Team-tier feature
+        if notifyStatusChange && validEmail != nil {
+            try await feedback.project.$owner.load(on: req.db)
+            if !feedback.project.owner.subscriptionTier.meetsRequirement(.team) {
+                // Silently disable - don't error, just don't save the preference
+                notifyStatusChange = false
+            }
+        }
 
         let vote = Vote(
             userId: dto.userId,

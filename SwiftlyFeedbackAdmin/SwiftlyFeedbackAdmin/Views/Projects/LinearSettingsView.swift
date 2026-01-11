@@ -27,6 +27,7 @@ struct LinearSettingsView: View {
     @State private var isLoadingProjects = false
     @State private var isLoadingLabels = false
     @State private var teamsError: String?
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -272,6 +273,9 @@ struct LinearSettingsView: View {
             } message: {
                 Text("1. Open Linear and go to Settings\n2. Navigate to API section\n3. Click 'Personal API Keys'\n4. Create a new key and copy it")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
             .task {
                 if hasToken {
                     loadTeams()
@@ -288,7 +292,7 @@ struct LinearSettingsView: View {
 
         Task {
             // First save the token so the API can use it
-            let success = await viewModel.updateLinearSettings(
+            let result = await viewModel.updateLinearSettings(
                 projectId: project.id,
                 linearToken: token.trimmingCharacters(in: .whitespacesAndNewlines),
                 linearTeamId: nil,
@@ -301,7 +305,7 @@ struct LinearSettingsView: View {
                 linearIsActive: nil
             )
 
-            if success {
+            if result == .success {
                 teams = await viewModel.loadLinearTeams(projectId: project.id)
                 if teams.isEmpty {
                     teamsError = "No teams found. Make sure your token is valid."
@@ -315,6 +319,8 @@ struct LinearSettingsView: View {
                         }
                     }
                 }
+            } else if result == .paymentRequired {
+                showPaywall = true
             } else {
                 teamsError = viewModel.errorMessage ?? "Failed to verify token"
             }
@@ -365,7 +371,7 @@ struct LinearSettingsView: View {
         Task {
             let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let success = await viewModel.updateLinearSettings(
+            let result = await viewModel.updateLinearSettings(
                 projectId: project.id,
                 linearToken: trimmedToken.isEmpty ? "" : trimmedToken,
                 linearTeamId: teamId.isEmpty ? "" : teamId,
@@ -377,8 +383,13 @@ struct LinearSettingsView: View {
                 linearSyncComments: syncComments,
                 linearIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

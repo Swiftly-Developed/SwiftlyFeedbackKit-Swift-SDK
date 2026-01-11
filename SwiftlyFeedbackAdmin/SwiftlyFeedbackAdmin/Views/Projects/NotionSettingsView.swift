@@ -25,6 +25,7 @@ struct NotionSettingsView: View {
 
     @State private var isLoadingDatabases = false
     @State private var databaseError: String?
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -240,6 +241,9 @@ struct NotionSettingsView: View {
             } message: {
                 Text("1. Go to notion.so/my-integrations\n2. Create a new Internal Integration\n3. Copy the Integration Secret\n4. Open your target database and share it with the integration (... menu > Add connections)")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
             .task {
                 if hasToken {
                     loadDatabases()
@@ -256,7 +260,7 @@ struct NotionSettingsView: View {
 
         Task {
             // First save the token so the API can use it
-            let success = await viewModel.updateNotionSettings(
+            let result = await viewModel.updateNotionSettings(
                 projectId: project.id,
                 notionToken: token.trimmingCharacters(in: .whitespacesAndNewlines),
                 notionDatabaseId: nil,
@@ -268,7 +272,7 @@ struct NotionSettingsView: View {
                 notionIsActive: nil
             )
 
-            if success {
+            if result == .success {
                 databases = await viewModel.loadNotionDatabases(projectId: project.id)
                 if databases.isEmpty {
                     databaseError = "No databases found. Make sure you've shared at least one database with the integration."
@@ -281,6 +285,8 @@ struct NotionSettingsView: View {
                         }
                     }
                 }
+            } else if result == .paymentRequired {
+                showPaywall = true
             } else {
                 databaseError = viewModel.errorMessage ?? "Failed to verify token"
             }
@@ -326,7 +332,7 @@ struct NotionSettingsView: View {
         Task {
             let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let success = await viewModel.updateNotionSettings(
+            let result = await viewModel.updateNotionSettings(
                 projectId: project.id,
                 notionToken: trimmedToken.isEmpty ? "" : trimmedToken,
                 notionDatabaseId: databaseId.isEmpty ? "" : databaseId,
@@ -337,8 +343,13 @@ struct NotionSettingsView: View {
                 notionVotesProperty: votesProperty.isEmpty ? "" : votesProperty,
                 notionIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

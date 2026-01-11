@@ -7,6 +7,8 @@ struct ProjectMembersView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingAddMember = false
     @State private var showingPaywall = false
+    @State private var forceShowPaywall = false  // True when triggered by server 402
+    @State private var shouldRetryAddMemberAfterPaywall = false  // Re-open add member sheet after successful paywall
     @State private var subscriptionService = SubscriptionService.shared
 
     var body: some View {
@@ -90,6 +92,7 @@ struct ProjectMembersView: View {
                         if subscriptionService.meetsRequirement(.team) {
                             showingAddMember = true
                         } else {
+                            forceShowPaywall = false  // User clicked button, show environment override if applicable
                             showingPaywall = true
                         }
                     } label: {
@@ -98,14 +101,32 @@ struct ProjectMembersView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingAddMember) {
+            .sheet(isPresented: $showingAddMember, onDismiss: {
+                // Check if paywall needs to be shown after dismissing add member sheet
+                if viewModel.shouldShowPaywallAfterAddMember {
+                    viewModel.shouldShowPaywallAfterAddMember = false
+                    forceShowPaywall = true  // Server returned 402, force actual paywall
+                    shouldRetryAddMemberAfterPaywall = true  // Remember to re-open add member after paywall
+                    showingPaywall = true
+                }
+            }) {
                 AddMemberSheet(projectId: projectId, viewModel: viewModel)
                     #if os(macOS)
                     .frame(minWidth: 400, minHeight: 350)
                     #endif
             }
-            .sheet(isPresented: $showingPaywall) {
-                PaywallView(requiredTier: .team)
+            .sheet(isPresented: $showingPaywall, onDismiss: {
+                // After paywall dismisses, re-open add member sheet if we were trying to add a member
+                // The email/role are still in the viewModel, so user can just click Add
+                if shouldRetryAddMemberAfterPaywall {
+                    shouldRetryAddMemberAfterPaywall = false
+                    // Small delay to ensure the sheet transition is smooth
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showingAddMember = true
+                    }
+                }
+            }) {
+                PaywallView(requiredTier: .team, forceShowPaywall: forceShowPaywall)
             }
             .task {
                 await viewModel.loadMembers(projectId: projectId)
@@ -306,8 +327,16 @@ struct AddMemberSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
                         Task {
-                            if await viewModel.addMember(projectId: projectId) {
+                            let result = await viewModel.addMember(projectId: projectId)
+                            switch result {
+                            case .success:
                                 dismiss()
+                            case .paymentRequired:
+                                // Set flag to show paywall after this sheet dismisses
+                                viewModel.shouldShowPaywallAfterAddMember = true
+                                dismiss()
+                            case .otherError:
+                                break // Error alert will be shown by viewModel.showError
                             }
                         }
                     }

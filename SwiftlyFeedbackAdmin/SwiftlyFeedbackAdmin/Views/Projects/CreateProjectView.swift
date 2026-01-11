@@ -6,6 +6,8 @@ struct CreateProjectView: View {
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focusedField: Field?
+    @State private var showPaywall = false
+    @State private var requiredTier: SubscriptionTier = .pro
 
     private enum Field: Hashable {
         case name, description
@@ -129,6 +131,9 @@ struct CreateProjectView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "An error occurred")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: requiredTier, forceShowPaywall: true)
+            }
             #if os(macOS)
             .frame(minWidth: 400, minHeight: 350)
             #endif
@@ -141,9 +146,16 @@ struct CreateProjectView: View {
 
     private func createProject() {
         Task {
-            if await viewModel.createProject() {
+            let result = await viewModel.createProject()
+            switch result {
+            case .success:
                 dismiss()
                 onDismiss()
+            case .paymentRequired(let tier):
+                requiredTier = tier
+                showPaywall = true
+            case .otherError:
+                break // Error is shown via viewModel.showError alert
             }
         }
     }

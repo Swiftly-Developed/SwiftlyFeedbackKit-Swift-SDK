@@ -11,6 +11,9 @@ struct RevenueCatService {
     // Pro entitlement ID configured in RevenueCat dashboard
     static let proEntitlementID = "Swiftly Pro"
 
+    // Team entitlement ID configured in RevenueCat dashboard
+    static let teamEntitlementID = "Swiftly Team"
+
     init(client: Client) {
         self.client = client
         self.apiKey = Environment.get("REVENUECAT_API_KEY") ?? ""
@@ -61,6 +64,20 @@ struct RevenueCatService {
 
     /// Map RevenueCat entitlements to SubscriptionTier
     func mapEntitlementsToTier(entitlements: [String: RevenueCatSubscriberResponse.Subscriber.Entitlement]) -> SubscriptionTier {
+        // Check Team first (higher tier)
+        if let teamEntitlement = entitlements[Self.teamEntitlementID] {
+            // Check if not expired
+            if let expiresDateString = teamEntitlement.expiresDate,
+               let expiresDate = ISO8601DateFormatter().date(from: expiresDateString),
+               expiresDate > Date() {
+                return .team
+            }
+            // If no expiration date, it's a lifetime subscription
+            if teamEntitlement.expiresDate == nil {
+                return .team
+            }
+        }
+
         // Check for Pro entitlement
         if let proEntitlement = entitlements[Self.proEntitlementID] {
             // Check if not expired
@@ -80,11 +97,13 @@ struct RevenueCatService {
 
     /// Get subscription status from entitlements
     func getSubscriptionStatus(entitlements: [String: RevenueCatSubscriberResponse.Subscriber.Entitlement]) -> SubscriptionStatus? {
-        guard let proEntitlement = entitlements[Self.proEntitlementID] else {
+        // Check Team first (higher tier), then Pro
+        let entitlement = entitlements[Self.teamEntitlementID] ?? entitlements[Self.proEntitlementID]
+        guard let entitlement else {
             return nil
         }
 
-        if let expiresDateString = proEntitlement.expiresDate,
+        if let expiresDateString = entitlement.expiresDate,
            let expiresDate = ISO8601DateFormatter().date(from: expiresDateString) {
             if expiresDate > Date() {
                 return .active
@@ -99,8 +118,9 @@ struct RevenueCatService {
 
     /// Get expiration date from entitlements
     func getExpirationDate(entitlements: [String: RevenueCatSubscriberResponse.Subscriber.Entitlement]) -> Date? {
-        guard let proEntitlement = entitlements[Self.proEntitlementID],
-              let expiresDateString = proEntitlement.expiresDate else {
+        // Check Team first (higher tier), then Pro
+        let entitlement = entitlements[Self.teamEntitlementID] ?? entitlements[Self.proEntitlementID]
+        guard let expiresDateString = entitlement?.expiresDate else {
             return nil
         }
 
@@ -109,7 +129,19 @@ struct RevenueCatService {
 
     /// Get product ID from entitlements
     func getProductId(entitlements: [String: RevenueCatSubscriberResponse.Subscriber.Entitlement]) -> String? {
-        return entitlements[Self.proEntitlementID]?.productIdentifier
+        // Check Team first (higher tier), then Pro
+        return entitlements[Self.teamEntitlementID]?.productIdentifier ?? entitlements[Self.proEntitlementID]?.productIdentifier
+    }
+
+    /// Determine tier from product ID
+    func tierFromProductId(_ productId: String?) -> SubscriptionTier {
+        guard let productId else { return .free }
+        if productId.contains("team") {
+            return .team
+        } else if productId.contains("pro") {
+            return .pro
+        }
+        return .free
     }
 
     // MARK: - Webhook Event Processing
@@ -131,7 +163,8 @@ struct RevenueCatService {
         // Update user based on event type
         switch event.type {
         case "INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION":
-            user.subscriptionTier = SubscriptionTier.pro
+            // Determine tier from product ID (team vs pro)
+            user.subscriptionTier = tierFromProductId(event.productId)
             user.subscriptionStatus = SubscriptionStatus.active
             user.subscriptionProductId = event.productId
 
@@ -146,13 +179,14 @@ struct RevenueCatService {
         case "CANCELLATION":
             // User cancelled but may still have access until expiration
             user.subscriptionStatus = SubscriptionStatus.cancelled
-            // Keep tier as pro until actual expiration
+            // Keep tier until actual expiration
 
         case "BILLING_ISSUE":
             user.subscriptionStatus = SubscriptionStatus.gracePeriod
 
         case "PRODUCT_CHANGE":
-            // Plan change (monthly <-> yearly)
+            // Plan change (monthly <-> yearly, or pro <-> team)
+            user.subscriptionTier = tierFromProductId(event.productId)
             user.subscriptionProductId = event.productId
             if let expirationMs = event.expirationAtMs {
                 user.subscriptionExpiresAt = Date(timeIntervalSince1970: TimeInterval(expirationMs) / 1000)

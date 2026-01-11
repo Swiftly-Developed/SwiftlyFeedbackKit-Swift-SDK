@@ -321,13 +321,13 @@ struct ProjectController: RouteCollection {
     @Sendable
     func addMember(req: Request) async throws -> Response {
         let user = try req.auth.require(User.self)
-
-        // Check Pro tier requirement for team members
-        guard user.subscriptionTier.meetsRequirement(.pro) else {
-            throw Abort(.paymentRequired, reason: "Team members require Pro subscription")
-        }
-
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        // Load project owner to check their tier (not the logged-in user's tier)
+        try await project.$owner.load(on: req.db)
+        guard project.owner.subscriptionTier.meetsRequirement(.team) else {
+            throw Abort(.paymentRequired, reason: "Project owner needs Team subscription to invite members")
+        }
 
         try AddMemberDTO.validate(content: req)
         let dto = try req.content.decode(AddMemberDTO.self)
@@ -565,6 +565,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func acceptInvite(req: Request) async throws -> AcceptInviteResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check invitee has Team tier
+        guard user.subscriptionTier.meetsRequirement(.team) else {
+            throw Abort(.paymentRequired, reason: "You need a Team subscription to join projects as a member")
+        }
+
         let dto = try req.content.decode(AcceptInviteDTO.self)
 
         let normalizedCode = dto.code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
@@ -584,6 +590,12 @@ struct ProjectController: RouteCollection {
         // Check if the invite email matches the user's email
         if invite.email != user.email.lowercased() {
             throw Abort(.forbidden, reason: "This invite was sent to a different email address")
+        }
+
+        // Check project owner still has Team tier
+        try await invite.project.$owner.load(on: req.db)
+        guard invite.project.owner.subscriptionTier.meetsRequirement(.team) else {
+            throw Abort(.paymentRequired, reason: "The project owner's subscription no longer supports team members")
         }
 
         let userId = try user.requireID()
@@ -683,6 +695,12 @@ struct ProjectController: RouteCollection {
     @Sendable
     func updateAllowedStatuses(req: Request) async throws -> ProjectResponseDTO {
         let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for configurable statuses
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Configurable statuses require Pro subscription")
+        }
+
         let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
 
         let dto = try req.content.decode(UpdateProjectStatusesDTO.self)

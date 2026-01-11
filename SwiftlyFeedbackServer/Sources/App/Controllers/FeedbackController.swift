@@ -286,7 +286,7 @@ struct FeedbackController: RouteCollection {
             // Send email notification
             Task {
                 do {
-                    // Collect emails: feedback submitter (if provided) + opted-in voters
+                    // Collect emails: feedback submitter (if provided) + opted-in voters (Team tier only)
                     var emails: [String] = []
                     var unsubscribeKeys: [String: UUID] = [:]
 
@@ -296,15 +296,21 @@ struct FeedbackController: RouteCollection {
                     }
 
                     // Load votes with notification opt-in
-                    try await feedback.$votes.load(on: req.db)
-                    for vote in feedback.votes {
-                        if vote.notifyStatusChange,
-                           let email = vote.email,
-                           !email.isEmpty,
-                           !emails.contains(email) {  // De-duplicate
-                            emails.append(email)
-                            if let key = vote.permissionKey {
-                                unsubscribeKeys[email] = key
+                    // Voter notifications are a Team-tier feature - check owner's tier
+                    try await project.$owner.load(on: req.db)
+                    let ownerHasTeamTier = project.owner.subscriptionTier.meetsRequirement(.team)
+
+                    if ownerHasTeamTier {
+                        try await feedback.$votes.load(on: req.db)
+                        for vote in feedback.votes {
+                            if vote.notifyStatusChange,
+                               let email = vote.email,
+                               !email.isEmpty,
+                               !emails.contains(email) {  // De-duplicate
+                                emails.append(email)
+                                if let key = vote.permissionKey {
+                                    unsubscribeKeys[email] = key
+                                }
                             }
                         }
                     }

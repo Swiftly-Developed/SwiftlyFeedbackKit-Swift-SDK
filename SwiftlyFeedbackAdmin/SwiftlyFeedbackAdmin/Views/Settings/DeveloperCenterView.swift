@@ -191,6 +191,11 @@ struct DeveloperCenterView: View {
                 // Feature Access (only shown in non-production environments)
                 featureAccessSection
 
+                // Subscription Simulation (DEBUG only)
+                #if DEBUG
+                subscriptionSimulationSection
+                #endif
+
                 // Project Generation
                 Section {
                     Stepper("Projects: \(projectCount)", value: $projectCount, in: 1...10)
@@ -449,8 +454,8 @@ struct DeveloperCenterView: View {
             projectViewModel.newProjectName = name
             projectViewModel.newProjectDescription = description
 
-            let success = await projectViewModel.createProject()
-            if success {
+            let result = await projectViewModel.createProject()
+            if case .success = result {
                 created.append(name)
                 AppLogger.view.info("Created project: \(name)")
             } else {
@@ -807,6 +812,47 @@ struct DeveloperCenterView: View {
             }
         }
     }
+
+    // MARK: - Subscription Simulation Section (DEBUG only)
+
+    #if DEBUG
+    private var simulatedTierBinding: Binding<SubscriptionTier?> {
+        Binding(
+            get: { subscriptionService.simulatedTier },
+            set: { subscriptionService.simulatedTier = $0 }
+        )
+    }
+
+    @ViewBuilder
+    private var subscriptionSimulationSection: some View {
+        Section {
+            Picker("Simulated Tier", selection: simulatedTierBinding) {
+                Text("None (Use Actual)").tag(Optional<SubscriptionTier>.none)
+                Text("Free").tag(Optional<SubscriptionTier>.some(.free))
+                Text("Pro").tag(Optional<SubscriptionTier>.some(.pro))
+                Text("Team").tag(Optional<SubscriptionTier>.some(.team))
+            }
+
+            if let simulated = subscriptionService.simulatedTier {
+                HStack {
+                    Text("Currently simulating")
+                    Spacer()
+                    Text(simulated.displayName)
+                        .foregroundStyle(.orange)
+                }
+            }
+
+            Button("Clear Simulated Tier") {
+                subscriptionService.clearSimulatedTier()
+            }
+            .disabled(subscriptionService.simulatedTier == nil)
+        } header: {
+            Label("Subscription Simulation", systemImage: "theatermasks")
+        } footer: {
+            Text("Override the subscription tier for testing. This only affects the client - server still uses actual tier.")
+        }
+    }
+    #endif
 
     @ViewBuilder
     private var tierFeaturesView: some View {

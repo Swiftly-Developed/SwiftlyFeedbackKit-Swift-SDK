@@ -30,6 +30,7 @@ struct MondaySettingsView: View {
     @State private var isLoadingGroups = false
     @State private var isLoadingColumns = false
     @State private var boardsError: String?
+    @State private var showPaywall = false
 
     init(project: Project, viewModel: ProjectViewModel) {
         self.project = project
@@ -289,6 +290,9 @@ struct MondaySettingsView: View {
             } message: {
                 Text("1. Log in to monday.com\n2. Click your avatar > Developers\n3. Go to 'My Access Tokens'\n4. Create a new token or copy an existing one")
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(requiredTier: .pro, forceShowPaywall: true)
+            }
             .task {
                 if hasToken {
                     loadBoards()
@@ -305,7 +309,7 @@ struct MondaySettingsView: View {
 
         Task {
             // First save the token so the API can use it
-            let success = await viewModel.updateMondaySettings(
+            let result = await viewModel.updateMondaySettings(
                 projectId: project.id,
                 mondayToken: token.trimmingCharacters(in: .whitespacesAndNewlines),
                 mondayBoardId: nil,
@@ -319,7 +323,7 @@ struct MondaySettingsView: View {
                 mondayIsActive: nil
             )
 
-            if success {
+            if result == .success {
                 boards = await viewModel.loadMondayBoards(projectId: project.id)
                 if boards.isEmpty {
                     boardsError = "No boards found. Make sure your token has access to at least one board."
@@ -333,6 +337,8 @@ struct MondaySettingsView: View {
                         }
                     }
                 }
+            } else if result == .paymentRequired {
+                showPaywall = true
             } else {
                 boardsError = viewModel.errorMessage ?? "Failed to verify token"
             }
@@ -395,7 +401,7 @@ struct MondaySettingsView: View {
         Task {
             let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
 
-            let success = await viewModel.updateMondaySettings(
+            let result = await viewModel.updateMondaySettings(
                 projectId: project.id,
                 mondayToken: trimmedToken.isEmpty ? "" : trimmedToken,
                 mondayBoardId: boardId.isEmpty ? "" : boardId,
@@ -408,8 +414,13 @@ struct MondaySettingsView: View {
                 mondayVotesColumnId: votesColumnId.isEmpty ? "" : votesColumnId,
                 mondayIsActive: isActive
             )
-            if success {
+            switch result {
+            case .success:
                 dismiss()
+            case .paymentRequired:
+                showPaywall = true
+            case .otherError:
+                break
             }
         }
     }

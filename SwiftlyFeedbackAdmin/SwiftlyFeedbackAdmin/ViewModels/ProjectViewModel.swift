@@ -1,5 +1,23 @@
 import SwiftUI
 
+enum AddMemberResult {
+    case success
+    case paymentRequired
+    case otherError
+}
+
+enum CreateProjectResult {
+    case success
+    case paymentRequired(SubscriptionTier)
+    case otherError
+}
+
+enum IntegrationUpdateResult {
+    case success
+    case paymentRequired
+    case otherError
+}
+
 @MainActor
 @Observable
 final class ProjectViewModel {
@@ -26,6 +44,7 @@ final class ProjectViewModel {
     // Add member fields
     var newMemberEmail = ""
     var newMemberRole: ProjectRole = .member
+    var shouldShowPaywallAfterAddMember = false
 
     // Track if projects are currently being loaded to prevent duplicate requests
     private var isLoadingProjects = false
@@ -69,10 +88,10 @@ final class ProjectViewModel {
         isLoadingDetail = false
     }
 
-    func createProject() async -> Bool {
+    func createProject() async -> CreateProjectResult {
         guard !newProjectName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             showError(message: "Project name is required")
-            return false
+            return .otherError
         }
 
         isLoading = true
@@ -87,11 +106,14 @@ final class ProjectViewModel {
             clearCreateProjectFields()
             await loadProjects()
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired(error.requiredSubscriptionTier)
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -185,10 +207,10 @@ final class ProjectViewModel {
         }
     }
 
-    func addMember(projectId: UUID) async -> Bool {
+    func addMember(projectId: UUID) async -> AddMemberResult {
         guard !newMemberEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             showError(message: "Email is required")
-            return false
+            return .otherError
         }
 
         isLoading = true
@@ -210,11 +232,14 @@ final class ProjectViewModel {
             }
 
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -306,7 +331,7 @@ final class ProjectViewModel {
         slackNotifyNewComments: Bool?,
         slackNotifyStatusChanges: Bool?,
         slackIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -320,11 +345,14 @@ final class ProjectViewModel {
                 slackIsActive: slackIsActive
             )
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -358,7 +386,7 @@ final class ProjectViewModel {
         githubDefaultLabels: [String]?,
         githubSyncStatus: Bool?,
         githubIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -373,11 +401,14 @@ final class ProjectViewModel {
                 githubIsActive: githubIsActive
             )
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -394,7 +425,7 @@ final class ProjectViewModel {
         clickupSyncComments: Bool?,
         clickupVotesFieldId: String?,
         clickupIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -412,11 +443,14 @@ final class ProjectViewModel {
                 clickupIsActive: clickupIsActive
             )
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -486,7 +520,7 @@ final class ProjectViewModel {
         notionStatusProperty: String?,
         notionVotesProperty: String?,
         notionIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -503,11 +537,14 @@ final class ProjectViewModel {
                 notionIsActive: notionIsActive
             )
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -543,7 +580,7 @@ final class ProjectViewModel {
         mondayStatusColumnId: String?,
         mondayVotesColumnId: String?,
         mondayIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -562,11 +599,14 @@ final class ProjectViewModel {
                 mondayIsActive: mondayIsActive
             )
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 
@@ -610,7 +650,7 @@ final class ProjectViewModel {
         linearSyncStatus: Bool?,
         linearSyncComments: Bool?,
         linearIsActive: Bool?
-    ) async -> Bool {
+    ) async -> IntegrationUpdateResult {
         isLoading = true
         errorMessage = nil
 
@@ -629,11 +669,14 @@ final class ProjectViewModel {
             let updated = try await AdminAPIClient.shared.updateLinearSettings(projectId: projectId, request: request)
             selectedProject = updated
             isLoading = false
-            return true
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
         } catch {
             showError(message: error.localizedDescription)
             isLoading = false
-            return false
+            return .otherError
         }
     }
 

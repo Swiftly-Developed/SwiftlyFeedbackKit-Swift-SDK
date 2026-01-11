@@ -73,12 +73,12 @@ struct CommentController: RouteCollection {
                     .with(\.$user)
                     .all()
 
-                // Filter to users with comment notifications enabled
+                // Filter to users with comment notifications enabled AND Pro+ tier
                 var emails: [String] = []
-                if project.owner.notifyNewComments {
+                if project.owner.notifyNewComments && project.owner.subscriptionTier.meetsRequirement(.pro) {
                     emails.append(project.owner.email)
                 }
-                for member in members where member.user.notifyNewComments {
+                for member in members where member.user.notifyNewComments && member.user.subscriptionTier.meetsRequirement(.pro) {
                     emails.append(member.user.email)
                 }
 
