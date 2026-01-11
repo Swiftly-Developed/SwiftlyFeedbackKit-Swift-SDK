@@ -9,6 +9,10 @@ final class AuthViewModel {
     var errorMessage: String?
     var showError = false
 
+    /// Whether the initial auth state check is in progress.
+    /// Views should wait for this to be false before making API calls.
+    var isCheckingAuthState = true
+
     // Login fields
     var loginEmail = ""
     var loginPassword = ""
@@ -29,6 +33,12 @@ final class AuthViewModel {
     var resetConfirmPassword = ""
     var resetEmailSent = false
 
+    // Keep me signed in
+    var keepMeSignedIn: Bool {
+        get { SecureStorageManager.shared.keepMeSignedIn }
+        set { SecureStorageManager.shared.keepMeSignedIn = newValue }
+    }
+
     var needsEmailVerification: Bool {
         let needs = isAuthenticated && currentUser?.isEmailVerified == false
         AppLogger.viewModel.debug("🔍 needsEmailVerification: \(needs) (isAuthenticated: \(self.isAuthenticated), isEmailVerified: \(self.currentUser?.isEmailVerified ?? false))")
@@ -43,7 +53,13 @@ final class AuthViewModel {
 
     func checkAuthState() {
         AppLogger.viewModel.info("🔄 Checking auth state...")
+        isCheckingAuthState = true
         Task {
+            defer { isCheckingAuthState = false }
+
+            // Ensure AdminAPIClient has the correct base URL before making any requests
+            await AdminAPIClient.shared.initializeBaseURL()
+
             if SecureStorageManager.shared.authToken != nil {
                 AppLogger.viewModel.info("🔑 Token found in keychain, fetching current user...")
                 do {
@@ -57,13 +73,24 @@ final class AuthViewModel {
                     }
                 } catch {
                     AppLogger.viewModel.error("❌ Failed to restore auth state: \(error.localizedDescription)")
-                    // Token invalid or expired
+                    // Token invalid or expired - try auto re-login if credentials are saved
                     SecureStorageManager.shared.authToken = nil
-                    isAuthenticated = false
-                    AppLogger.viewModel.info("🔑 Invalid token deleted from keychain")
+
+                    if await attemptAutoReLogin() {
+                        AppLogger.viewModel.info("✅ Auto re-login successful")
+                    } else {
+                        isAuthenticated = false
+                        AppLogger.viewModel.info("🔑 Invalid token deleted from keychain, no saved credentials for auto re-login")
+                    }
                 }
             } else {
-                AppLogger.viewModel.info("🔑 No token in keychain - user not authenticated")
+                AppLogger.viewModel.info("🔑 No token in keychain - checking for saved credentials...")
+                // No token, but maybe we have saved credentials from "keep me signed in"
+                if await attemptAutoReLogin() {
+                    AppLogger.viewModel.info("✅ Auto re-login successful with saved credentials")
+                } else {
+                    AppLogger.viewModel.info("🔑 No saved credentials - user not authenticated")
+                }
             }
         }
     }
@@ -79,6 +106,10 @@ final class AuthViewModel {
         isLoading = true
         errorMessage = nil
 
+        // Store credentials before clearing fields (for saving after success)
+        let emailToSave = loginEmail
+        let passwordToSave = loginPassword
+
         do {
             let response = try await AuthService.shared.login(
                 email: loginEmail,
@@ -87,6 +118,10 @@ final class AuthViewModel {
             currentUser = response.user
             isAuthenticated = true
             AppLogger.viewModel.info("✅ Login successful - isEmailVerified: \(response.user.isEmailVerified)")
+
+            // Save credentials if keep me signed in is enabled
+            SecureStorageManager.shared.saveCredentialsIfEnabled(email: emailToSave, password: passwordToSave)
+
             clearLoginFields()
 
             // Sync subscription service with user ID
@@ -158,6 +193,9 @@ final class AuthViewModel {
         // Logout from subscription service
         await SubscriptionService.shared.logout()
 
+        // Clear saved credentials on explicit logout
+        SecureStorageManager.shared.clearSavedCredentials()
+
         currentUser = nil
         isAuthenticated = false
         isLoading = false
@@ -168,6 +206,68 @@ final class AuthViewModel {
         AppLogger.viewModel.error("⚠️ Showing error to user: \(message)")
         errorMessage = message
         showError = true
+    }
+
+    /// Attempts to re-login using saved credentials.
+    /// Returns true if successful, false otherwise.
+    func attemptAutoReLogin() async -> Bool {
+        guard let credentials = SecureStorageManager.shared.getSavedCredentials() else {
+            AppLogger.viewModel.info("🔐 No saved credentials for auto re-login")
+            return false
+        }
+
+        AppLogger.viewModel.info("🔐 Attempting auto re-login with saved credentials...")
+
+        do {
+            let response = try await AuthService.shared.login(
+                email: credentials.email,
+                password: credentials.password
+            )
+            currentUser = response.user
+            isAuthenticated = true
+            AppLogger.viewModel.info("✅ Auto re-login successful - user: \(response.user.id)")
+
+            // Sync subscription service with user ID
+            await SubscriptionService.shared.login(userId: response.user.id)
+            return true
+        } catch {
+            AppLogger.viewModel.error("❌ Auto re-login failed: \(error.localizedDescription)")
+            // Clear saved credentials since they didn't work (e.g., password changed)
+            SecureStorageManager.shared.clearSavedCredentials()
+            return false
+        }
+    }
+
+    /// Handles a 401 unauthorized error by attempting auto re-login.
+    /// Call this when an API request fails with unauthorized error.
+    /// - Parameter retryAction: Optional closure to retry the original action after successful re-login
+    /// - Returns: True if auto re-login succeeded (and retryAction was called if provided), false otherwise
+    @discardableResult
+    func handleUnauthorizedError(retryAction: (() async throws -> Void)? = nil) async -> Bool {
+        AppLogger.viewModel.info("🔐 Handling unauthorized error...")
+
+        // Clear the invalid token
+        SecureStorageManager.shared.authToken = nil
+
+        // Attempt auto re-login
+        if await attemptAutoReLogin() {
+            // If we have a retry action, execute it
+            if let retryAction = retryAction {
+                do {
+                    try await retryAction()
+                    AppLogger.viewModel.info("✅ Retry action succeeded after auto re-login")
+                } catch {
+                    AppLogger.viewModel.error("❌ Retry action failed after auto re-login: \(error.localizedDescription)")
+                }
+            }
+            return true
+        } else {
+            // Auto re-login failed, user needs to log in manually
+            isAuthenticated = false
+            currentUser = nil
+            AppLogger.viewModel.info("🔐 Auto re-login failed, user needs to log in manually")
+            return false
+        }
     }
 
     private func clearLoginFields() {

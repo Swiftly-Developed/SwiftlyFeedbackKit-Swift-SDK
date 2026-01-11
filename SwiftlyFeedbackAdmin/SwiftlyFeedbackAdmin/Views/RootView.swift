@@ -7,7 +7,11 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if authViewModel.isAuthenticated {
+            if authViewModel.isCheckingAuthState {
+                // Show loading while checking auth state (including auto re-login)
+                ProgressView("Signing in...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if authViewModel.isAuthenticated {
                 if authViewModel.needsEmailVerification {
                     // User is authenticated but needs email verification
                     // This handles returning users who haven't verified yet
@@ -36,6 +40,7 @@ struct RootView: View {
                 }
             }
         }
+        .animation(.default, value: authViewModel.isCheckingAuthState)
         .animation(.default, value: authViewModel.isAuthenticated)
         .animation(.default, value: authViewModel.needsEmailVerification)
         .animation(.default, value: onboardingManager.hasCompletedOnboarding)

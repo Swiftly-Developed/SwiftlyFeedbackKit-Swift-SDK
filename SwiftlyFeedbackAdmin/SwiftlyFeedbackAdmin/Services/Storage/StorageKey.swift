@@ -7,6 +7,15 @@ enum StorageKey: String, CaseIterable, Sendable {
     /// Bearer token for API authentication (environment-specific)
     case authToken = "authToken"
 
+    /// Whether to keep the user signed in (save credentials for auto re-login)
+    case keepMeSignedIn = "keepMeSignedIn"
+
+    /// Saved email for auto re-login (environment-specific)
+    case savedEmail = "savedEmail"
+
+    /// Saved password for auto re-login (environment-specific, stored securely in Keychain)
+    case savedPassword = "savedPassword"
+
     // MARK: - Onboarding
     /// Whether the user has completed onboarding (environment-specific)
     case hasCompletedOnboarding = "hasCompletedOnboarding"
@@ -41,6 +50,9 @@ enum StorageKey: String, CaseIterable, Sendable {
     var isEnvironmentScoped: Bool {
         switch self {
         case .authToken,
+             .keepMeSignedIn,
+             .savedEmail,
+             .savedPassword,
              .hasCompletedOnboarding,
              .feedbackViewMode,
              .dashboardViewMode,

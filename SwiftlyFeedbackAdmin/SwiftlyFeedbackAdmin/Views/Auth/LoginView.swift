@@ -58,6 +58,15 @@ struct LoginView: View {
                     .submitLabel(.go)
 
                 HStack {
+                    #if os(macOS)
+                    Toggle("Keep me signed in", isOn: $viewModel.keepMeSignedIn)
+                        .toggleStyle(.checkbox)
+                        .font(.subheadline)
+                    #else
+                    Toggle("Keep me signed in", isOn: $viewModel.keepMeSignedIn)
+                        .font(.subheadline)
+                        .tint(.accentColor)
+                    #endif
                     Spacer()
                     Button("Forgot Password?") {
                         onForgotPassword()

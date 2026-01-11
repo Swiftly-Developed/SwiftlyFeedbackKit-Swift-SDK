@@ -240,6 +240,34 @@ Via Resend API. User preferences in Settings:
 3. User enters code + new password
 4. All sessions invalidated
 
+## Keep Me Signed In (Admin App)
+
+Allows users to stay signed in across app restarts by securely storing credentials in Keychain.
+
+**How it works:**
+1. User checks "Keep me signed in" toggle on login screen
+2. On successful login, email and password are saved to Keychain (environment-scoped)
+3. On app restart, if no valid token exists, app attempts auto re-login with saved credentials
+4. If token expires mid-session, app automatically re-authenticates
+5. On explicit logout, saved credentials are cleared
+
+**Storage Keys (all environment-scoped):**
+- `keepMeSignedIn` (Bool) - Whether the feature is enabled
+- `savedEmail` (String) - User's email for auto re-login
+- `savedPassword` (String) - User's password (stored securely in Keychain)
+
+**Implementation:**
+- `SecureStorageManager.saveCredentialsIfEnabled()` - Saves credentials after successful login
+- `SecureStorageManager.getSavedCredentials()` - Returns credentials tuple if available
+- `SecureStorageManager.clearSavedCredentials()` - Clears on logout or failed re-login
+- `AuthViewModel.attemptAutoReLogin()` - Attempts login with saved credentials
+- `AuthViewModel.isCheckingAuthState` - Prevents UI from loading until auth check completes
+
+**Security:**
+- Credentials stored in Keychain with `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
+- Environment-scoped (dev credentials don't work in production)
+- Cleared on explicit logout or when password changes (re-login fails)
+
 ## Feedback Merging
 
 Select 2+ feedback items → Merge. Primary keeps title/description, votes are de-duplicated, comments migrated with prefix. Secondary items soft-deleted.

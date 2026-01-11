@@ -44,6 +44,8 @@ SwiftlyFeedbackAdmin/
 ### Authentication
 1. Login/Signup → 2. Email verification (8-char code) → 3. Token stored via `SecureStorageManager`
 
+**Keep Me Signed In:** Toggle on login screen saves credentials to Keychain for automatic re-login on app restart or session expiry.
+
 **Password Reset:** Forgot Password → Enter email → Enter code + new password → All sessions invalidated
 
 **Password Validation UI:** All password fields (Signup, Onboarding, Password Reset) use `PasswordStrengthView` component:
@@ -158,6 +160,9 @@ Type-safe enum with scope configuration:
 | Key | Scope | Description |
 |-----|-------|-------------|
 | `.authToken` | Environment | Bearer token for API |
+| `.keepMeSignedIn` | Environment | Keep me signed in toggle |
+| `.savedEmail` | Environment | Email for auto re-login |
+| `.savedPassword` | Environment | Password for auto re-login |
 | `.hasCompletedOnboarding` | Environment | Onboarding completion |
 | `.feedbackViewMode` | Environment | List/Kanban preference |
 | `.dashboardViewMode` | Environment | Dashboard view preference |

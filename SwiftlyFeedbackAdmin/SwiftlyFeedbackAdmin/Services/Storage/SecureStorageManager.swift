@@ -227,4 +227,48 @@ extension SecureStorageManager {
         get { get(.hasCompletedOnboarding) ?? false }
         set { set(newValue, for: .hasCompletedOnboarding) }
     }
+
+    /// Whether to keep the user signed in (save credentials for auto re-login).
+    var keepMeSignedIn: Bool {
+        get { get(.keepMeSignedIn) ?? false }
+        set { set(newValue, for: .keepMeSignedIn) }
+    }
+
+    /// Saved email for auto re-login.
+    var savedEmail: String? {
+        get { get(.savedEmail) }
+        set { set(newValue, for: .savedEmail) }
+    }
+
+    /// Saved password for auto re-login.
+    var savedPassword: String? {
+        get { get(.savedPassword) }
+        set { set(newValue, for: .savedPassword) }
+    }
+
+    /// Saves credentials for auto re-login if keepMeSignedIn is enabled.
+    func saveCredentialsIfEnabled(email: String, password: String) {
+        if keepMeSignedIn {
+            savedEmail = email
+            savedPassword = password
+            AppLogger.storage.info("Credentials saved for auto re-login")
+        }
+    }
+
+    /// Clears saved credentials.
+    func clearSavedCredentials() {
+        savedEmail = nil
+        savedPassword = nil
+        AppLogger.storage.info("Saved credentials cleared")
+    }
+
+    /// Returns saved credentials if available.
+    func getSavedCredentials() -> (email: String, password: String)? {
+        guard keepMeSignedIn,
+              let email = savedEmail,
+              let password = savedPassword else {
+            return nil
+        }
+        return (email, password)
+    }
 }
