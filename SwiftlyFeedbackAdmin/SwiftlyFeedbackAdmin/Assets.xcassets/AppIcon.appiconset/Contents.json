@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Swiftly FeedbackKit copy-iOS-Dark-1024x1024@1x.png",
+      "filename" : "Swiftly FeedbackKit-iOS-Dark-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "Swiftly FeedbackKit-iOS-ClearLight-1024x1024@1x.png",
+      "filename" : "Swiftly FeedbackKit-iOS-TintedLight-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

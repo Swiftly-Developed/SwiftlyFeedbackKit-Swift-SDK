@@ -308,10 +308,15 @@ Available in DEBUG and TestFlight builds only. Access via:
 
 **Features:**
 - Server environment switching (Localhost, Development, TestFlight, Production)
-- Generate dummy projects, feedback, and comments
 - Reset onboarding, auth token, UserDefaults
 - Clear project feedback, delete all projects
-- Full database reset (DEBUG only - not available in TestFlight)
+- Storage management (view/clear stored keys)
+
+**DEBUG-only features:**
+- Generate dummy projects, feedback, and comments
+- Subscription testing (tier override, reset purchases)
+- Subscription simulation (client-side tier override)
+- Full database reset
 
 Controlled by `BuildEnvironment.canShowTestingFeatures` (DEBUG || TestFlight) and `BuildEnvironment.isDebug`.
 
@@ -378,37 +383,20 @@ Non-production environments (Localhost, Development, TestFlight) automatically d
 - Developer Center shows a "7-Day Data Retention" warning banner for non-production environments
 - Users are informed that their test data will be automatically cleaned up
 
-## Environment Feature Override (Admin App)
+## Subscription System (Admin App)
 
-Environment override only applies in **DEBUG builds**. TestFlight and App Store builds always use real subscriptions from RevenueCat.
-
-| Build Type | Environment | Features |
-|------------|-------------|----------|
-| DEBUG | localhost/dev/testflight | All unlocked (Team tier) |
-| DEBUG | production | Subscription-based |
-| **TestFlight** | **Any** | **Subscription-based** |
-| App Store | production | Subscription-based |
-
-**How it works:**
-- `SubscriptionService.hasEnvironmentOverride` returns `true` only in DEBUG builds for non-production environments
-- `SubscriptionService.effectiveTier` returns `.team` when override is active
-- `SubscriptionService.meetsRequirement(_:)` checks `effectiveTier`, not `currentTier`
-
-**Visual indicators:**
-- "DEV" badge shown on features unlocked via environment override (orange capsule)
-- PaywallView shows "All Features Unlocked" screen instead of purchase options
-- Developer Center shows Feature Access section with override status
+All builds (DEBUG, TestFlight, App Store) use RevenueCat for real subscription management. The paywall always shows purchase options.
 
 **Usage in code:**
 ```swift
-// Check if user has access (respects environment override)
+// Check if user has access (considers simulated tier in DEBUG)
 if subscriptionService.meetsRequirement(.pro) { ... }
 
-// Check actual subscription tier (ignores environment override)
+// Check actual subscription tier from RevenueCat
 if subscriptionService.currentTier == .pro { ... }
 
-// Check if override is active
-if subscriptionService.hasEnvironmentOverride { ... }
+// Get effective tier (simulated or actual)
+let tier = subscriptionService.effectiveTier
 ```
 
 ## Tier Simulation (DEBUG Only)
@@ -420,15 +408,14 @@ DEBUG builds can simulate specific subscription tiers for testing tier-specific 
 // Set a simulated tier
 subscriptionService.simulatedTier = .pro
 
-// Clear simulation (returns to actual tier or environment override)
+// Clear simulation (returns to actual RevenueCat tier)
 subscriptionService.clearSimulatedTier()
 #endif
 ```
 
 **Priority order for `effectiveTier`:**
 1. Simulated tier (if set, DEBUG only)
-2. Environment override (`.team` if active, DEBUG only)
-3. Actual RevenueCat tier
+2. Actual RevenueCat tier
 
 **Access via Developer Center:**
 - Settings → Developer Center → "Subscription Simulation" section
@@ -437,22 +424,27 @@ subscriptionService.clearSimulatedTier()
 
 **Note:** Tier simulation only affects the client. Server-side tier checks still use the actual subscription.
 
+## Developer Server Tier Override (DEBUG Only)
+
+In DEBUG builds for localhost/development environments, the paywall shows a "DEV: Unlock [Tier] on Server" button. This updates your server-side tier for testing without going through StoreKit.
+
+## Reset Purchases (Developer Center)
+
+The Developer Center has a "Reset Purchases" button that:
+1. Clears RevenueCat local cache
+2. Clears simulated tier
+3. Re-authenticates with RevenueCat
+
+This simulates a fresh/free user for testing the purchase flow.
+
 **Server 402 Handling:**
 
-The server enforces subscription limits independently of client-side environment overrides. When the server returns a 402 Payment Required response, the client must show the actual paywall (not the "All Features Unlocked" screen).
-
-```swift
-// API calls that require subscription may return 402
-catch let error as APIError where error.isPaymentRequired {
-    // Show paywall with forceShowPaywall: true to bypass environment override
-    PaywallView(requiredTier: .team, forceShowPaywall: true)
-}
-```
+When the server returns a 402 Payment Required response, the client shows the paywall.
 
 **Pattern for handling 402 in sheets:**
 1. User attempts action → API returns 402
 2. Dismiss current sheet with flag set (`shouldShowPaywallAfterAddMember = true`)
-3. On sheet dismiss, check flag and show PaywallView with `forceShowPaywall: true`
+3. On sheet dismiss, check flag and show PaywallView
 4. After paywall dismisses, optionally re-open original sheet to retry
 
 **Configuration:** `SwiftlyFeedbackAdmin/Services/SubscriptionService.swift`

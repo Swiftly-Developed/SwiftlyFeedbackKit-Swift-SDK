@@ -1,4 +1,5 @@
 import SwiftUI
+import RevenueCat
 
 // MARK: - Developer Center View
 
@@ -27,7 +28,7 @@ struct DeveloperCenterView: View {
     @State private var connectionTestResult: String?
 
     // Subscription
-    @State private var subscriptionService = SubscriptionService.shared
+    @Environment(SubscriptionService.self) private var subscriptionService
     @State private var selectedPreviewTier: SubscriptionTier = .free
     @State private var isSavingTier = false
     @State private var tierSaveError: String?
@@ -60,14 +61,16 @@ struct DeveloperCenterView: View {
             warningBannerSection
             dataRetentionSection
             serverEnvironmentSection
-            featureAccessSection
             #if DEBUG
+            featureAccessSection
             subscriptionSimulationSection
             #endif
             storageManagementSection
+            #if DEBUG
             projectGenerationSection
             feedbackGenerationSection
             commentGenerationSection
+            #endif
             resetsSection
             dataDeletionSection
             #if DEBUG
@@ -789,44 +792,40 @@ struct DeveloperCenterView: View {
         #endif
     }
 
-    // MARK: - Feature Access Section
+    // MARK: - Feature Access Section (DEBUG only)
 
+    #if DEBUG
     @ViewBuilder
     private var featureAccessSection: some View {
         Section {
-            // Subscription tier picker
+            // Current tier display
+            HStack {
+                Label("Current Tier", systemImage: "crown.fill")
+                Spacer()
+                Text(subscriptionService.effectiveTier.displayName)
+                    .foregroundStyle(.secondary)
+            }
+
+            // Subscription tier picker for server override
             Picker(selection: $selectedPreviewTier) {
                 ForEach(SubscriptionTier.allCases, id: \.self) { tier in
                     Text(tier.displayName).tag(tier)
                 }
             } label: {
-                Label("Subscription Tier", systemImage: "crown.fill")
-            }
-
-            // Toggle to test actual tier gating (disable environment override)
-            Toggle(isOn: Binding(
-                get: { subscriptionService.disableEnvironmentOverrideForTesting },
-                set: { subscriptionService.disableEnvironmentOverrideForTesting = $0 }
-            )) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Label("Test Subscription Gating", systemImage: "lock.shield")
-                    Text("Disable \"All Features Unlocked\" to test actual tier restrictions")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Label("Override Tier", systemImage: "hammer.fill")
             }
 
             // Features for selected tier
             tierFeaturesView
 
-            // Save button
+            // Save button (only for non-production)
             Button {
                 Task {
                     await saveSubscriptionTier()
                 }
             } label: {
                 HStack {
-                    Label("Save Tier Override", systemImage: "square.and.arrow.down")
+                    Label("Save Tier Override to Server", systemImage: "square.and.arrow.down")
                     Spacer()
                     if isSavingTier {
                         ProgressView()
@@ -836,6 +835,16 @@ struct DeveloperCenterView: View {
             }
             .disabled(isSavingTier || appConfiguration.environment == .production)
 
+            // Reset purchases button
+            Button(role: .destructive) {
+                Task {
+                    await resetPurchases()
+                }
+            } label: {
+                Label("Reset Purchases (Simulate Free User)", systemImage: "arrow.counterclockwise")
+            }
+            .disabled(subscriptionService.isLoading)
+
             // Error message if save failed
             if let error = tierSaveError {
                 Text(error)
@@ -843,19 +852,57 @@ struct DeveloperCenterView: View {
                     .foregroundStyle(.red)
             }
         } header: {
-            Label("Feature Access", systemImage: "star.fill")
+            Label("Subscription Testing", systemImage: "star.fill")
         } footer: {
             if appConfiguration.environment == .production {
-                Text("Tier override is disabled in Production. Switch to a non-production environment to test different subscription tiers.")
+                Text("Server tier override is disabled in Production. Reset Purchases clears local RevenueCat cache to simulate a fresh user.")
             } else {
-                Text("Save your selected tier to update your account's subscription level for testing purposes.")
+                Text("Override tier on server for testing. Reset Purchases clears RevenueCat cache and simulated tier to test as a free user.")
             }
         }
     }
 
-    // MARK: - Subscription Simulation Section (DEBUG only)
+    private func resetPurchases() async {
+        isGenerating = true
+        defer { isGenerating = false }
 
-    #if DEBUG
+        #if DEBUG
+        subscriptionService.clearSimulatedTier()
+        #endif
+
+        // Clear cached server tier so we fall back to free
+        subscriptionService.clearServerTier()
+
+        // Invalidate RevenueCat customer info cache
+        Purchases.shared.invalidateCustomerInfoCache()
+
+        // For non-production environments, also reset tier on server to free
+        if appConfiguration.environment != .production {
+            do {
+                let _ = try await AdminAPIClient.shared.overrideSubscriptionTier(.free)
+                AppLogger.api.info("✅ Server tier reset to Free")
+            } catch {
+                AppLogger.api.error("❌ Failed to reset server tier: \(error.localizedDescription)")
+            }
+        }
+
+        // Refresh subscription status to get fresh data from RevenueCat
+        await subscriptionService.fetchCustomerInfo()
+
+        generationResult = GenerationResult(
+            success: true,
+            message: "Purchases reset successfully",
+            details: [
+                "RevenueCat cache invalidated",
+                "Simulated tier cleared",
+                "Server tier reset to Free",
+                "Current tier: \(subscriptionService.currentTier.displayName)"
+            ]
+        )
+        showingResult = true
+    }
+
+    // MARK: - Subscription Simulation Section
     private var simulatedTierBinding: Binding<SubscriptionTier?> {
         Binding(
             get: { subscriptionService.simulatedTier },
