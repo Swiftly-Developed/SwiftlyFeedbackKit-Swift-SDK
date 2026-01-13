@@ -286,6 +286,49 @@ struct LinearLabelDTO: Content {
     var color: String
 }
 
+// MARK: - Trello Integration DTOs
+
+struct UpdateProjectTrelloDTO: Content {
+    var trelloToken: String?
+    var trelloBoardId: String?
+    var trelloBoardName: String?
+    var trelloListId: String?
+    var trelloListName: String?
+    var trelloSyncStatus: Bool?
+    var trelloSyncComments: Bool?
+    var trelloIsActive: Bool?
+}
+
+struct CreateTrelloCardDTO: Content {
+    var feedbackId: UUID
+}
+
+struct CreateTrelloCardResponseDTO: Content {
+    var feedbackId: UUID
+    var cardUrl: String
+    var cardId: String
+}
+
+struct BulkCreateTrelloCardsDTO: Content {
+    var feedbackIds: [UUID]
+}
+
+struct BulkCreateTrelloCardsResponseDTO: Content {
+    var created: [CreateTrelloCardResponseDTO]
+    var failed: [UUID]
+}
+
+// Trello hierarchy DTOs for settings UI
+struct TrelloBoardDTO: Content {
+    var id: String
+    var name: String
+}
+
+struct TrelloListDTO: Content {
+    var id: String
+    var name: String
+}
+
 struct AddMemberDTO: Content, Validatable {
     let email: String
     let role: ProjectRole
@@ -366,6 +409,15 @@ struct ProjectResponseDTO: Content {
     let linearSyncStatus: Bool
     let linearSyncComments: Bool
     let linearIsActive: Bool
+    // Trello integration fields
+    let trelloToken: String?
+    let trelloBoardId: String?
+    let trelloBoardName: String?
+    let trelloListId: String?
+    let trelloListName: String?
+    let trelloSyncStatus: Bool
+    let trelloSyncComments: Bool
+    let trelloIsActive: Bool
 
     init(project: Project, feedbackCount: Int = 0, memberCount: Int = 0, ownerEmail: String? = nil) {
         self.id = project.id!
@@ -429,6 +481,14 @@ struct ProjectResponseDTO: Content {
         self.linearSyncStatus = project.linearSyncStatus
         self.linearSyncComments = project.linearSyncComments
         self.linearIsActive = project.linearIsActive
+        self.trelloToken = project.trelloToken
+        self.trelloBoardId = project.trelloBoardId
+        self.trelloBoardName = project.trelloBoardName
+        self.trelloListId = project.trelloListId
+        self.trelloListName = project.trelloListName
+        self.trelloSyncStatus = project.trelloSyncStatus
+        self.trelloSyncComments = project.trelloSyncComments
+        self.trelloIsActive = project.trelloIsActive
     }
 }
 

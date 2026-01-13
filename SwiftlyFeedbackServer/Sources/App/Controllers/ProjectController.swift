@@ -73,6 +73,13 @@ struct ProjectController: RouteCollection {
         protected.get(":projectId", "linear", "states", ":teamId", use: getLinearWorkflowStates)
         protected.get(":projectId", "linear", "labels", ":teamId", use: getLinearLabels)
 
+        // Trello integration
+        protected.patch(":projectId", "trello", use: updateTrelloSettings)
+        protected.post(":projectId", "trello", "card", use: createTrelloCard)
+        protected.post(":projectId", "trello", "cards", use: bulkCreateTrelloCards)
+        protected.get(":projectId", "trello", "boards", use: getTrelloBoards)
+        protected.get(":projectId", "trello", "boards", ":boardId", "lists", use: getTrelloLists)
+
         // Invite management
         protected.get(":projectId", "invites", use: listInvites)
         protected.delete(":projectId", "invites", ":inviteId", use: cancelInvite)
@@ -2137,6 +2144,246 @@ struct ProjectController: RouteCollection {
 
         let labels = try await req.linearService.getLabels(teamId: teamId, token: token)
         return labels.map { LinearLabelDTO(id: $0.id, name: $0.name, color: $0.color) }
+    }
+
+    // MARK: - Trello Integration
+
+    @Sendable
+    func updateTrelloSettings(req: Request) async throws -> ProjectResponseDTO {
+        let user = try req.auth.require(User.self)
+
+        // Check Pro tier requirement for integrations
+        guard user.subscriptionTier.meetsRequirement(.pro) else {
+            throw Abort(.paymentRequired, reason: "Trello integration requires Pro subscription")
+        }
+
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        let dto = try req.content.decode(UpdateProjectTrelloDTO.self)
+
+        if let token = dto.trelloToken {
+            project.trelloToken = token.isEmpty ? nil : token
+        }
+        if let boardId = dto.trelloBoardId {
+            project.trelloBoardId = boardId.isEmpty ? nil : boardId
+        }
+        if let boardName = dto.trelloBoardName {
+            project.trelloBoardName = boardName.isEmpty ? nil : boardName
+        }
+        if let listId = dto.trelloListId {
+            project.trelloListId = listId.isEmpty ? nil : listId
+        }
+        if let listName = dto.trelloListName {
+            project.trelloListName = listName.isEmpty ? nil : listName
+        }
+        if let syncStatus = dto.trelloSyncStatus {
+            project.trelloSyncStatus = syncStatus
+        }
+        if let syncComments = dto.trelloSyncComments {
+            project.trelloSyncComments = syncComments
+        }
+        if let isActive = dto.trelloIsActive {
+            project.trelloIsActive = isActive
+        }
+
+        try await project.save(on: req.db)
+
+        try await project.$feedbacks.load(on: req.db)
+        try await project.$members.load(on: req.db)
+        try await project.$owner.load(on: req.db)
+
+        return ProjectResponseDTO(
+            project: project,
+            feedbackCount: project.feedbacks.count,
+            memberCount: project.members.count + 1,  // +1 for owner
+            ownerEmail: project.owner.email
+        )
+    }
+
+    @Sendable
+    func createTrelloCard(req: Request) async throws -> CreateTrelloCardResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.trelloToken,
+              let listId = project.trelloListId else {
+            throw Abort(.badRequest, reason: "Trello integration not configured")
+        }
+
+        guard project.trelloIsActive else {
+            throw Abort(.badRequest, reason: "Trello integration is not active")
+        }
+
+        let dto = try req.content.decode(CreateTrelloCardDTO.self)
+
+        guard let feedback = try await Feedback.query(on: req.db)
+            .filter(\.$id == dto.feedbackId)
+            .filter(\.$project.$id == project.id!)
+            .with(\.$votes)
+            .first() else {
+            throw Abort(.notFound, reason: "Feedback not found")
+        }
+
+        if feedback.trelloCardURL != nil {
+            throw Abort(.conflict, reason: "Feedback already has a Trello card")
+        }
+
+        // Calculate MRR
+        let allUserIds = Set([feedback.userId] + feedback.votes.map { $0.userId })
+        let sdkUsers = try await SDKUser.query(on: req.db)
+            .filter(\.$project.$id == project.id!)
+            .filter(\.$userId ~~ Array(allUserIds))
+            .all()
+        let mrrByUserId = Dictionary(uniqueKeysWithValues: sdkUsers.map { ($0.userId, $0.mrr) })
+
+        var totalMrr: Double = 0
+        if let creatorMrr = mrrByUserId[feedback.userId] ?? nil {
+            totalMrr += creatorMrr
+        }
+        for vote in feedback.votes {
+            if let voterMrr = mrrByUserId[vote.userId] ?? nil {
+                totalMrr += voterMrr
+            }
+        }
+
+        let description = req.trelloService.buildCardDescription(
+            feedback: feedback,
+            projectName: project.name,
+            voteCount: feedback.voteCount,
+            mrr: totalMrr > 0 ? totalMrr : nil
+        )
+
+        let card = try await req.trelloService.createCard(
+            token: token,
+            listId: listId,
+            name: feedback.title,
+            description: description
+        )
+
+        feedback.trelloCardURL = card.url
+        feedback.trelloCardId = card.id
+        try await feedback.save(on: req.db)
+
+        return CreateTrelloCardResponseDTO(
+            feedbackId: feedback.id!,
+            cardUrl: card.url,
+            cardId: card.id
+        )
+    }
+
+    @Sendable
+    func bulkCreateTrelloCards(req: Request) async throws -> BulkCreateTrelloCardsResponseDTO {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.trelloToken,
+              let listId = project.trelloListId else {
+            throw Abort(.badRequest, reason: "Trello integration not configured")
+        }
+
+        guard project.trelloIsActive else {
+            throw Abort(.badRequest, reason: "Trello integration is not active")
+        }
+
+        let dto = try req.content.decode(BulkCreateTrelloCardsDTO.self)
+
+        var created: [CreateTrelloCardResponseDTO] = []
+        var failed: [UUID] = []
+
+        for feedbackId in dto.feedbackIds {
+            do {
+                guard let feedback = try await Feedback.query(on: req.db)
+                    .filter(\.$id == feedbackId)
+                    .filter(\.$project.$id == project.id!)
+                    .with(\.$votes)
+                    .first() else {
+                    failed.append(feedbackId)
+                    continue
+                }
+
+                if feedback.trelloCardURL != nil {
+                    failed.append(feedbackId)
+                    continue
+                }
+
+                // Calculate MRR
+                let allUserIds = Set([feedback.userId] + feedback.votes.map { $0.userId })
+                let sdkUsers = try await SDKUser.query(on: req.db)
+                    .filter(\.$project.$id == project.id!)
+                    .filter(\.$userId ~~ Array(allUserIds))
+                    .all()
+                let mrrByUserId = Dictionary(uniqueKeysWithValues: sdkUsers.map { ($0.userId, $0.mrr) })
+
+                var totalMrr: Double = 0
+                if let creatorMrr = mrrByUserId[feedback.userId] ?? nil {
+                    totalMrr += creatorMrr
+                }
+                for vote in feedback.votes {
+                    if let voterMrr = mrrByUserId[vote.userId] ?? nil {
+                        totalMrr += voterMrr
+                    }
+                }
+
+                let description = req.trelloService.buildCardDescription(
+                    feedback: feedback,
+                    projectName: project.name,
+                    voteCount: feedback.voteCount,
+                    mrr: totalMrr > 0 ? totalMrr : nil
+                )
+
+                let card = try await req.trelloService.createCard(
+                    token: token,
+                    listId: listId,
+                    name: feedback.title,
+                    description: description
+                )
+
+                feedback.trelloCardURL = card.url
+                feedback.trelloCardId = card.id
+                try await feedback.save(on: req.db)
+
+                created.append(CreateTrelloCardResponseDTO(
+                    feedbackId: feedback.id!,
+                    cardUrl: card.url,
+                    cardId: card.id
+                ))
+            } catch {
+                req.logger.error("Failed to create Trello card for \(feedbackId): \(error)")
+                failed.append(feedbackId)
+            }
+        }
+
+        return BulkCreateTrelloCardsResponseDTO(created: created, failed: failed)
+    }
+
+    @Sendable
+    func getTrelloBoards(req: Request) async throws -> [TrelloBoardDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.trelloToken else {
+            throw Abort(.badRequest, reason: "Trello token not configured")
+        }
+
+        let boards = try await req.trelloService.getBoards(token: token)
+        return boards.map { TrelloBoardDTO(id: $0.id, name: $0.name) }
+    }
+
+    @Sendable
+    func getTrelloLists(req: Request) async throws -> [TrelloListDTO] {
+        let user = try req.auth.require(User.self)
+        let project = try await getProjectAsOwnerOrAdmin(req: req, user: user)
+
+        guard let token = project.trelloToken else {
+            throw Abort(.badRequest, reason: "Trello token not configured")
+        }
+
+        guard let boardId = req.parameters.get("boardId") else {
+            throw Abort(.badRequest, reason: "Board ID required")
+        }
+
+        let lists = try await req.trelloService.getLists(token: token, boardId: boardId)
+        return lists.map { TrelloListDTO(id: $0.id, name: $0.name) }
     }
 
     // MARK: - Helpers

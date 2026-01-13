@@ -219,6 +219,35 @@ struct CommentController: RouteCollection {
             }
         }
 
+        // Sync comment to Trello if enabled and active
+        if project.trelloIsActive,
+           project.trelloSyncComments,
+           let cardId = feedback.trelloCardId,
+           let token = project.trelloToken {
+            let isAdmin = dto.isAdmin ?? false
+            let commenterType = isAdmin ? "Admin" : "User"
+            let commentText = """
+            **[\(commenterType)] Comment:**
+
+            \(comment.content)
+
+            ---
+            _Synced from FeedbackKit_
+            """
+
+            Task {
+                do {
+                    try await req.trelloService.addComment(
+                        token: token,
+                        cardId: cardId,
+                        text: commentText
+                    )
+                } catch {
+                    req.logger.error("Failed to sync comment to Trello: \(error)")
+                }
+            }
+        }
+
         return CommentResponseDTO(comment: comment)
     }
 

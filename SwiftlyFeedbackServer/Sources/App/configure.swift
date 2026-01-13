@@ -96,6 +96,7 @@ func configure(_ app: Application) async throws {
     app.migrations.add(CreatePasswordReset())
     app.migrations.add(AddUserSubscriptionFields())
     app.migrations.add(AddVoteEmailNotification())
+    app.migrations.add(AddProjectTrelloIntegration())
 
     try await app.autoMigrate()
 

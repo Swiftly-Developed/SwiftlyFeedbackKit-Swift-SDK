@@ -88,6 +88,13 @@ final class Feedback: Model, Content, @unchecked Sendable {
     @OptionalField(key: "linear_issue_id")
     var linearIssueId: String?
 
+    // Trello integration fields
+    @OptionalField(key: "trello_card_url")
+    var trelloCardURL: String?
+
+    @OptionalField(key: "trello_card_id")
+    var trelloCardId: String?
+
     /// Whether this feedback has been merged into another
     var isMerged: Bool {
         mergedIntoId != nil
@@ -121,6 +128,11 @@ final class Feedback: Model, Content, @unchecked Sendable {
     /// Whether this feedback has a linked Linear issue
     var hasLinearIssue: Bool {
         linearIssueURL != nil
+    }
+
+    /// Whether this feedback has a linked Trello card
+    var hasTrelloCard: Bool {
+        trelloCardURL != nil
     }
 
     init() {}

@@ -177,6 +177,31 @@ final class Project: Model, Content, @unchecked Sendable {
     @Field(key: "linear_is_active")
     var linearIsActive: Bool
 
+    // Trello integration fields
+    @OptionalField(key: "trello_token")
+    var trelloToken: String?
+
+    @OptionalField(key: "trello_board_id")
+    var trelloBoardId: String?
+
+    @OptionalField(key: "trello_board_name")
+    var trelloBoardName: String?
+
+    @OptionalField(key: "trello_list_id")
+    var trelloListId: String?
+
+    @OptionalField(key: "trello_list_name")
+    var trelloListName: String?
+
+    @Field(key: "trello_sync_status")
+    var trelloSyncStatus: Bool
+
+    @Field(key: "trello_sync_comments")
+    var trelloSyncComments: Bool
+
+    @Field(key: "trello_is_active")
+    var trelloIsActive: Bool
+
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -246,7 +271,15 @@ final class Project: Model, Content, @unchecked Sendable {
         linearDefaultLabelIds: [String]? = nil,
         linearSyncStatus: Bool = false,
         linearSyncComments: Bool = false,
-        linearIsActive: Bool = true
+        linearIsActive: Bool = true,
+        trelloToken: String? = nil,
+        trelloBoardId: String? = nil,
+        trelloBoardName: String? = nil,
+        trelloListId: String? = nil,
+        trelloListName: String? = nil,
+        trelloSyncStatus: Bool = false,
+        trelloSyncComments: Bool = false,
+        trelloIsActive: Bool = true
     ) {
         self.id = id
         self.name = name
@@ -303,6 +336,14 @@ final class Project: Model, Content, @unchecked Sendable {
         self.linearSyncStatus = linearSyncStatus
         self.linearSyncComments = linearSyncComments
         self.linearIsActive = linearIsActive
+        self.trelloToken = trelloToken
+        self.trelloBoardId = trelloBoardId
+        self.trelloBoardName = trelloBoardName
+        self.trelloListId = trelloListId
+        self.trelloListName = trelloListName
+        self.trelloSyncStatus = trelloSyncStatus
+        self.trelloSyncComments = trelloSyncComments
+        self.trelloIsActive = trelloIsActive
     }
 }
 
