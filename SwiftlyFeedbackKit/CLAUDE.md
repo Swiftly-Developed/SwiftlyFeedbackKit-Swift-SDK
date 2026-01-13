@@ -2,6 +2,14 @@
 
 Swift client SDK with SwiftUI views for integrating feedback into iOS/macOS/visionOS apps.
 
+## Version History
+
+| Version | Date | Type | Notes |
+|---------|------|------|-------|
+| 1.0.0 | 2026-01-13 | Initial | First public release |
+
+See [CHANGELOG.md](./CHANGELOG.md) for detailed release notes.
+
 ## Build & Test
 
 ```bash

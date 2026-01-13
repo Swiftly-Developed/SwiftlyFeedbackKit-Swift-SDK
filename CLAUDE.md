@@ -55,6 +55,65 @@ git remote add feedbackkit-admin https://github.com/Swiftly-Developed/SwiftlyFee
 git remote add feedbackkit-demo https://github.com/Swiftly-Developed/SwiftlyFeedbackDemoApp.git
 ```
 
+## SDK Versioning (SwiftlyFeedbackKit)
+
+SwiftlyFeedbackKit follows [Semantic Versioning](https://semver.org/):
+
+- **MAJOR** (X.0.0): Breaking API changes (removed/renamed public types, methods, properties)
+- **MINOR** (0.X.0): New features, backward-compatible additions
+- **PATCH** (0.0.X): Bug fixes, performance improvements, no API changes
+
+### Release Checklist
+
+1. **Update CHANGELOG.md** in `SwiftlyFeedbackKit/`
+   - Add new version section with date
+   - Document all changes under Added/Changed/Deprecated/Removed/Fixed/Security
+
+2. **Create git tag**
+   ```bash
+   git tag X.Y.Z
+   git push feedbackkit-sdk X.Y.Z
+   git push origin X.Y.Z
+   ```
+
+3. **Create GitHub Release**
+   - Go to https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases
+   - Create release from tag with CHANGELOG content
+
+### What Constitutes a Breaking Change
+
+**MAJOR version required for:**
+- Removing public types, methods, or properties
+- Renaming public APIs
+- Changing method signatures (parameters, return types)
+- Changing behavior that existing code depends on
+- Increasing minimum platform versions
+
+**MINOR version for:**
+- Adding new public types, methods, or properties
+- Adding new parameters with default values
+- New features that don't affect existing code
+
+**PATCH version for:**
+- Bug fixes
+- Performance improvements
+- Documentation updates
+- Internal refactoring (no public API changes)
+
+### SPM Version Constraints
+
+Consumers can use:
+```swift
+// Recommended: accepts 1.x.x updates
+.package(url: "...", from: "1.0.0")
+
+// Alternative: accepts 1.0.x patches only
+.package(url: "...", .upToNextMinor(from: "1.0.0"))
+
+// Strict: exact version only
+.package(url: "...", exact: "1.0.0")
+```
+
 ## Tech Stack
 
 - **Language**: Swift 6.2
