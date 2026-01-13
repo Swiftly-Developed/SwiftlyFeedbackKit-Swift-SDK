@@ -1359,6 +1359,100 @@ actor AdminAPIClient {
         }
     }
 
+    // MARK: - Trello Integration API
+
+    func updateTrelloSettings(projectId: UUID, request: UpdateProjectTrelloRequest) async throws -> Project {
+        let path = "projects/\(projectId)/trello"
+        let body = request
+
+        AppLogger.api.info("🟠 PATCH \(path) (Trello settings)")
+        let (data, response) = try await makeRequest(path: path, method: "PATCH", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(Project.self, from: data)
+            AppLogger.api.info("✅ PATCH \(path) - decoded successfully")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ PATCH \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func createTrelloCard(
+        projectId: UUID,
+        feedbackId: UUID
+    ) async throws -> CreateTrelloCardResponse {
+        let path = "projects/\(projectId)/trello/card"
+        let body = CreateTrelloCardRequest(feedbackId: feedbackId)
+
+        AppLogger.api.info("🟢 POST \(path) (create Trello card)")
+        let (data, response) = try await makeRequest(path: path, method: "POST", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(CreateTrelloCardResponse.self, from: data)
+            AppLogger.api.info("✅ POST \(path) - decoded successfully")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ POST \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func bulkCreateTrelloCards(
+        projectId: UUID,
+        feedbackIds: [UUID]
+    ) async throws -> BulkCreateTrelloCardsResponse {
+        let path = "projects/\(projectId)/trello/cards"
+        let body = BulkCreateTrelloCardsRequest(feedbackIds: feedbackIds)
+
+        AppLogger.api.info("🟢 POST \(path) (bulk create Trello cards)")
+        let (data, response) = try await makeRequest(path: path, method: "POST", body: body, requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode(BulkCreateTrelloCardsResponse.self, from: data)
+            AppLogger.api.info("✅ POST \(path) - decoded: \(decoded.created.count) created, \(decoded.failed.count) failed")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ POST \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getTrelloBoards(projectId: UUID) async throws -> [TrelloBoard] {
+        let path = "projects/\(projectId)/trello/boards"
+        AppLogger.api.info("🔵 GET \(path) (Trello boards)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([TrelloBoard].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) boards")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func getTrelloLists(projectId: UUID, boardId: String) async throws -> [TrelloList] {
+        let path = "projects/\(projectId)/trello/boards/\(boardId)/lists"
+        AppLogger.api.info("🔵 GET \(path) (Trello lists)")
+        let (data, response) = try await makeRequest(path: path, method: "GET", requiresAuth: true)
+        try validateResponse(response, data: data, path: path)
+
+        do {
+            let decoded = try decoder.decode([TrelloList].self, from: data)
+            AppLogger.api.info("✅ GET \(path) - decoded \(decoded.count) lists")
+            return decoded
+        } catch {
+            AppLogger.api.error("❌ GET \(path) - decoding failed: \(error.localizedDescription)")
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - Merge Feedback API
 
     func mergeFeedback(primaryId: UUID, secondaryIds: [UUID]) async throws -> MergeFeedbackResponse {

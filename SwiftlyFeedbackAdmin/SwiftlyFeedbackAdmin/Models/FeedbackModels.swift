@@ -42,6 +42,9 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
     // Linear integration fields
     let linearIssueUrl: String?
     let linearIssueId: String?
+    // Trello integration fields
+    let trelloCardUrl: String?
+    let trelloCardId: String?
 
     /// Formatted total MRR string for display (always shows, even if $0)
     var formattedMrr: String {
@@ -90,6 +93,11 @@ struct Feedback: Codable, Identifiable, Sendable, Hashable {
     /// Whether this feedback has a linked Linear issue
     var hasLinearIssue: Bool {
         linearIssueUrl != nil
+    }
+
+    /// Whether this feedback has a linked Trello card
+    var hasTrelloCard: Bool {
+        trelloCardUrl != nil
     }
 }
 

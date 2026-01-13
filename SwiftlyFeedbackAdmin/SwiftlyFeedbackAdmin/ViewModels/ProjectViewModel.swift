@@ -707,6 +707,65 @@ final class ProjectViewModel {
         }
     }
 
+    // MARK: - Trello Integration
+
+    func updateTrelloSettings(
+        projectId: UUID,
+        trelloToken: String?,
+        trelloBoardId: String?,
+        trelloBoardName: String?,
+        trelloListId: String?,
+        trelloListName: String?,
+        trelloSyncStatus: Bool?,
+        trelloSyncComments: Bool?,
+        trelloIsActive: Bool?
+    ) async -> IntegrationUpdateResult {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let request = UpdateProjectTrelloRequest(
+                trelloToken: trelloToken,
+                trelloBoardId: trelloBoardId,
+                trelloBoardName: trelloBoardName,
+                trelloListId: trelloListId,
+                trelloListName: trelloListName,
+                trelloSyncStatus: trelloSyncStatus,
+                trelloSyncComments: trelloSyncComments,
+                trelloIsActive: trelloIsActive
+            )
+            let updated = try await AdminAPIClient.shared.updateTrelloSettings(projectId: projectId, request: request)
+            selectedProject = updated
+            isLoading = false
+            return .success
+        } catch let error as APIError where error.isPaymentRequired {
+            isLoading = false
+            return .paymentRequired
+        } catch {
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return .otherError
+        }
+    }
+
+    func loadTrelloBoards(projectId: UUID) async -> [TrelloBoard] {
+        do {
+            return try await AdminAPIClient.shared.getTrelloBoards(projectId: projectId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
+    func loadTrelloLists(projectId: UUID, boardId: String) async -> [TrelloList] {
+        do {
+            return try await AdminAPIClient.shared.getTrelloLists(projectId: projectId, boardId: boardId)
+        } catch {
+            showError(message: error.localizedDescription)
+            return []
+        }
+    }
+
     // MARK: - Accept Invite
 
     var inviteCode = ""

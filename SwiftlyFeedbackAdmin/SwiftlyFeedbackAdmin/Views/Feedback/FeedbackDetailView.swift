@@ -481,7 +481,9 @@ struct CommentRowView: View {
                 mondayItemUrl: nil,
                 mondayItemId: nil,
                 linearIssueUrl: nil,
-                linearIssueId: nil
+                linearIssueId: nil,
+                trelloCardUrl: nil,
+                trelloCardId: nil
             ),
             apiKey: "test-key",
             allowedStatuses: [.pending, .approved, .inProgress, .completed, .rejected],

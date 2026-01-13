@@ -175,6 +175,19 @@ struct FeedbackListView: View {
                 .disabled(viewModel.selectedFeedbacks.allSatisfy { $0.hasLinearIssue })
             }
 
+            // Trello push button (only show if Trello is configured)
+            if project.isTrelloConfigured {
+                Button {
+                    Task {
+                        await viewModel.bulkCreateTrelloCards(projectId: project.id)
+                    }
+                } label: {
+                    Label("Push to Trello", systemImage: "square.grid.2x2")
+                }
+                .buttonStyle(.bordered)
+                .disabled(viewModel.selectedFeedbacks.allSatisfy { $0.hasTrelloCard })
+            }
+
             Button {
                 viewModel.startMergeWithSelection()
             } label: {
@@ -485,6 +498,26 @@ struct FeedbackListView: View {
                     }
                 } label: {
                     Label("Push to Linear", systemImage: "lineweight")
+                }
+            }
+            Divider()
+        }
+
+        // Trello options
+        if project.isTrelloConfigured {
+            if feedback.hasTrelloCard {
+                if let cardUrl = feedback.trelloCardUrl, let url = URL(string: cardUrl) {
+                    Link(destination: url) {
+                        Label("View Trello Card", systemImage: "link")
+                    }
+                }
+            } else {
+                Button {
+                    Task {
+                        await viewModel.createTrelloCard(projectId: project.id, feedbackId: feedback.id)
+                    }
+                } label: {
+                    Label("Push to Trello", systemImage: "square.grid.2x2")
                 }
             }
             Divider()
@@ -1091,6 +1124,26 @@ struct KanbanColumnView: View {
                     }
                 } label: {
                     Label("Push to Linear", systemImage: "lineweight")
+                }
+            }
+            Divider()
+        }
+
+        // Trello options
+        if project.isTrelloConfigured {
+            if feedback.hasTrelloCard {
+                if let cardUrl = feedback.trelloCardUrl, let url = URL(string: cardUrl) {
+                    Link(destination: url) {
+                        Label("View Trello Card", systemImage: "link")
+                    }
+                }
+            } else {
+                Button {
+                    Task {
+                        await viewModel.createTrelloCard(projectId: project.id, feedbackId: feedback.id)
+                    }
+                } label: {
+                    Label("Push to Trello", systemImage: "square.grid.2x2")
                 }
             }
             Divider()

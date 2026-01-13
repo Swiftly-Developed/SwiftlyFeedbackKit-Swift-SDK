@@ -18,6 +18,7 @@ struct ProjectDetailView: View {
     @State private var showingNotionSheet = false
     @State private var showingMondaySheet = false
     @State private var showingLinearSheet = false
+    @State private var showingTrelloSheet = false
     @State private var copiedToClipboard = false
     @State private var showingPaywall = false
     @State private var paywallRequiredTier: SubscriptionTier = .pro
@@ -165,6 +166,18 @@ struct ProjectDetailView: View {
                                 Label("Linear", systemImage: "arrow.triangle.branch")
                                     .tierBadge(.pro)
                             }
+
+                            Button {
+                                if subscriptionService.meetsRequirement(.pro) {
+                                    showingTrelloSheet = true
+                                } else {
+                                    paywallRequiredTier = .pro
+                                    showingPaywall = true
+                                }
+                            } label: {
+                                Label("Trello", systemImage: "square.grid.2x2")
+                                    .tierBadge(.pro)
+                            }
                         } label: {
                             Label("Integrations", systemImage: "puzzlepiece.extension")
                         }
@@ -302,6 +315,14 @@ struct ProjectDetailView: View {
         .sheet(isPresented: $showingLinearSheet) {
             if let project = viewModel.selectedProject {
                 LinearSettingsView(project: project, viewModel: viewModel)
+                    #if os(macOS)
+                    .frame(minWidth: 500, minHeight: 500)
+                    #endif
+            }
+        }
+        .sheet(isPresented: $showingTrelloSheet) {
+            if let project = viewModel.selectedProject {
+                TrelloSettingsView(project: project, viewModel: viewModel)
                     #if os(macOS)
                     .frame(minWidth: 500, minHeight: 500)
                     #endif
@@ -634,6 +655,22 @@ struct ProjectDetailView: View {
                         isActive: project.linearIsActive
                     ) {
                         showingLinearSheet = true
+                    }
+                }
+
+                if project.isTrelloConfigured {
+                    if project.isSlackConfigured || project.isGitHubConfigured || project.isClickUpConfigured || project.isNotionConfigured || project.isMondayConfigured || project.isLinearConfigured {
+                        Divider()
+                            .padding(.leading, 44)
+                    }
+                    integrationRow(
+                        icon: "square.grid.2x2",
+                        iconColor: Color(red: 0.0, green: 0.47, blue: 0.8),
+                        name: "Trello",
+                        detail: project.trelloIsActive ? (project.trelloBoardName ?? "Connected") : "Paused",
+                        isActive: project.trelloIsActive
+                    ) {
+                        showingTrelloSheet = true
                     }
                 }
             }

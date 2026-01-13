@@ -73,6 +73,15 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
     let linearSyncStatus: Bool
     let linearSyncComments: Bool
     let linearIsActive: Bool
+    // Trello integration fields
+    let trelloToken: String?
+    let trelloBoardId: String?
+    let trelloBoardName: String?
+    let trelloListId: String?
+    let trelloListName: String?
+    let trelloSyncStatus: Bool
+    let trelloSyncComments: Bool
+    let trelloIsActive: Bool
 
     /// Whether Slack integration is configured (has webhook URL)
     var isSlackConfigured: Bool {
@@ -134,14 +143,24 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         isLinearConfigured && linearIsActive
     }
 
+    /// Whether Trello integration is configured (has required fields)
+    var isTrelloConfigured: Bool {
+        trelloToken != nil && trelloBoardId != nil && trelloListId != nil
+    }
+
+    /// Whether Trello integration is active (configured AND enabled)
+    var isTrelloActive: Bool {
+        isTrelloConfigured && trelloIsActive
+    }
+
     /// Whether any integration is configured
     var hasAnyIntegration: Bool {
-        isSlackConfigured || isGitHubConfigured || isClickUpConfigured || isNotionConfigured || isMondayConfigured || isLinearConfigured
+        isSlackConfigured || isGitHubConfigured || isClickUpConfigured || isNotionConfigured || isMondayConfigured || isLinearConfigured || isTrelloConfigured
     }
 
     /// Whether any integration is active
     var hasAnyActiveIntegration: Bool {
-        isSlackActive || isGitHubActive || isClickUpActive || isNotionActive || isMondayActive || isLinearActive
+        isSlackActive || isGitHubActive || isClickUpActive || isNotionActive || isMondayActive || isLinearActive || isTrelloActive
     }
 
     // Custom decoder to handle backwards compatibility when allowedStatuses is missing
@@ -215,6 +234,15 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         linearSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .linearSyncStatus) ?? false
         linearSyncComments = try container.decodeIfPresent(Bool.self, forKey: .linearSyncComments) ?? false
         linearIsActive = try container.decodeIfPresent(Bool.self, forKey: .linearIsActive) ?? true
+        // Trello fields (backwards compatibility)
+        trelloToken = try container.decodeIfPresent(String.self, forKey: .trelloToken)
+        trelloBoardId = try container.decodeIfPresent(String.self, forKey: .trelloBoardId)
+        trelloBoardName = try container.decodeIfPresent(String.self, forKey: .trelloBoardName)
+        trelloListId = try container.decodeIfPresent(String.self, forKey: .trelloListId)
+        trelloListName = try container.decodeIfPresent(String.self, forKey: .trelloListName)
+        trelloSyncStatus = try container.decodeIfPresent(Bool.self, forKey: .trelloSyncStatus) ?? false
+        trelloSyncComments = try container.decodeIfPresent(Bool.self, forKey: .trelloSyncComments) ?? false
+        trelloIsActive = try container.decodeIfPresent(Bool.self, forKey: .trelloIsActive) ?? true
     }
 
     init(
@@ -278,7 +306,15 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         linearDefaultLabelIds: [String]? = nil,
         linearSyncStatus: Bool = false,
         linearSyncComments: Bool = false,
-        linearIsActive: Bool = true
+        linearIsActive: Bool = true,
+        trelloToken: String? = nil,
+        trelloBoardId: String? = nil,
+        trelloBoardName: String? = nil,
+        trelloListId: String? = nil,
+        trelloListName: String? = nil,
+        trelloSyncStatus: Bool = false,
+        trelloSyncComments: Bool = false,
+        trelloIsActive: Bool = true
     ) {
         self.id = id
         self.name = name
@@ -341,6 +377,14 @@ struct Project: Codable, Identifiable, Sendable, Hashable {
         self.linearSyncStatus = linearSyncStatus
         self.linearSyncComments = linearSyncComments
         self.linearIsActive = linearIsActive
+        self.trelloToken = trelloToken
+        self.trelloBoardId = trelloBoardId
+        self.trelloBoardName = trelloBoardName
+        self.trelloListId = trelloListId
+        self.trelloListName = trelloListName
+        self.trelloSyncStatus = trelloSyncStatus
+        self.trelloSyncComments = trelloSyncComments
+        self.trelloIsActive = trelloIsActive
     }
 }
 
@@ -765,4 +809,54 @@ struct LinearLabel: Codable, Identifiable, Sendable, Hashable {
     let id: String
     let name: String
     let color: String
+}
+
+// MARK: - Trello Integration
+
+nonisolated
+struct UpdateProjectTrelloRequest: Encodable, Sendable {
+    let trelloToken: String?
+    let trelloBoardId: String?
+    let trelloBoardName: String?
+    let trelloListId: String?
+    let trelloListName: String?
+    let trelloSyncStatus: Bool?
+    let trelloSyncComments: Bool?
+    let trelloIsActive: Bool?
+}
+
+nonisolated
+struct CreateTrelloCardRequest: Encodable, Sendable {
+    let feedbackId: UUID
+}
+
+nonisolated
+struct CreateTrelloCardResponse: Decodable, Sendable {
+    let feedbackId: UUID
+    let cardUrl: String
+    let cardId: String
+}
+
+nonisolated
+struct BulkCreateTrelloCardsRequest: Encodable, Sendable {
+    let feedbackIds: [UUID]
+}
+
+nonisolated
+struct BulkCreateTrelloCardsResponse: Decodable, Sendable {
+    let created: [CreateTrelloCardResponse]
+    let failed: [UUID]
+}
+
+// Trello hierarchy models
+nonisolated
+struct TrelloBoard: Codable, Identifiable, Sendable, Hashable {
+    let id: String
+    let name: String
+}
+
+nonisolated
+struct TrelloList: Codable, Identifiable, Sendable, Hashable {
+    let id: String
+    let name: String
 }

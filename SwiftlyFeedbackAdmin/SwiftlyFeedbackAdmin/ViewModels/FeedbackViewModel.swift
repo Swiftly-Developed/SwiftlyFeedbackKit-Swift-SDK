@@ -782,4 +782,75 @@ final class FeedbackViewModel {
             return false
         }
     }
+
+    // MARK: - Trello Integration
+
+    func createTrelloCard(projectId: UUID, feedbackId: UUID) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await AdminAPIClient.shared.createTrelloCard(
+                projectId: projectId,
+                feedbackId: feedbackId
+            )
+
+            // Refresh to get updated Trello fields
+            await refreshFeedbacks()
+
+            AppLogger.viewModel.info("✅ Trello card created: \(response.cardUrl)")
+            showSuccess(message: "Trello card created")
+            isLoading = false
+            return true
+        } catch {
+            AppLogger.viewModel.error("❌ Failed to create Trello card: \(error.localizedDescription)")
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
+
+    func bulkCreateTrelloCards(projectId: UUID) async -> Bool {
+        // Get feedbacks that don't already have Trello cards
+        let feedbackIds = selectedFeedbacks
+            .filter { !$0.hasTrelloCard }
+            .map { $0.id }
+
+        guard !feedbackIds.isEmpty else {
+            showError(message: "No feedbacks to push to Trello (all selected items already have cards)")
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let response = try await AdminAPIClient.shared.bulkCreateTrelloCards(
+                projectId: projectId,
+                feedbackIds: feedbackIds
+            )
+
+            // Refresh to get updated Trello fields
+            await refreshFeedbacks()
+
+            // Clear selection
+            clearSelection()
+
+            if response.failed.isEmpty {
+                AppLogger.viewModel.info("✅ Trello cards created: \(response.created.count)")
+                showSuccess(message: "Created \(response.created.count) Trello cards")
+            } else {
+                AppLogger.viewModel.warning("⚠️ Trello cards created with some failures: \(response.created.count) created, \(response.failed.count) failed")
+                showSuccess(message: "Created \(response.created.count) Trello cards (\(response.failed.count) failed)")
+            }
+
+            isLoading = false
+            return true
+        } catch {
+            AppLogger.viewModel.error("❌ Failed to create Trello cards: \(error.localizedDescription)")
+            showError(message: error.localizedDescription)
+            isLoading = false
+            return false
+        }
+    }
 }
