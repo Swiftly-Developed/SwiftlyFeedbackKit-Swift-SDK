@@ -590,7 +590,7 @@ Manage your feedback from the [FeedbackKit Admin app](https://swiftly-developed.
 
 - **Documentation:** [swiftly-developed.com/feedbackkit](https://swiftly-developed.com/feedbackkit)
 - **Issues:** [GitHub Issues](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/issues)
-- **Email:** support@swiftly-developed.com
+- **Email:** info@swiftly-developed.com
 
 ## License
 

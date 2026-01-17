@@ -1,23 +1,13 @@
 # CLAUDE.md - Feedback Kit SDK
 
-Swift client SDK with SwiftUI views for integrating feedback into iOS/macOS/visionOS apps.
-
-## Version History
-
-| Version | Date | Type | Notes |
-|---------|------|------|-------|
-| 1.0.0 | 2026-01-13 | Initial | First public release |
-
-See [CHANGELOG.md](./CHANGELOG.md) for detailed release notes.
+Swift SDK with SwiftUI views for integrating feedback into iOS/macOS/visionOS apps.
 
 ## Build & Test
 
 ```bash
-# Build
 swift build
-
-# Test
 swift test
+swift test --filter TestClassName/testMethodName  # Single test
 ```
 
 ## Platforms
@@ -30,71 +20,42 @@ swift test
 
 ```
 Sources/SwiftlyFeedbackKit/
-├── SwiftlyFeedback.swift     # Main SDK entry point & configuration
+├── SwiftlyFeedback.swift        # Main entry point & configuration
 ├── Configuration/
-│   ├── Config.swift          # SDK configuration options
-│   └── EnvironmentAPIKeys.swift  # Multi-environment API key config
+│   ├── Config.swift             # SDK options
+│   └── EnvironmentAPIKeys.swift # Multi-environment keys
 ├── Utilities/
-│   └── BuildEnvironment.swift    # Build type detection
+│   └── BuildEnvironment.swift   # Build type detection
 ├── Models/
-│   ├── Feedback.swift        # Feedback model
-│   ├── Comment.swift         # Comment model
-│   ├── VoteResult.swift      # Vote result model
-│   └── ViewEvent.swift       # View event model & predefined types
+│   ├── Feedback.swift           # Feedback model
+│   ├── Comment.swift            # Comment model
+│   ├── VoteResult.swift         # Vote result
+│   └── ViewEvent.swift          # Event tracking
 ├── Networking/
-│   ├── APIClient.swift       # HTTP client for API calls
-│   └── SwiftlyFeedbackError.swift  # Error types
+│   ├── APIClient.swift          # HTTP client
+│   └── SwiftlyFeedbackError.swift
 └── Views/
-    ├── FeedbackListView.swift      # List of all feedback
-    ├── FeedbackRowView.swift       # Single feedback row
-    ├── FeedbackDetailView.swift    # Feedback detail with comments
-    └── SubmitFeedbackView.swift    # Form to submit new feedback
+    ├── FeedbackListView.swift
+    ├── FeedbackRowView.swift
+    ├── FeedbackDetailView.swift
+    └── SubmitFeedbackView.swift
 ```
 
-## SDK Usage
+## SDK Configuration
+
+### Basic Setup
 
 ```swift
 import SwiftlyFeedbackKit
 
-// Configure once at app launch
+// Single environment
 SwiftlyFeedback.configure(
     apiKey: "sf_your_api_key",
     baseURL: URL(string: "https://your-server.com/api/v1")!
 )
-
-// Use pre-built SwiftUI views
-FeedbackListView()
-SubmitFeedbackView()
-FeedbackDetailView(feedback: someFeedback)
-
-// Or use the API directly
-let feedback = try await SwiftlyFeedback.shared?.getFeedback()
-try await SwiftlyFeedback.shared?.submitFeedback(title: "...", description: "...")
-try await SwiftlyFeedback.shared?.vote(for: feedbackId)
-
-// Track custom view events (any event name)
-SwiftlyFeedback.view("onboarding_step_1")
-SwiftlyFeedback.view("purchase_completed", properties: ["amount": "9.99"])
-
-// Predefined views (automatically tracked when views appear)
-SwiftlyFeedback.view(.feedbackList)
-SwiftlyFeedback.view(.feedbackDetail)
-SwiftlyFeedback.view(.submitFeedback)
-
-// Disable automatic view tracking
-SwiftlyFeedback.config.enableAutomaticViewTracking = false
-
-// Restrict feedback submission (e.g., for free users)
-SwiftlyFeedback.config.allowFeedbackSubmission = false
-SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feedback!"
-
-// Disable SDK logging to reduce console clutter
-SwiftlyFeedback.config.loggingEnabled = false
 ```
 
-## Multi-Environment Configuration
-
-For apps that need different API keys per server environment:
+### Multi-Environment Setup (Recommended)
 
 ```swift
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
@@ -110,132 +71,163 @@ SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
 | TestFlight | staging server | `testflight` |
 | App Store | production server | `production` |
 
-**Security Tip:** Store API keys in Info.plist with xcconfig files or environment variables rather than hardcoding them.
+> **Security:** Store API keys in Info.plist with xcconfig files, not hardcoded.
+
+### Configuration Options
 
 ```swift
-// Vote email notifications (see Vote Notifications section below)
-SwiftlyFeedback.config.userEmail = "user@example.com"
-SwiftlyFeedback.config.showVoteEmailField = true
-SwiftlyFeedback.config.voteNotificationDefaultOptIn = false
+// Disable submission (e.g., for free users)
+SwiftlyFeedback.config.allowFeedbackSubmission = false
+SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
+
+// Disable logging
+SwiftlyFeedback.config.loggingEnabled = false
+
+// Event tracking
+SwiftlyFeedback.view("feature_details", properties: ["id": "123"])
+SwiftlyFeedback.config.enableAutomaticViewTracking = false
 ```
 
-## Code Patterns
+### Vote Notification Options
 
-### Models
-- All models are `Codable`, `Sendable`, and `Equatable`
-- Use `Identifiable` for SwiftUI list compatibility
-- `FeedbackStatus` - Enum with cases: `pending`, `approved`, `inProgress`, `testflight`, `completed`, `rejected`
-- `FeedbackStatus.canVote` - Returns `false` for `completed`/`rejected` statuses
-- `FeedbackStatus.displayName` - User-friendly name for display
-- `Feedback.mergedIntoId` - Points to primary feedback if this item was merged
-- `Feedback.isMerged` - Computed property to check if feedback was merged
-- `Feedback.mergedFeedbackIds` - Array of IDs merged into this feedback (for primary)
+```swift
+// Pre-set email (skips dialog when voting)
+SwiftlyFeedback.config.userEmail = "user@example.com"
 
-### Networking
-- All API calls use async/await
-- Errors are typed via `SwiftlyFeedbackError`
-- API key is sent via `X-API-Key` header
-- JSON encoding/decoding uses snake_case key strategy
-- OSLog logging via `SDKLogger` utility (subsystem: `com.swiftlyfeedback.sdk`)
-- Logging can be disabled via `SwiftlyFeedback.config.loggingEnabled = false`
-- Request cancellation is handled gracefully - `CancellationError` and `URLError.cancelled` are silently re-thrown without logging
+// Show email dialog when voting (only if userEmail is nil)
+SwiftlyFeedback.config.showVoteEmailField = true
 
-### Error Handling
-- `SwiftlyFeedbackError` cases: `invalidResponse`, `badRequest(message:)`, `unauthorized`, `invalidApiKey`, `notFound`, `conflict`, `serverError(statusCode:)`, `networkError(underlying:)`, `decodingError(underlying:)`
-- Server error messages are parsed from response body when available
-- Cancelled requests do not show error alerts to users
-- `SwiftlyFeedbackError` conforms to `Equatable` for pattern matching
+// Default state of "notify me" toggle
+SwiftlyFeedback.config.voteNotificationDefaultOptIn = false
 
-### Invalid API Key Handling
-When the server returns a 401 with "Invalid API key" message:
-- SDK throws `.invalidApiKey` error (distinct from generic `.unauthorized`)
-- Views detect this and show `InvalidApiKeyView` - a `ContentUnavailableView` with localized message
-- All toolbar buttons and interactive elements are hidden/disabled
-- Further API calls are blocked via `hasInvalidApiKey` guard
-- Localized strings: `error.invalidApiKey.title`, `error.invalidApiKey.message`
-- Message tells users to contact the app developers for assistance
+// Callback when email is set via vote dialog
+SwiftlyFeedback.config.onUserEmailChanged = { email in
+    UserDefaults.standard.set(email ?? "", forKey: "userEmail")
+}
+```
 
-### User Identification
-- Uses iCloud user record ID when CloudKit is available and properly configured
-- Falls back to local UUID stored in Keychain when CloudKit is unavailable
-- Safely checks for CloudKit container configuration before attempting to use it
+## Using the SDK
 
-### Views
-- Views use `@State` and `@Environment` for state management
-- Follow AGENTS.md guidelines for SwiftUI patterns
-- Use `#Preview` macro for previews
-- Platform-specific adaptations:
-  - macOS: Uses Grid layout for forms, refresh button (⌘R), submit shortcut (⌘Return)
-  - iOS: Uses Form with sections, keyboard-aware scrolling
-- `FeedbackCategory.iconName` provides SF Symbol names for each category
-- `VoteButton` is disabled and dimmed for feedback with non-votable status
+### SwiftUI Views
 
-### FeedbackListView Sorting & Animation
+```swift
+// Pre-built views
+FeedbackListView()
+SubmitFeedbackView()
+FeedbackDetailView(feedback: someFeedback)
+```
 
-The `FeedbackListView` includes built-in sorting and smooth animations:
+### Direct API Access
 
-**Sort Options (`FeedbackSortOption` enum):**
+```swift
+let feedback = try await SwiftlyFeedback.shared?.getFeedback()
+try await SwiftlyFeedback.shared?.submitFeedback(title: "...", description: "...")
+try await SwiftlyFeedback.shared?.vote(for: feedbackId)
+```
+
+### Event Tracking
+
+```swift
+// Custom events
+SwiftlyFeedback.view("onboarding_step_1")
+SwiftlyFeedback.view("purchase_completed", properties: ["amount": "9.99"])
+
+// Predefined views
+SwiftlyFeedback.view(.feedbackList)
+SwiftlyFeedback.view(.feedbackDetail)
+SwiftlyFeedback.view(.submitFeedback)
+```
+
+## Models
+
+All models are `Codable`, `Sendable`, `Equatable`, and `Identifiable`.
+
+**FeedbackStatus:**
+- Cases: `pending`, `approved`, `inProgress`, `testflight`, `completed`, `rejected`
+- `canVote` - Returns `false` for `completed`/`rejected`
+- `displayName` - User-friendly name
+
+**Feedback:**
+- `mergedIntoId` - Points to primary if merged
+- `isMerged` - Computed property
+- `mergedFeedbackIds` - Array of merged IDs (for primary)
+
+## FeedbackListView Features
+
+### Sorting
+
 | Option | Description |
 |--------|-------------|
 | `.votes` | Highest vote count first (default) |
 | `.newest` | Most recently created first |
 | `.oldest` | Oldest first |
 
-**Features:**
-- Sort picker in toolbar menu (combined with status filter if enabled)
-- Sorting is applied client-side after fetching
-- Smooth `.smooth` animation when list order changes
-- Items animate with `.opacity.combined(with: .move(edge: .top))` transition
-
-**Implementation:**
-- `FeedbackListViewModel.selectedSort` - Current sort option (default: `.votes`)
-- `sortFeedback()` - Applies sort with `withAnimation(.smooth)`
-- Animation value: `.animation(.smooth, value: viewModel.feedbackItems)`
+Sort picker in toolbar menu. Sorting applied client-side with smooth animation.
 
 ### Request Deduplication
-- `FeedbackListViewModel` tracks in-flight requests via `loadTask` property
-- New requests cancel any pending request to prevent race conditions
-- `loadFeedbackIfNeeded()` prevents duplicate initial loads (used by `.task` modifier)
-- `loadFeedback()` always executes (used by `.refreshable` and filter changes)
-- Cancelled requests are silently ignored - no error alerts shown to users
 
-## Vote Notifications
+- `loadTask` tracks in-flight requests
+- New requests cancel pending ones
+- `loadFeedbackIfNeeded()` prevents duplicate initial loads
+- Cancelled requests silently ignored (no error alerts)
 
-Users can optionally provide their email when voting to receive status change notifications.
+## Error Handling
 
-### Configuration Options
+**SwiftlyFeedbackError cases:**
+- `invalidResponse`, `badRequest(message:)`, `unauthorized`
+- `invalidApiKey` - Distinct from generic unauthorized
+- `notFound`, `conflict`, `serverError(statusCode:)`
+- `networkError(underlying:)`, `decodingError(underlying:)`
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `userEmail` | `nil` | Pre-configured email. If set, votes use it automatically (no dialog shown) |
-| `showVoteEmailField` | `true` | Show email dialog when voting (only if `userEmail` is nil) |
-| `voteNotificationDefaultOptIn` | `false` | Default state of "notify me" toggle |
-| `onUserEmailChanged` | `nil` | Callback when email is set via vote dialog |
+**Invalid API Key Handling:**
+- Views detect `.invalidApiKey` and show `InvalidApiKeyView`
+- All interactive elements hidden/disabled
+- Localized strings: `error.invalidApiKey.title`, `error.invalidApiKey.message`
 
-### Behavior
+## Networking
 
-1. **Email configured** (`userEmail` set): Votes automatically use the email, no dialog shown
-2. **No email + dialog enabled**: User sees dialog to optionally enter email when voting
-3. **No email + dialog disabled**: Vote submitted without email
+- All API calls use async/await
+- API key sent via `X-API-Key` header
+- JSON uses snake_case key strategy
+- OSLog logging via `SDKLogger` (subsystem: `com.swiftlyfeedback.sdk`)
+- Cancelled requests (`CancellationError`, `URLError.cancelled`) silently re-thrown
 
-### Syncing Email from Vote Dialog
+## User Identification
 
-When a user enters their email via the vote dialog, it's saved to `SwiftlyFeedback.config.userEmail`. To sync this back to your app's settings:
+- Uses iCloud user record ID when CloudKit available
+- Falls back to local UUID stored in Keychain
+- Safely checks CloudKit container before use
+
+## Platform-Specific Behavior
+
+| Feature | iOS | macOS |
+|---------|-----|-------|
+| Forms | Form with sections | Grid layout |
+| Refresh | Pull-to-refresh | Refresh button (⌘R) |
+| Submit | Standard | ⌘Return shortcut |
+
+## Versioning
+
+Follows [Semantic Versioning](https://semver.org/):
+
+- **MAJOR**: Breaking API changes (removed/renamed public types, methods)
+- **MINOR**: New features, backward-compatible additions
+- **PATCH**: Bug fixes, no API changes
+
+### Release Checklist
+
+1. Update `CHANGELOG.md`
+2. Create git tag: `git tag X.Y.Z`
+3. Push: `git push feedbackkit-sdk X.Y.Z && git push origin X.Y.Z`
+4. Create GitHub Release with CHANGELOG content
+
+### SPM Constraints
 
 ```swift
-SwiftlyFeedback.config.onUserEmailChanged = { email in
-    // Save to UserDefaults or your settings system
-    UserDefaults.standard.set(email ?? "", forKey: "userEmail")
-}
+.package(url: "...", from: "1.0.0")           // Recommended: 1.x.x
+.package(url: "...", .upToNextMinor(from: "1.0.0"))  // 1.0.x only
+.package(url: "...", exact: "1.0.0")          // Exact version
 ```
-
-### Vote Dialog UI
-
-The vote dialog is platform-specific following Apple HIG:
-- **iOS/iPadOS**: Sheet with Form, navigation bar buttons (Skip/Vote)
-- **macOS**: VStack layout with button bar (Skip left, Vote right)
-
-Both list view and detail view voting trigger the same dialog when email is not configured.
 
 ## Adding New Features
 
