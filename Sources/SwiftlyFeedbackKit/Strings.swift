@@ -211,6 +211,12 @@ public enum Strings {
         String(localized: "status.rejected", bundle: #bundle)
     }
 
+    // MARK: - Rejection Reason
+
+    public static var rejectionReasonTitle: String {
+        String(localized: "rejection.reason.title", bundle: #bundle)
+    }
+
     // MARK: - Categories
 
     public static var categoryFeatureRequest: String {

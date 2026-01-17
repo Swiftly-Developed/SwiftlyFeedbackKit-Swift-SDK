@@ -430,6 +430,17 @@
         }
       }
     },
+    "rejection.reason.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reason for Rejection"
+          }
+        }
+      }
+    },
     "category.featureRequest" : {
       "extractionState" : "manual",
       "localizations" : {

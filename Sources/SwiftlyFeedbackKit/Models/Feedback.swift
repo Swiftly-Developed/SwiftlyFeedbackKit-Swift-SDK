@@ -18,6 +18,8 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
     public let mergedIntoId: UUID?
     public let mergedAt: Date?
     public let mergedFeedbackIds: [UUID]?
+    // Rejection reason (only present when status is rejected)
+    public let rejectionReason: String?
 
     /// Whether this feedback has been merged into another
     public var isMerged: Bool {
@@ -39,7 +41,8 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         updatedAt: Date?,
         mergedIntoId: UUID? = nil,
         mergedAt: Date? = nil,
-        mergedFeedbackIds: [UUID]? = nil
+        mergedFeedbackIds: [UUID]? = nil,
+        rejectionReason: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -56,6 +59,7 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         self.mergedIntoId = mergedIntoId
         self.mergedAt = mergedAt
         self.mergedFeedbackIds = mergedFeedbackIds
+        self.rejectionReason = rejectionReason
     }
 }
 

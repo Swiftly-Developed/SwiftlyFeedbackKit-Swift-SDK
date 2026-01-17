@@ -67,6 +67,53 @@ public final class SwiftlyFeedback: @unchecked Sendable {
 
     // MARK: - Configuration
 
+    // MARK: - Multi-Environment Auto-Configuration
+
+    /// Configures the SDK with environment-specific API keys.
+    ///
+    /// This method automatically detects the current build environment and
+    /// selects the appropriate API key and server URL:
+    ///
+    /// | Build Type | Server | API Key Used |
+    /// |------------|--------|--------------|
+    /// | DEBUG | localhost:8080 | `keys.debug` (or `keys.testflight` if nil) |
+    /// | TestFlight | staging server | `keys.testflight` |
+    /// | App Store | production server | `keys.production` |
+    ///
+    /// ## Usage
+    ///
+    /// ```swift
+    /// // In your App's init or AppDelegate
+    /// SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
+    ///     debug: "sf_local_...",        // Optional
+    ///     testflight: "sf_staging_...",  // Required
+    ///     production: "sf_prod_..."      // Required
+    /// ))
+    /// ```
+    ///
+    /// - Parameter keys: Environment-specific API keys configuration.
+    ///
+    /// - Note: For security, consider storing API keys in your app's
+    ///   Info.plist or using a secrets management solution rather than
+    ///   hardcoding them in source code.
+    public static func configureAuto(keys: EnvironmentAPIKeys) {
+        let apiKey = keys.currentKey
+        let baseURL = keys.currentServerURL
+
+        configure(with: apiKey, baseURL: baseURL)
+
+        SDKLogger.info("Auto-configured for \(keys.currentEnvironmentName)")
+
+        #if DEBUG
+        // In DEBUG, log which key type is being used
+        if keys.debug != nil {
+            SDKLogger.debug("Using dedicated DEBUG API key")
+        } else {
+            SDKLogger.debug("Using TestFlight API key (no DEBUG key provided)")
+        }
+        #endif
+    }
+
     /// Configure the SDK with automatic server detection based on build type.
     ///
     /// The server URL is automatically selected based on your build configuration:
@@ -81,6 +128,12 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// ```
     ///
     /// - Parameter apiKey: Your project's API key from the SwiftlyFeedback dashboard
+    ///
+    /// - Important: This method uses a single API key for all environments,
+    ///   which may cause authentication failures when switching between
+    ///   DEBUG, TestFlight, and App Store builds. Consider using
+    ///   ``configureAuto(keys:)`` instead for multi-environment support.
+    @available(*, deprecated, message: "Use configureAuto(keys:) for multi-environment support")
     public static func configureAuto(with apiKey: String) {
         let baseURL = detectServerURL()
         configure(with: apiKey, baseURL: baseURL)

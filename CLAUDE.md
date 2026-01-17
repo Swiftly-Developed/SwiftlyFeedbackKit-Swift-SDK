@@ -32,7 +32,10 @@ swift test
 Sources/SwiftlyFeedbackKit/
 ├── SwiftlyFeedback.swift     # Main SDK entry point & configuration
 ├── Configuration/
-│   └── Config.swift          # SDK configuration options
+│   ├── Config.swift          # SDK configuration options
+│   └── EnvironmentAPIKeys.swift  # Multi-environment API key config
+├── Utilities/
+│   └── BuildEnvironment.swift    # Build type detection
 ├── Models/
 │   ├── Feedback.swift        # Feedback model
 │   ├── Comment.swift         # Comment model
@@ -56,7 +59,6 @@ import SwiftlyFeedbackKit
 // Configure once at app launch
 SwiftlyFeedback.configure(
     apiKey: "sf_your_api_key",
-    userId: "unique_user_id",
     baseURL: URL(string: "https://your-server.com/api/v1")!
 )
 
@@ -88,7 +90,29 @@ SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to su
 
 // Disable SDK logging to reduce console clutter
 SwiftlyFeedback.config.loggingEnabled = false
+```
 
+## Multi-Environment Configuration
+
+For apps that need different API keys per server environment:
+
+```swift
+SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
+    debug: "sf_local_...",        // Optional: localhost
+    testflight: "sf_staging_...",  // Required: staging server
+    production: "sf_prod_..."      // Required: production server
+))
+```
+
+| Build Type | Server | API Key Used |
+|------------|--------|--------------|
+| DEBUG | localhost:8080 | `debug` (or `testflight` if nil) |
+| TestFlight | staging server | `testflight` |
+| App Store | production server | `production` |
+
+**Security Tip:** Store API keys in Info.plist with xcconfig files or environment variables rather than hardcoding them.
+
+```swift
 // Vote email notifications (see Vote Notifications section below)
 SwiftlyFeedback.config.userEmail = "user@example.com"
 SwiftlyFeedback.config.showVoteEmailField = true

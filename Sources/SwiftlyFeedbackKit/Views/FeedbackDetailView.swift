@@ -84,6 +84,30 @@ struct FeedbackDetailHeaderView: View {
                 .font(.body)
                 .foregroundStyle(.secondary)
 
+            // Rejection reason section (only shown when status is rejected and reason is provided)
+            if feedback.status == .rejected,
+               let reason = feedback.rejectionReason,
+               !reason.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                        Text(Strings.rejectionReasonTitle)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.red)
+
+                    Text(reason)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
             if let createdAt = feedback.createdAt {
                 Text(String(format: Strings.feedbackSubmitted, createdAt.formatted(date: .abbreviated, time: .shortened)))
                     .font(.caption)
@@ -551,7 +575,8 @@ final class FeedbackDetailViewModel {
                 updatedAt: currentFeedback.updatedAt,
                 mergedIntoId: currentFeedback.mergedIntoId,
                 mergedAt: currentFeedback.mergedAt,
-                mergedFeedbackIds: currentFeedback.mergedFeedbackIds
+                mergedFeedbackIds: currentFeedback.mergedFeedbackIds,
+                rejectionReason: currentFeedback.rejectionReason
             )
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
