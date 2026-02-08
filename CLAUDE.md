@@ -43,33 +43,39 @@ Sources/SwiftlyFeedbackKit/
 
 ## SDK Configuration
 
-### Basic Setup
+### Recommended Setup (Explicit Environment)
 
 ```swift
 import SwiftlyFeedbackKit
 
-// Single environment
-SwiftlyFeedback.configure(
-    apiKey: "sf_your_api_key",
-    baseURL: URL(string: "https://your-server.com/api/v1")!
-)
+// In your App's init()
+#if DEBUG
+SwiftlyFeedback.configure(environment: .development, key: "your-dev-key")
+#elseif TESTFLIGHT
+SwiftlyFeedback.configure(environment: .testflight, key: "your-staging-key")
+#else
+SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
+#endif
 ```
 
-### Multi-Environment Setup (Recommended)
+| Environment | Server |
+|-------------|--------|
+| `.development` | localhost:8080 |
+| `.testflight` | staging server |
+| `.production` | production server |
+
+> **Note:** Add `TESTFLIGHT` to your target's **Active Compilation Conditions** in Build Settings for TestFlight builds.
+
+### Alternative: Auto-Detection
 
 ```swift
+// May be unreliable in some cases (uses AppTransaction with timeout)
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
     debug: "sf_local_...",        // Optional: localhost
     testflight: "sf_staging_...",  // Required: staging server
     production: "sf_prod_..."      // Required: production server
 ))
 ```
-
-| Build Type | Server | API Key Used |
-|------------|--------|--------------|
-| DEBUG | localhost:8080 | `debug` (or `testflight` if nil) |
-| TestFlight | staging server | `testflight` |
-| App Store | production server | `production` |
 
 > **Security:** Store API keys in Info.plist with xcconfig files, not hardcoded.
 

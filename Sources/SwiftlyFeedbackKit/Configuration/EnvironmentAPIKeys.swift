@@ -7,6 +7,61 @@
 
 import Foundation
 
+// MARK: - Environment
+
+/// The server environment to connect to.
+///
+/// Use with `SwiftlyFeedback.configure(environment:key:)` to explicitly
+/// specify which server environment to use.
+///
+/// ## Example
+///
+/// ```swift
+/// #if DEBUG
+/// SwiftlyFeedback.configure(environment: .development, key: "your-dev-key")
+/// #elseif TESTFLIGHT
+/// SwiftlyFeedback.configure(environment: .testflight, key: "your-staging-key")
+/// #else
+/// SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
+/// #endif
+/// ```
+public enum Environment: Sendable {
+    /// Development environment (localhost:8080)
+    case development
+
+    /// TestFlight/staging environment
+    case testflight
+
+    /// Production/App Store environment
+    case production
+
+    /// The server URL for this environment
+    internal var serverURL: URL {
+        switch self {
+        case .development:
+            return URL(string: "http://localhost:8080/api/v1")!
+        case .testflight:
+            return URL(string: "https://api.feedbackkit.testflight.swiftly-developed.com/api/v1")!
+        case .production:
+            return URL(string: "https://api.feedbackkit.prod.swiftly-developed.com/api/v1")!
+        }
+    }
+
+    /// Human-readable name for logging
+    internal var displayName: String {
+        switch self {
+        case .development:
+            return "development (localhost)"
+        case .testflight:
+            return "staging (TestFlight)"
+        case .production:
+            return "production (App Store)"
+        }
+    }
+}
+
+// MARK: - EnvironmentAPIKeys
+
 /// API keys for each server environment.
 ///
 /// Use with `SwiftlyFeedback.configureAuto(keys:)` to automatically

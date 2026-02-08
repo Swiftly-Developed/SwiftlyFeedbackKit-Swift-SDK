@@ -62,8 +62,13 @@ import SwiftlyFeedbackKit
 @main
 struct MyApp: App {
     init() {
-        // Auto-detects environment (localhost/TestFlight/production)
-        SwiftlyFeedback.configureAuto(with: "your_api_key")
+        #if DEBUG
+        SwiftlyFeedback.configure(environment: .development, key: "your-dev-api-key")
+        #elseif TESTFLIGHT
+        SwiftlyFeedback.configure(environment: .testflight, key: "your-staging-api-key")
+        #else
+        SwiftlyFeedback.configure(environment: .production, key: "your-prod-api-key")
+        #endif
     }
 
     var body: some Scene {
@@ -73,6 +78,8 @@ struct MyApp: App {
     }
 }
 ```
+
+> **Note:** To use the `TESTFLIGHT` flag, add it to your project's build settings under **Active Compilation Conditions** for your TestFlight build configuration.
 
 ### 2. Present the Feedback List
 
@@ -112,21 +119,38 @@ Get your API key from the [FeedbackKit Admin app](https://swiftly-developed.com/
 ### Configuration Methods
 
 ```swift
-// Recommended: Auto-detects the right server based on build type
-// - DEBUG: localhost:8080
-// - TestFlight: TestFlight server
-// - App Store: Production server
-SwiftlyFeedback.configureAuto(with: "sf_your_api_key")
+// Recommended: Explicit environment configuration
+#if DEBUG
+SwiftlyFeedback.configure(environment: .development, key: "your-dev-key")
+#elseif TESTFLIGHT
+SwiftlyFeedback.configure(environment: .testflight, key: "your-staging-key")
+#else
+SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
+#endif
 
-// Explicit localhost (for development)
-SwiftlyFeedback.configure(with: "sf_your_api_key")
+// Alternative: Auto-detection (may be unreliable in some cases)
+SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
+    debug: "your-dev-key",        // Optional
+    testflight: "your-staging-key",
+    production: "your-prod-key"
+))
 
-// Custom server URL
+// Custom server URL (advanced)
 SwiftlyFeedback.configure(
-    with: "sf_your_api_key",
+    with: "your-api-key",
     baseURL: URL(string: "https://your-server.com/api/v1")!
 )
 ```
+
+#### Setting Up the TESTFLIGHT Flag
+
+To use the `#if TESTFLIGHT` compiler flag:
+
+1. In Xcode, go to your target's **Build Settings**
+2. Search for **Active Compilation Conditions**
+3. Add `TESTFLIGHT` to your TestFlight/Staging build configuration
+
+This gives you explicit control over which environment is used for each build type.
 
 ## Views
 

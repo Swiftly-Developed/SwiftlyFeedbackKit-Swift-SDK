@@ -67,6 +67,37 @@ public final class SwiftlyFeedback: @unchecked Sendable {
 
     // MARK: - Configuration
 
+    // MARK: - Simple Environment Configuration (Recommended)
+
+    /// Configure the SDK with an explicit environment and API key.
+    ///
+    /// This is the recommended configuration method. Use compiler flags to
+    /// select the appropriate environment:
+    ///
+    /// ```swift
+    /// init() {
+    ///     #if DEBUG
+    ///     SwiftlyFeedback.configure(environment: .development, key: "dev-api-key")
+    ///     #elseif TESTFLIGHT
+    ///     SwiftlyFeedback.configure(environment: .testflight, key: "staging-api-key")
+    ///     #else
+    ///     SwiftlyFeedback.configure(environment: .production, key: "prod-api-key")
+    ///     #endif
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - environment: The server environment to connect to
+    ///   - key: Your project's API key for this environment
+    ///
+    /// - Note: To use the `TESTFLIGHT` compiler flag, add it to your project's
+    ///   build settings under "Active Compilation Conditions" for your TestFlight
+    ///   build configuration.
+    public static func configure(environment: Environment, key: String) {
+        configure(with: key, baseURL: environment.serverURL)
+        SDKLogger.info("Configured for \(environment.displayName)")
+    }
+
     // MARK: - Multi-Environment Auto-Configuration
 
     /// Configures the SDK with environment-specific API keys.
