@@ -25,9 +25,9 @@ FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user fe
 
 ## Requirements
 
-- iOS 26.0+ / macOS 26.0+ / visionOS 26.0+
+- iOS 26+ / macOS 26+ / visionOS 26+
 - Swift 6.2+
-- Xcode 26.0+
+- Xcode 26+
 
 ## Installation
 

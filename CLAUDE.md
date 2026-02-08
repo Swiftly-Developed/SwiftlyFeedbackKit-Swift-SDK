@@ -12,9 +12,9 @@ swift test --filter TestClassName/testMethodName  # Single test
 
 ## Platforms
 
-- iOS 15+
-- macOS 12+
-- visionOS 1+
+- iOS 26+
+- macOS 26+
+- visionOS 26+
 
 ## Directory Structure
 
