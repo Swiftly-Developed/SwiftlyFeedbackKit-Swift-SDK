@@ -93,7 +93,7 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// - Note: To use the `TESTFLIGHT` compiler flag, add it to your project's
     ///   build settings under "Active Compilation Conditions" for your TestFlight
     ///   build configuration.
-    public static func configure(environment: Environment, key: String) {
+    public static func configure(environment: ServerEnvironment, key: String) {
         configure(with: key, baseURL: environment.serverURL)
         SDKLogger.info("Configured for \(environment.displayName)")
     }

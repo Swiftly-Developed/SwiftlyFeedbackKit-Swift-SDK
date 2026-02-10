@@ -719,7 +719,7 @@ BuildEnvironment.displayName          // Human-readable name
 
 ## Example App
 
-Check out the [SwiftlyFeedbackDemoApp](../SwiftlyFeedbackDemoApp) for a complete integration example showing:
+Check out the [SwiftlyFeedbackDemoApp](https://github.com/Swiftly-Developed/SwiftlyFeedbackDemoApp) for a complete integration example showing:
 
 - Basic setup and configuration
 - Presenting feedback views
