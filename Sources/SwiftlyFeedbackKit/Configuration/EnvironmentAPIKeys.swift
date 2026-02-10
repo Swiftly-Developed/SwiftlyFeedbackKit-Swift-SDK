@@ -25,7 +25,7 @@ import Foundation
 /// SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 /// #endif
 /// ```
-public enum ServerEnvironment: Sendable {
+public enum Environment: Sendable {
     /// Development environment (localhost:8080)
     case development
 
