@@ -31,6 +31,7 @@ public struct FeedbackDetailView: View {
                         }
                     }
                     .padding()
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
         }
