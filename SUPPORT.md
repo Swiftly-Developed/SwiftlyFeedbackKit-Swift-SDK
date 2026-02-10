@@ -4,7 +4,7 @@ Need help with FeedbackKit? Here's how to get support.
 
 ## Documentation
 
-Visit our documentation at [swiftly-developed.com/feedbackkit](https://swiftly-developed.com/feedbackkit) for guides, API reference, and examples.
+Visit our website at [getfeedbackkit.com](https://www.getfeedbackkit.com) for guides and examples.
 
 ## Report an Issue
 
@@ -16,6 +16,6 @@ Found a bug or have a feature request? Open an issue on GitHub:
 
 For general questions or support inquiries:
 
-**Email:** info@swiftly-developed.com
+**Email:** info@swiftly-workspace.com
 
 We typically respond within 1-2 business days.
