@@ -8,7 +8,19 @@ In-app feedback collection for iOS, macOS, and visionOS.
 ![Platforms](https://img.shields.io/badge/Platforms-iOS%20|%20macOS%20|%20visionOS-blue.svg)
 ![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)
 
-FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user feedback directly within your app. Users can submit feature requests, report bugs, vote on ideas, and see what's being worked on—all without leaving your app.
+FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user feedback directly within your app. Users can submit feature requests, report bugs, vote on ideas, and see what's being worked on — all without leaving your app.
+
+## Multi-Platform SDKs
+
+FeedbackKit is available for multiple platforms:
+
+| Platform | Package | Install |
+|----------|---------|---------|
+| **Swift** (iOS/macOS/visionOS) | This package | Swift Package Manager |
+| **JavaScript** | [feedbackkit-js](https://www.npmjs.com/package/feedbackkit-js) | `npm install feedbackkit-js` |
+| **React Native** | [feedbackkit-react-native](https://www.npmjs.com/package/feedbackkit-react-native) | `npm install feedbackkit-react-native` |
+| **Flutter** | [feedbackkit_flutter](https://pub.dev/packages/feedbackkit_flutter) | `flutter pub add feedbackkit_flutter` |
+| **Kotlin/Android** | [com.getfeedbackkit:feedbackkit](https://central.sonatype.com/artifact/com.getfeedbackkit/feedbackkit) | Maven Central |
 
 ## Features
 
@@ -17,11 +29,14 @@ FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user fe
 - **Comments** — Two-way communication between you and your users
 - **Status tracking** — Show users the progress of their feedback (pending → approved → in progress → completed)
 - **Categories** — Organize feedback by type: feature requests, bug reports, improvements
-- **Theming** — Customize colors to match your app's design
+- **Feedback merging** — Duplicate feedback items can be merged from the admin side
+- **Rejection reasons** — Explain why feedback was rejected with a visible reason
+- **Theming** — Customize primary, secondary, and tertiary colors to match your app's design
 - **Dark mode** — Full support for light and dark appearances
 - **Multi-platform** — Native support for iOS, macOS, and visionOS
 - **Event tracking** — Built-in analytics for user engagement
 - **MRR tracking** — Associate feedback with customer revenue
+- **Localization** — Full String Catalog support for translations
 
 ## Requirements
 
@@ -108,9 +123,17 @@ Your users can now browse existing feedback, submit new ideas, and vote on what 
 
 ## Configuration
 
+### Environments
+
+| Environment | Server |
+|-------------|--------|
+| `.development` | `http://localhost:8080/api/v1` |
+| `.testflight` | `https://api.feedbackkit.testflight.swiftly-developed.com/api/v1` |
+| `.production` | `https://api.feedbackkit.prod.swiftly-developed.com/api/v1` |
+
 ### API Key Setup
 
-Get your API key from the [FeedbackKit Admin app](https://swiftly-developed.com/feedbackkit):
+Get your API key from the [FeedbackKit Admin app](https://www.getfeedbackkit.com):
 
 1. Create or select a project
 2. Go to **Project Settings → API Key**
@@ -128,19 +151,15 @@ SwiftlyFeedback.configure(environment: .testflight, key: "your-staging-key")
 SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 #endif
 
-// Alternative: Auto-detection (may be unreliable in some cases)
+// Alternative: Auto-detection
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
     debug: "your-dev-key",        // Optional
     testflight: "your-staging-key",
     production: "your-prod-key"
 ))
-
-// Custom server URL (advanced)
-SwiftlyFeedback.configure(
-    with: "your-api-key",
-    baseURL: URL(string: "https://your-server.com/api/v1")!
-)
 ```
+
+> **Note:** `configureAuto(with:)` (single key) is deprecated. Use `configureAuto(keys:)` for multi-environment support.
 
 #### Setting Up the TESTFLIGHT Flag
 
@@ -150,7 +169,13 @@ To use the `#if TESTFLIGHT` compiler flag:
 2. Search for **Active Compilation Conditions**
 3. Add `TESTFLIGHT` to your TestFlight/Staging build configuration
 
-This gives you explicit control over which environment is used for each build type.
+#### Testing TestFlight Behavior in Debug
+
+```swift
+#if DEBUG
+BuildEnvironment.simulateTestFlight = true
+#endif
+```
 
 ## Views
 
@@ -169,11 +194,20 @@ FeedbackListView(swiftlyFeedback: customInstance)
 ```
 
 **Features:**
-- Sort by votes, newest, or oldest
+- Sort by votes (default), newest, or oldest
 - Filter by status (pending, approved, in progress, etc.)
-- Pull-to-refresh on iOS
+- Pull-to-refresh on iOS, refresh button (⌘R) on macOS
 - Add feedback button (configurable)
 - Empty state with call-to-action
+- Request deduplication (prevents duplicate API calls)
+
+**Sort Options:**
+
+| Option | Description |
+|--------|-------------|
+| `.votes` | Highest vote count first (default) |
+| `.newest` | Most recently created first |
+| `.oldest` | Oldest first |
 
 ![Feedback List on macOS](docs/images/feedback-list-mac.png)
 
@@ -219,8 +253,13 @@ FeedbackDetailView(feedback: selectedFeedback)
 - Full title and description
 - Status and category badges
 - Vote button with count
-- Comments section
+- Comments section (admin comments styled differently)
+- Rejection reason display (when status is rejected)
 - Submission date
+
+### InvalidApiKeyView
+
+Automatically shown when an invalid API key is detected. All interactive elements are hidden/disabled. No configuration needed.
 
 ## Customization
 
@@ -295,6 +334,10 @@ Customize colors to match your app:
 ```swift
 // Primary color (buttons, highlights)
 SwiftlyFeedback.theme.primaryColor = .color(.blue)
+
+// Secondary and tertiary colors
+SwiftlyFeedback.theme.secondaryColor = .color(.gray)
+SwiftlyFeedback.theme.tertiaryColor = .color(.gray.opacity(0.2))
 
 // Adaptive colors for dark mode
 SwiftlyFeedback.theme.primaryColor = .adaptive(
@@ -431,17 +474,96 @@ let comment = try await SwiftlyFeedback.shared?.addComment(
 )
 ```
 
+## Models
+
+### Feedback
+
+```swift
+public struct Feedback: Identifiable, Codable, Sendable, Equatable {
+    public let id: UUID
+    public let title: String
+    public let description: String
+    public let status: FeedbackStatus
+    public let category: FeedbackCategory
+    public let userId: String
+    public let userEmail: String?
+    public let voteCount: Int
+    public let hasVoted: Bool
+    public let commentCount: Int
+    public let rejectionReason: String?
+    public let mergedIntoId: UUID?
+    public let mergedAt: Date?
+    public let mergedFeedbackIds: [UUID]?
+    public let createdAt: Date?
+    public let updatedAt: Date?
+
+    public var isMerged: Bool { mergedIntoId != nil }
+}
+```
+
+### FeedbackStatus
+
+| Status | Display Name | Can Vote | Icon |
+|--------|-------------|----------|------|
+| `pending` | Pending | Yes | — |
+| `approved` | Approved | Yes | — |
+| `inProgress` | In Progress | Yes | — |
+| `testflight` | TestFlight | Yes | — |
+| `completed` | Completed | No | — |
+| `rejected` | Rejected | No | — |
+
+### FeedbackCategory
+
+| Category | Icon | Use Case |
+|----------|------|----------|
+| `featureRequest` | `lightbulb` | New functionality ideas |
+| `bugReport` | `ladybug` | Issues and problems |
+| `improvement` | `arrow.up.circle` | Enhancements to existing features |
+| `other` | `ellipsis.circle` | General feedback |
+
+### Comment
+
+```swift
+public struct Comment: Identifiable, Codable, Sendable, Equatable {
+    public let id: UUID
+    public let content: String
+    public let userId: String
+    public let isAdmin: Bool        // Admin comments have special styling
+    public let createdAt: Date?
+}
+```
+
+### VoteResult
+
+```swift
+public struct VoteResult: Codable, Sendable {
+    public let feedbackId: UUID
+    public let voteCount: Int
+    public let hasVoted: Bool
+}
+```
+
 ## User Identification
 
-FeedbackKit automatically generates and persists a unique user ID in the Keychain. This ID survives app reinstalls and is used to track votes and associate feedback.
+FeedbackKit automatically manages user identity with the following priority:
+
+1. **Custom user ID** — If set via `updateUser(customID:)`
+2. **Existing stored ID** — Previously generated/set ID from Keychain
+3. **iCloud user record ID** — If CloudKit is available
+4. **Local UUID** — Generated and stored in Keychain (survives app reinstalls)
 
 ### Custom User ID
-
-Associate feedback with your own user system:
 
 ```swift
 // Set a custom user ID (e.g., after login)
 SwiftlyFeedback.updateUser(customID: "user_12345")
+```
+
+### Clearing User ID
+
+```swift
+// Clear the stored user ID from Keychain
+UserIdentifier.clearUserId()
 ```
 
 ### MRR Tracking
@@ -532,6 +654,14 @@ do {
         print("Authentication failed")
     case .notFound:
         print("Feedback not found")
+    case .badRequest(let message):
+        print("Bad request: \(message ?? "")")
+    case .conflict:
+        print("Conflict (e.g., duplicate vote)")
+    case .serverError(let statusCode):
+        print("Server error: \(statusCode)")
+    case .decodingError(let underlying):
+        print("Failed to decode response: \(underlying)")
     default:
         print("Error: \(error.localizedDescription)")
     }
@@ -540,7 +670,11 @@ do {
 
 ### Invalid API Key
 
-When an invalid API key is detected, the SDK automatically shows an error state in views. No feedback data is displayed, and submission is disabled.
+When an invalid API key is detected, the SDK automatically shows an error state in views with all interactive elements disabled.
+
+### Feedback Limit Reached
+
+When hitting subscription tier limits (e.g., 10 feedback items on the Free tier), a `feedbackLimitReached` error is thrown with a descriptive message.
 
 ## Logging
 
@@ -551,37 +685,19 @@ FeedbackKit logs API requests and responses using OSLog for debugging:
 SwiftlyFeedback.config.loggingEnabled = false
 ```
 
-Logs appear in Console.app under the subsystem `com.swiftlyfeedback.sdk`.
+Logs appear in Console.app under the subsystem `com.swiftlyfeedback.sdk` with category `SDK`.
 
-## Example App
+## Build Environment
 
-Check out the [SwiftlyFeedbackDemoApp](../SwiftlyFeedbackDemoApp) for a complete integration example showing:
+Detect the current build environment:
 
-- Basic setup and configuration
-- Presenting feedback views
-- Custom theming
-- Event tracking
-- User identification
-
-## Feedback Statuses
-
-| Status | Description | Can Vote |
-|--------|-------------|----------|
-| Pending | New feedback, awaiting review | Yes |
-| Approved | Accepted for consideration | Yes |
-| In Progress | Currently being worked on | Yes |
-| TestFlight | Available in beta | Yes |
-| Completed | Shipped and available | No |
-| Rejected | Won't be implemented | No |
-
-## Feedback Categories
-
-| Category | Icon | Use Case |
-|----------|------|----------|
-| Feature Request | 💡 | New functionality ideas |
-| Bug Report | 🐛 | Issues and problems |
-| Improvement | ⬆️ | Enhancements to existing features |
-| Other | ⋯ | General feedback |
+```swift
+BuildEnvironment.isDebug              // Running in Xcode
+BuildEnvironment.isTestFlight         // Running in TestFlight
+BuildEnvironment.isAppStore           // Running from App Store
+BuildEnvironment.canShowTestingFeatures  // Debug or TestFlight
+BuildEnvironment.displayName          // Human-readable name
+```
 
 ## Platform Differences
 
@@ -592,29 +708,41 @@ Check out the [SwiftlyFeedbackDemoApp](../SwiftlyFeedbackDemoApp) for a complete
 
 ### macOS
 - Grid-based submit view
-- Minimum window size enforced (400×350)
+- Minimum window size enforced (400x350)
 - ⌘Return shortcut to submit
+- ⌘R shortcut to refresh
 - Window or popover presentation
 
 ### visionOS
 - Adapted for spatial computing
 - Supports all standard interactions
 
+## Example App
+
+Check out the [SwiftlyFeedbackDemoApp](https://github.com/Swiftly-Developed/SwiftlyFeedbackDemoApp) for a complete integration example showing:
+
+- Basic setup and configuration
+- Presenting feedback views
+- Custom theming
+- Event tracking
+- User identification
+
 ## Admin App
 
-Manage your feedback from the [FeedbackKit Admin app](https://swiftly-developed.com/feedbackkit):
+Manage your feedback from the [FeedbackKit Admin app](https://www.getfeedbackkit.com):
 
 - Review and respond to feedback
 - Update statuses
+- Merge duplicate feedback
 - View analytics and MRR data
-- Configure integrations (Slack, GitHub, Linear, Notion, etc.)
+- Configure integrations (Slack, GitHub, Linear, Notion, and more)
 - Manage team members
 
 ## Support
 
-- **Documentation:** [swiftly-developed.com/feedbackkit](https://swiftly-developed.com/feedbackkit)
+- **Website:** [getfeedbackkit.com](https://www.getfeedbackkit.com)
 - **Issues:** [GitHub Issues](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/issues)
-- **Email:** info@swiftly-developed.com
+- **Email:** info@swiftly-workspace.com
 
 ## License
 
