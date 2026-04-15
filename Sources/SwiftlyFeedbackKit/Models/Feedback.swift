@@ -26,6 +26,14 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         mergedIntoId != nil
     }
 
+    public static func == (lhs: Feedback, rhs: Feedback) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
     public init(
         id: UUID,
         title: String,

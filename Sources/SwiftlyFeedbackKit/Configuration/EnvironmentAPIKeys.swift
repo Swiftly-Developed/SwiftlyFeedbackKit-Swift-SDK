@@ -26,7 +26,10 @@ import Foundation
 /// #endif
 /// ```
 public enum Environment: Sendable {
-    /// Development environment (localhost:8080)
+    /// Local development environment (localhost:8080)
+    case local
+
+    /// Development environment
     case development
 
     /// TestFlight/staging environment
@@ -38,12 +41,14 @@ public enum Environment: Sendable {
     /// The server URL for this environment
     internal var serverURL: URL {
         switch self {
-        case .development:
+        case .local:
             return URL(string: "http://localhost:8080/api/v1")!
+        case .development:
+            return URL(string: "https://api.dev.getfeedbackkit.com/api/v1")!
         case .testflight:
-            return URL(string: "https://api.feedbackkit.testflight.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.testflight.getfeedbackkit.com/api/v1")!
         case .production:
-            return URL(string: "https://api.feedbackkit.prod.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.prod.getfeedbackkit.com/api/v1")!
         }
     }
 
@@ -130,12 +135,12 @@ public struct EnvironmentAPIKeys: Sendable {
     /// Returns the server URL for the current build environment.
     internal var currentServerURL: URL {
         #if DEBUG
-        return URL(string: "http://localhost:8080/api/v1")!
+        return URL(string: "https://api.dev.getfeedbackkit.com/api/v1")!
         #else
         if BuildEnvironment.isTestFlight {
-            return URL(string: "https://api.feedbackkit.testflight.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.testflight.getfeedbackkit.com/api/v1")!
         } else {
-            return URL(string: "https://api.feedbackkit.prod.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.prod.getfeedbackkit.com/api/v1")!
         }
         #endif
     }

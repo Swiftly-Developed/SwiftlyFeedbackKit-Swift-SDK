@@ -26,5 +26,6 @@ let package = Package(
             name: "SwiftlyFeedbackKitTests",
             dependencies: ["SwiftlyFeedbackKit"]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )

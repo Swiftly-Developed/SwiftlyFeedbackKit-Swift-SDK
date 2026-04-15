@@ -152,6 +152,15 @@ To use the `#if TESTFLIGHT` compiler flag:
 
 This gives you explicit control over which environment is used for each build type.
 
+#### Server Environments
+
+| Environment | Server URL |
+|-------------|-----------|
+| `.local` | `http://localhost:8080/api/v1` |
+| `.development` | `https://api.dev.getfeedbackkit.com/api/v1` |
+| `.testflight` | `https://api.testflight.getfeedbackkit.com/api/v1` |
+| `.production` | `https://api.prod.getfeedbackkit.com/api/v1` |
+
 ## Views
 
 FeedbackKit provides three main SwiftUI views that handle all the UI and API interactions for you.

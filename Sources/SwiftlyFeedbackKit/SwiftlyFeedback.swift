@@ -217,15 +217,15 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// Detect the appropriate server URL based on build environment
     private static func detectServerURL() -> URL {
         #if DEBUG
-        // DEBUG builds → localhost
-        return URL(string: "http://localhost:8080/api/v1")!
+        // DEBUG builds → dev server
+        return URL(string: "https://api.dev.getfeedbackkit.com/api/v1")!
         #else
         if BuildEnvironment.isTestFlight {
             // TestFlight builds → staging
-            return URL(string: "https://api.feedbackkit.testflight.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.testflight.getfeedbackkit.com/api/v1")!
         } else {
             // App Store builds → production
-            return URL(string: "https://api.feedbackkit.prod.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.prod.getfeedbackkit.com/api/v1")!
         }
         #endif
     }
