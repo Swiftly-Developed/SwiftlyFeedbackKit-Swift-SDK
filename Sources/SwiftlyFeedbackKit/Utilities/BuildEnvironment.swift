@@ -7,35 +7,35 @@
 
 import Foundation
 import StoreKit
+import os
 
 #if os(macOS)
 import Security
 #endif
 
 enum BuildEnvironment {
-    /// Cached environment detection result (computed once at startup)
-    private static let cachedEnvironment: AppStore.Environment? = {
-        // Use synchronous approach with Task for initial detection
-        // This is safe because it's only called once during static initialization
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: AppStore.Environment?
+    private static let cache = OSAllocatedUnfairLock<AppStore.Environment?>(initialState: nil)
 
-        Task {
-            do {
-                let verification = try await AppTransaction.shared
-                if case .verified(let transaction) = verification {
-                    result = transaction.environment
-                }
-            } catch {
-                // Fall back to nil if AppTransaction fails
+    private static let probeTask: Task<AppStore.Environment?, Never> = Task {
+        do {
+            let verification = try await AppTransaction.shared
+            if case .verified(let transaction) = verification {
+                return transaction.environment
             }
-            semaphore.signal()
-        }
+        } catch { }
+        return nil
+    }
 
-        // Wait with a short timeout to avoid blocking indefinitely
-        _ = semaphore.wait(timeout: .now() + 1.0)
-        return result
-    }()
+    /// Resolve the StoreKit environment and cache it for synchronous reads.
+    /// Call once at app launch before any call site reads `isTestFlight` / `isAppStore`.
+    static func prepare() async {
+        let result = await probeTask.value
+        cache.withLock { $0 = result }
+    }
+
+    private static var cachedEnvironment: AppStore.Environment? {
+        cache.withLock { $0 }
+    }
 
     /// Debug override to simulate TestFlight (for local testing)
     /// Set this to true in Debug Settings to test TestFlight behavior

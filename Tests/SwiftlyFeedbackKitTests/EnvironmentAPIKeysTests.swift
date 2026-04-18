@@ -54,7 +54,7 @@ struct EnvironmentAPIKeysTests {
         #endif
     }
 
-    @Test("Server URL is localhost in DEBUG")
+    @Test("Server URL is dev server in DEBUG")
     func serverURLInDebug() {
         let keys = EnvironmentAPIKeys(
             testflight: "tf_key",
@@ -62,8 +62,8 @@ struct EnvironmentAPIKeysTests {
         )
 
         #if DEBUG
-        #expect(keys.currentServerURL.host == "localhost")
-        #expect(keys.currentServerURL.port == 8080)
+        #expect(keys.currentServerURL.host == "api.dev.getfeedbackkit.com")
+        #expect(keys.currentServerURL.path == "/api/v1")
         #endif
     }
 
