@@ -128,21 +128,24 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     ///   Info.plist or using a secrets management solution rather than
     ///   hardcoding them in source code.
     public static func configureAuto(keys: EnvironmentAPIKeys) {
-        let apiKey = keys.currentKey
-        let baseURL = keys.currentServerURL
+        Task {
+            await BuildEnvironment.prepare()
 
-        configure(with: apiKey, baseURL: baseURL)
+            let apiKey = keys.currentKey
+            let baseURL = keys.currentServerURL
 
-        SDKLogger.info("Auto-configured for \(keys.currentEnvironmentName)")
+            configure(with: apiKey, baseURL: baseURL)
 
-        #if DEBUG
-        // In DEBUG, log which key type is being used
-        if keys.debug != nil {
-            SDKLogger.debug("Using dedicated DEBUG API key")
-        } else {
-            SDKLogger.debug("Using TestFlight API key (no DEBUG key provided)")
+            SDKLogger.info("Auto-configured for \(keys.currentEnvironmentName)")
+
+            #if DEBUG
+            if keys.debug != nil {
+                SDKLogger.debug("Using dedicated DEBUG API key")
+            } else {
+                SDKLogger.debug("Using TestFlight API key (no DEBUG key provided)")
+            }
+            #endif
         }
-        #endif
     }
 
     /// Configure the SDK with automatic server detection based on build type.
@@ -166,18 +169,22 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     ///   ``configureAuto(keys:)`` instead for multi-environment support.
     @available(*, deprecated, message: "Use configureAuto(keys:) for multi-environment support")
     public static func configureAuto(with apiKey: String) {
-        let baseURL = detectServerURL()
-        configure(with: apiKey, baseURL: baseURL)
+        Task {
+            await BuildEnvironment.prepare()
 
-        #if DEBUG
-        SDKLogger.info("Auto-configured with localhost (DEBUG)")
-        #else
-        if BuildEnvironment.isTestFlight {
-            SDKLogger.info("Auto-configured with staging (TestFlight)")
-        } else {
-            SDKLogger.info("Auto-configured with production (App Store)")
+            let baseURL = detectServerURL()
+            configure(with: apiKey, baseURL: baseURL)
+
+            #if DEBUG
+            SDKLogger.info("Auto-configured with localhost (DEBUG)")
+            #else
+            if BuildEnvironment.isTestFlight {
+                SDKLogger.info("Auto-configured with staging (TestFlight)")
+            } else {
+                SDKLogger.info("Auto-configured with production (App Store)")
+            }
+            #endif
         }
-        #endif
     }
 
     /// Configure the SDK with your API key (defaults to localhost).
