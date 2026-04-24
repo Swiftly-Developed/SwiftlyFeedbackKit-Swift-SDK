@@ -20,10 +20,20 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
     public let mergedFeedbackIds: [UUID]?
     // Rejection reason (only present when status is rejected)
     public let rejectionReason: String?
+    // Whether this feedback is hidden over the free-tier limit (only visible to creator)
+    public let isHiddenOverLimit: Bool?
 
     /// Whether this feedback has been merged into another
     public var isMerged: Bool {
         mergedIntoId != nil
+    }
+
+    public static func == (lhs: Feedback, rhs: Feedback) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 
     public init(
@@ -42,7 +52,8 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         mergedIntoId: UUID? = nil,
         mergedAt: Date? = nil,
         mergedFeedbackIds: [UUID]? = nil,
-        rejectionReason: String? = nil
+        rejectionReason: String? = nil,
+        isHiddenOverLimit: Bool? = nil
     ) {
         self.id = id
         self.title = title
@@ -60,6 +71,7 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         self.mergedAt = mergedAt
         self.mergedFeedbackIds = mergedFeedbackIds
         self.rejectionReason = rejectionReason
+        self.isHiddenOverLimit = isHiddenOverLimit
     }
 }
 
