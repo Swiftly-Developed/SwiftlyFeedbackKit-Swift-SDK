@@ -5,6 +5,25 @@ All notable changes to FeedbackKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-04-24
+
+### Fixed
+
+- Fully-qualified all `@Environment(\.…)` uses in SwiftUI views as `@SwiftUI.Environment(\.…)` to avoid an ambiguity introduced by Swift 6.2 / Xcode 26 where the SDK's own `Environment` type could shadow `SwiftUI.Environment`. Consumers can now build against Xcode 26 without `ambiguous use of 'Environment'` errors.
+
+## [1.1.0] - 2026-04-15
+
+### Added
+
+- CONTRIBUTING.md with contribution guidelines
+- SECURITY.md with vulnerability reporting policy
+- CODE_OF_CONDUCT.md (Contributor Covenant v2.1)
+- Package.swift metadata comment block
+
+### Changed
+
+- Standardized documentation across all FeedbackKit SDKs
+
 ## [1.0.0] - 2026-01-13
 
 ### Added
@@ -80,4 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Comment` - Comment model with author and timestamp
 - `VoteResult` - Vote operation response with updated counts
 
+[1.1.1]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.1
+[1.1.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.0
 [1.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.0.0

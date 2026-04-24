@@ -4,7 +4,7 @@ struct FeedbackCardView: View {
     let feedback: Feedback
     let onVote: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
@@ -15,6 +15,26 @@ struct FeedbackCardView: View {
         #else
         colorScheme == .dark ? Color(.systemGray5) : Color(.systemGray6)
         #endif
+    }
+
+    /// Builds a combined accessibility description for VoiceOver
+    var accessibilityDescription: String {
+        var parts: [String] = []
+        parts.append(feedback.title)
+        parts.append(feedback.description)
+        if config.showStatusBadge {
+            parts.append(Strings.accessibilityStatus(feedback.status.localizedDisplayName))
+        }
+        if config.showCategoryBadge {
+            parts.append(Strings.accessibilityCategory(feedback.category.localizedDisplayName))
+        }
+        if config.showVoteCount {
+            parts.append(Strings.accessibilityVoteCount(feedback.voteCount))
+        }
+        if feedback.commentCount > 0 && config.showCommentSection {
+            parts.append(Strings.accessibilityCommentCount(feedback.commentCount))
+        }
+        return parts.joined(separator: ", ")
     }
 
     var body: some View {
@@ -47,6 +67,7 @@ struct FeedbackCardView: View {
             Image(systemName: "chevron.right")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
         .padding(12)
         .background(cardBackground)
@@ -58,7 +79,7 @@ struct FeedbackRowView: View {
     let feedback: Feedback
     let onVote: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
@@ -112,6 +133,7 @@ struct FeedbackRowMetadataView: View {
                 Label("\(feedback.commentCount)", systemImage: "bubble.right")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .accessibilityLabel(Strings.accessibilityCommentCount(feedback.commentCount))
             }
         }
         .padding(.top, 4)
@@ -124,7 +146,7 @@ struct VoteButton: View {
     let status: FeedbackStatus
     let action: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
@@ -158,6 +180,16 @@ struct VoteButton: View {
         !status.canVote || (!config.allowUndoVote && hasVoted)
     }
 
+    private var accessibilityHintText: String {
+        if !status.canVote {
+            return Strings.accessibilityVotingClosed
+        } else if hasVoted {
+            return Strings.accessibilityUnvoteHint
+        } else {
+            return Strings.accessibilityVoteHint
+        }
+    }
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 2) {
@@ -179,13 +211,16 @@ struct VoteButton: View {
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
+        .accessibilityLabel(Strings.accessibilityVoteCount(voteCount))
+        .accessibilityValue(hasVoted ? Strings.accessibilityVoted : Strings.accessibilityNotVoted)
+        .accessibilityHint(accessibilityHintText)
     }
 }
 
 struct StatusBadge: View {
     let status: FeedbackStatus
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
@@ -202,13 +237,14 @@ struct StatusBadge: View {
             .background(statusColor.opacity(0.2))
             .foregroundStyle(statusColor)
             .clipShape(.capsule)
+            .accessibilityLabel(Strings.accessibilityStatus(status.localizedDisplayName))
     }
 }
 
 struct CategoryBadge: View {
     let category: FeedbackCategory
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
@@ -224,5 +260,6 @@ struct CategoryBadge: View {
             .background(categoryColor.opacity(0.15))
             .foregroundStyle(categoryColor)
             .clipShape(.capsule)
+            .accessibilityLabel(Strings.accessibilityCategory(category.localizedDisplayName))
     }
 }

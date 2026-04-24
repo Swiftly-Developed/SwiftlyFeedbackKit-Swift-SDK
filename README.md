@@ -37,6 +37,7 @@ FeedbackKit is available for multiple platforms:
 - **Event tracking** — Built-in analytics for user engagement
 - **MRR tracking** — Associate feedback with customer revenue
 - **Localization** — Full String Catalog support for translations
+- **Accessibility** — Full VoiceOver support with descriptive labels, hints, and localized accessibility strings
 
 ## Requirements
 
@@ -127,9 +128,10 @@ Your users can now browse existing feedback, submit new ideas, and vote on what 
 
 | Environment | Server |
 |-------------|--------|
-| `.development` | `http://localhost:8080/api/v1` |
-| `.testflight` | `https://api.feedbackkit.testflight.swiftly-developed.com/api/v1` |
-| `.production` | `https://api.feedbackkit.prod.swiftly-developed.com/api/v1` |
+| `.local` | `http://localhost:8080/api/v1` |
+| `.development` | `https://api.dev.getfeedbackkit.com/api/v1` |
+| `.testflight` | `https://api.testflight.getfeedbackkit.com/api/v1` |
+| `.production` | `https://api.prod.getfeedbackkit.com/api/v1` |
 
 ### API Key Setup
 
@@ -716,6 +718,40 @@ BuildEnvironment.displayName          // Human-readable name
 ### visionOS
 - Adapted for spatial computing
 - Supports all standard interactions
+
+## Accessibility
+
+FeedbackKit is built with accessibility in mind. All views are fully compatible with VoiceOver and assistive technologies.
+
+### VoiceOver Support
+
+Every interactive element includes descriptive labels, values, and hints:
+
+- **Feedback list items** — Announces title, description, status, category, vote count, and comment count
+- **Vote buttons** — Announces vote count, voted/not voted state, and context-aware hints (e.g., "Vote on this feedback", "Remove your vote", "Voting is closed")
+- **Status & category badges** — Announces "Status: In Progress" or "Category: Bug Report"
+- **Form fields** — Indicates required vs. optional fields with hints
+- **Submit button** — Dynamic hint changes based on form validity ("Submit feedback" vs. "Complete all required fields to submit")
+- **Comments** — Grouped elements for natural reading order
+- **Loading states** — All progress indicators have descriptive labels
+- **Decorative elements** — Hidden from VoiceOver (e.g., chevron icons)
+
+### Localized Accessibility Strings
+
+All 21 accessibility strings are included in the SDK's String Catalog and localized across all supported languages. No additional setup required.
+
+### Privacy Manifest
+
+FeedbackKit includes a `PrivacyInfo.xcprivacy` privacy manifest that declares the data types collected by the SDK. When you run **Product → Archive** in Xcode and generate a privacy report from the Organizer, the SDK's data collection will appear automatically. The SDK declares:
+
+| Data Type | Purpose | Linked to User |
+|-----------|---------|:-:|
+| User ID | App Functionality | Yes |
+| Email Address | App Functionality | Yes |
+| Other User Content | App Functionality | Yes |
+| Product Interaction | Analytics | Yes |
+
+No Required Reason APIs are used.
 
 ## Example App
 

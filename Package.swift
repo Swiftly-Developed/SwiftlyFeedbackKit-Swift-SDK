@@ -1,4 +1,8 @@
 // swift-tools-version: 6.2
+// SwiftlyFeedbackKit - Swift SDK for FeedbackKit
+// https://github.com/Swiftly-Developed/SwiftlyFeedbackKit
+// Copyright (c) 2025 Swiftly Developed - MIT License
+
 import PackageDescription
 
 let package = Package(
@@ -26,5 +30,6 @@ let package = Package(
             name: "SwiftlyFeedbackKitTests",
             dependencies: ["SwiftlyFeedbackKit"]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )

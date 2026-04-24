@@ -103,6 +103,20 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// - If `userEmail` is not set and dialog is shown, the toggle starts enabled.
     public var voteNotificationDefaultOptIn: Bool = false
 
+    // MARK: - Mailing List
+
+    /// Show an opt-in checkbox for subscribing to the project's mailing list. Default: `true`
+    ///
+    /// When enabled and the user provides an email (via the submit form or vote dialog),
+    /// a toggle is shown allowing them to opt in to the project's mailing list.
+    /// The server silently ignores the flag if no email campaign integration is configured.
+    public var showMailingListOptIn: Bool = true
+
+    /// Default state of the mailing list opt-in toggle. Default: `false`
+    ///
+    /// When `true`, the mailing list toggle starts enabled by default.
+    public var mailingListDefaultOptIn: Bool = false
+
     // MARK: - Permissions
 
     /// Allow users to submit new feedback. Default: `true`

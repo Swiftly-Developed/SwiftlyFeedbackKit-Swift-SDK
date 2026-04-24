@@ -31,7 +31,6 @@ public struct FeedbackDetailView: View {
                         }
                     }
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
         }
@@ -107,6 +106,8 @@ struct FeedbackDetailHeaderView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.red.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Strings.accessibilityRejectionReason(reason))
             }
 
             if let createdAt = feedback.createdAt {
@@ -123,7 +124,7 @@ struct FeedbackDetailHeaderView: View {
 
 struct FeedbackDetailVoteView: View {
     @Bindable var viewModel: FeedbackDetailViewModel
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
@@ -196,12 +197,21 @@ struct FeedbackDetailVoteView: View {
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
+        .accessibilityLabel(Strings.accessibilityVoteCount(viewModel.currentFeedback.voteCount))
+        .accessibilityValue(viewModel.currentFeedback.hasVoted ? Strings.accessibilityVoted : Strings.accessibilityNotVoted)
+        .accessibilityHint(
+            !viewModel.currentFeedback.status.canVote
+                ? Strings.accessibilityVotingClosed
+                : viewModel.currentFeedback.hasVoted
+                    ? Strings.accessibilityUnvoteHint
+                    : Strings.accessibilityVoteHint
+        )
     }
 }
 
 struct FeedbackDetailCommentsView: View {
     @Bindable var viewModel: FeedbackDetailViewModel
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
@@ -213,6 +223,7 @@ struct FeedbackDetailCommentsView: View {
             if viewModel.isLoadingComments {
                 ProgressView()
                     .frame(maxWidth: .infinity)
+                    .accessibilityLabel(Strings.accessibilityLoadingComments)
             } else if viewModel.comments.isEmpty {
                 Text(Strings.commentsEmpty)
                     .foregroundStyle(.secondary)
@@ -226,6 +237,7 @@ struct FeedbackDetailCommentsView: View {
             HStack {
                 TextField(Strings.addCommentPlaceholder, text: $viewModel.newCommentText)
                     .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel(Strings.accessibilityAddComment)
 
                 Button {
                     Task { await viewModel.submitComment() }
@@ -234,6 +246,7 @@ struct FeedbackDetailCommentsView: View {
                 }
                 .tint(theme.primaryColor.resolve(for: colorScheme))
                 .disabled(viewModel.newCommentText.isEmpty || viewModel.isSubmittingComment)
+                .accessibilityLabel(Strings.accessibilityPostComment)
             }
         }
         .padding()
@@ -245,7 +258,7 @@ struct FeedbackDetailCommentsView: View {
 struct CommentRowView: View {
     let comment: Comment
 
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     var body: some View {
@@ -269,15 +282,16 @@ struct CommentRowView: View {
                 .font(.subheadline)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
     }
 }
 
 struct VoteDialogView: View {
     @Bindable var viewModel: FeedbackDetailViewModel
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.dismiss) private var dismiss
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
     #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @SwiftUI.Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
 
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
@@ -315,7 +329,9 @@ struct VoteDialogView: View {
                     Button(Strings.voteDialogSubmit) {
                         submitAndDismiss(
                             email: viewModel.voteEmail,
-                            notify: viewModel.voteNotifyStatusChange
+                            notify: viewModel.voteNotifyStatusChange,
+                            subscribeToMailingList: viewModel.voteSubscribeToMailingList,
+                            mailingListEmailTypes: viewModel.buildVoteEmailTypes()
                         )
                     }
                     .fontWeight(.semibold)
@@ -383,6 +399,24 @@ struct VoteDialogView: View {
                     .foregroundStyle(.tertiary)
             }
 
+            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
+                Toggle(isOn: $viewModel.voteSubscribeToMailingList) {
+                    Text(Strings.mailingListOptIn)
+                }
+
+                if viewModel.voteSubscribeToMailingList {
+                    Toggle(isOn: $viewModel.voteOperationalEmails) {
+                        Text(Strings.mailingListOperational)
+                    }
+                    .padding(.leading, 20)
+
+                    Toggle(isOn: $viewModel.voteMarketingEmails) {
+                        Text(Strings.mailingListMarketing)
+                    }
+                    .padding(.leading, 20)
+                }
+            }
+
             Spacer()
 
             Divider()
@@ -399,7 +433,9 @@ struct VoteDialogView: View {
                 Button(Strings.voteDialogSubmit) {
                     submitAndDismiss(
                         email: viewModel.voteEmail,
-                        notify: viewModel.voteNotifyStatusChange
+                        notify: viewModel.voteNotifyStatusChange,
+                        subscribeToMailingList: viewModel.voteSubscribeToMailingList,
+                        mailingListEmailTypes: viewModel.buildVoteEmailTypes()
                     )
                 }
                 .keyboardShortcut(.defaultAction)
@@ -408,7 +444,7 @@ struct VoteDialogView: View {
             }
         }
         .padding(20)
-        .frame(width: 380, height: 280)
+        .frame(width: 380, height: 300)
     }
     #endif
 
@@ -444,6 +480,24 @@ struct VoteDialogView: View {
                     viewModel.voteNotifyStatusChange = false
                 }
             }
+
+            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
+                Toggle(isOn: $viewModel.voteSubscribeToMailingList) {
+                    Text(Strings.mailingListOptIn)
+                }
+
+                if viewModel.voteSubscribeToMailingList {
+                    Toggle(isOn: $viewModel.voteOperationalEmails) {
+                        Text(Strings.mailingListOperational)
+                    }
+                    .padding(.leading, 20)
+
+                    Toggle(isOn: $viewModel.voteMarketingEmails) {
+                        Text(Strings.mailingListMarketing)
+                    }
+                    .padding(.leading, 20)
+                }
+            }
         } footer: {
             Text(Strings.voteDialogNotifyDescription)
                 .font(.footnote)
@@ -453,7 +507,7 @@ struct VoteDialogView: View {
 
     // MARK: - Actions
 
-    private func submitAndDismiss(email: String?, notify: Bool) {
+    private func submitAndDismiss(email: String?, notify: Bool, subscribeToMailingList: Bool? = nil, mailingListEmailTypes: [String]? = nil) {
         dismiss()
 
         // Save the email to config for future votes (if a valid email was provided)
@@ -463,7 +517,7 @@ struct VoteDialogView: View {
         }
 
         Task {
-            await viewModel.submitVote(email: email, notify: notify)
+            await viewModel.submitVote(email: email, notify: notify, subscribeToMailingList: subscribeToMailingList, mailingListEmailTypes: mailingListEmailTypes)
         }
     }
 }
@@ -484,6 +538,9 @@ final class FeedbackDetailViewModel {
     var showingVoteDialog = false
     var voteEmail = ""
     var voteNotifyStatusChange = false
+    var voteSubscribeToMailingList = SwiftlyFeedback.config.mailingListDefaultOptIn
+    var voteOperationalEmails = true
+    var voteMarketingEmails = true
 
     private let swiftlyFeedback: SwiftlyFeedback?
 
@@ -530,11 +587,12 @@ final class FeedbackDetailViewModel {
 
             if hasConfiguredEmail {
                 // Use configured email directly, no dialog needed
-                await submitVote(email: configuredEmail, notify: config.voteNotificationDefaultOptIn)
+                await submitVote(email: configuredEmail, notify: config.voteNotificationDefaultOptIn, subscribeToMailingList: config.mailingListDefaultOptIn, mailingListEmailTypes: buildVoteEmailTypes())
             } else if config.showVoteEmailField {
                 // No configured email - show dialog to collect email
                 voteEmail = ""
                 voteNotifyStatusChange = config.voteNotificationDefaultOptIn
+                voteSubscribeToMailingList = config.mailingListDefaultOptIn
                 showingVoteDialog = true
             } else {
                 // No email configured and dialog disabled - vote without email
@@ -543,7 +601,15 @@ final class FeedbackDetailViewModel {
         }
     }
 
-    func submitVote(email: String?, notify: Bool) async {
+    func buildVoteEmailTypes() -> [String]? {
+        guard voteSubscribeToMailingList else { return nil }
+        var types: [String] = []
+        if voteOperationalEmails { types.append("operational") }
+        if voteMarketingEmails { types.append("marketing") }
+        return types.isEmpty ? nil : types
+    }
+
+    func submitVote(email: String?, notify: Bool, subscribeToMailingList: Bool? = nil, mailingListEmailTypes: [String]? = nil) async {
         guard let sf = swiftlyFeedback else { return }
         guard !hasInvalidApiKey else { return }
 
@@ -557,7 +623,9 @@ final class FeedbackDetailViewModel {
                 result = try await sf.vote(
                     for: currentFeedback.id,
                     email: validEmail,
-                    notifyStatusChange: notify && validEmail != nil
+                    notifyStatusChange: notify && validEmail != nil,
+                    subscribeToMailingList: validEmail != nil ? subscribeToMailingList : nil,
+                    mailingListEmailTypes: validEmail != nil && subscribeToMailingList == true ? mailingListEmailTypes : nil
                 )
             }
 
