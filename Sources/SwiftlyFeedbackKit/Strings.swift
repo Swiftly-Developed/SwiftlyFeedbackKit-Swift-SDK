@@ -137,6 +137,24 @@ public enum Strings {
         String(localized: "vote.dialog.submit", bundle: #bundle)
     }
 
+    // MARK: - Mailing List
+
+    public static var mailingListOptIn: String {
+        String(localized: "mailingList.optIn", bundle: #bundle)
+    }
+
+    public static var mailingListOptInDescription: String {
+        String(localized: "mailingList.optIn.description", bundle: #bundle)
+    }
+
+    public static var mailingListOperational: String {
+        String(localized: "mailingList.operational", bundle: #bundle)
+    }
+
+    public static var mailingListMarketing: String {
+        String(localized: "mailingList.marketing", bundle: #bundle)
+    }
+
     // MARK: - Toolbar
 
     public static var toolbarRefresh: String {
@@ -173,6 +191,10 @@ public enum Strings {
 
     public static var sortOldest: String {
         String(localized: "sort.oldest", bundle: #bundle)
+    }
+
+    public static var sortComments: String {
+        String(localized: "sort.comments", bundle: #bundle)
     }
 
     // MARK: - Comment Author
@@ -283,5 +305,96 @@ public enum Strings {
 
     public static func commentsCount(_ count: Int) -> String {
         String(localized: "comments.count", bundle: #bundle)
+    }
+
+    // MARK: - Accessibility
+
+    static func accessibilityVoteCount(_ count: Int) -> String {
+        let format = String(localized: "accessibility.vote.count", bundle: #bundle)
+        return String(format: format, count)
+    }
+
+    static var accessibilityVoteHint: String {
+        String(localized: "accessibility.vote.hint", bundle: #bundle)
+    }
+
+    static var accessibilityUnvoteHint: String {
+        String(localized: "accessibility.unvote.hint", bundle: #bundle)
+    }
+
+    static var accessibilityVotingClosed: String {
+        String(localized: "accessibility.voting.closed", bundle: #bundle)
+    }
+
+    static var accessibilityVoted: String {
+        String(localized: "accessibility.voted", bundle: #bundle)
+    }
+
+    static var accessibilityNotVoted: String {
+        String(localized: "accessibility.notVoted", bundle: #bundle)
+    }
+
+    static func accessibilityStatus(_ status: String) -> String {
+        let format = String(localized: "accessibility.status", bundle: #bundle)
+        return String(format: format, status)
+    }
+
+    static func accessibilityCategory(_ category: String) -> String {
+        let format = String(localized: "accessibility.category", bundle: #bundle)
+        return String(format: format, category)
+    }
+
+    static func accessibilityCommentCount(_ count: Int) -> String {
+        let format = String(localized: "accessibility.comment.count", bundle: #bundle)
+        return String(format: format, count)
+    }
+
+    static var accessibilityViewDetails: String {
+        String(localized: "accessibility.viewDetails", bundle: #bundle)
+    }
+
+    static var accessibilityLoadingFeedback: String {
+        String(localized: "accessibility.loading.feedback", bundle: #bundle)
+    }
+
+    static var accessibilityLoadingComments: String {
+        String(localized: "accessibility.loading.comments", bundle: #bundle)
+    }
+
+    static func accessibilityRejectionReason(_ reason: String) -> String {
+        let format = String(localized: "accessibility.rejectionReason", bundle: #bundle)
+        return String(format: format, reason)
+    }
+
+    static var accessibilityAddComment: String {
+        String(localized: "accessibility.addComment", bundle: #bundle)
+    }
+
+    static var accessibilityPostComment: String {
+        String(localized: "accessibility.postComment", bundle: #bundle)
+    }
+
+    static var accessibilityFormRequired: String {
+        String(localized: "accessibility.form.required", bundle: #bundle)
+    }
+
+    static var accessibilityFormOptional: String {
+        String(localized: "accessibility.form.optional", bundle: #bundle)
+    }
+
+    static var accessibilityFormDescriptionHint: String {
+        String(localized: "accessibility.form.description.hint", bundle: #bundle)
+    }
+
+    static var accessibilitySubmitHint: String {
+        String(localized: "accessibility.submit.hint", bundle: #bundle)
+    }
+
+    static var accessibilitySubmitDisabledHint: String {
+        String(localized: "accessibility.submit.disabled.hint", bundle: #bundle)
+    }
+
+    static var accessibilitySubmitting: String {
+        String(localized: "accessibility.submitting", bundle: #bundle)
     }
 }

@@ -93,7 +93,7 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// - Note: To use the `TESTFLIGHT` compiler flag, add it to your project's
     ///   build settings under "Active Compilation Conditions" for your TestFlight
     ///   build configuration.
-    public static func configure(environment: Environment, key: String) {
+    public static func configure(environment: FeedbackEnvironment, key: String) {
         configure(with: key, baseURL: environment.serverURL)
         SDKLogger.info("Configured for \(environment.displayName)")
     }
@@ -224,15 +224,15 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// Detect the appropriate server URL based on build environment
     private static func detectServerURL() -> URL {
         #if DEBUG
-        // DEBUG builds → localhost
-        return URL(string: "http://localhost:8080/api/v1")!
+        // DEBUG builds → dev server
+        return URL(string: "https://api.dev.getfeedbackkit.com/api/v1")!
         #else
         if BuildEnvironment.isTestFlight {
             // TestFlight builds → staging
-            return URL(string: "https://api.feedbackkit.testflight.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.testflight.getfeedbackkit.com/api/v1")!
         } else {
             // App Store builds → production
-            return URL(string: "https://api.feedbackkit.prod.swiftly-developed.com/api/v1")!
+            return URL(string: "https://api.prod.getfeedbackkit.com/api/v1")!
         }
         #endif
     }
@@ -379,19 +379,25 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     ///   - description: Detailed description
     ///   - category: The category of feedback
     ///   - email: Optional user email for follow-up
+    ///   - subscribeToMailingList: Whether the user consents to join the project's mailing list
+    ///   - mailingListEmailTypes: Email preference types (e.g. `["operational", "marketing"]`). Defaults to both when nil.
     /// - Returns: The created feedback item
     public func submitFeedback(
         title: String,
         description: String,
         category: FeedbackCategory,
-        email: String? = nil
+        email: String? = nil,
+        subscribeToMailingList: Bool? = nil,
+        mailingListEmailTypes: [String]? = nil
     ) async throws -> Feedback {
         let body = CreateFeedbackRequest(
             title: title,
             description: description,
             category: category,
             userId: userId,
-            userEmail: email
+            userEmail: email,
+            subscribeToMailingList: email != nil ? subscribeToMailingList : nil,
+            mailingListEmailTypes: email != nil && subscribeToMailingList == true ? mailingListEmailTypes : nil
         )
         return try await client.post(path: "feedbacks", body: body)
     }
@@ -404,16 +410,22 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     ///   - feedbackId: The ID of the feedback to vote for
     ///   - email: Optional email to receive status change notifications
     ///   - notifyStatusChange: Whether to receive notifications when status changes (requires email)
+    ///   - subscribeToMailingList: Whether the user consents to join the project's mailing list
+    ///   - mailingListEmailTypes: Email preference types (e.g. `["operational", "marketing"]`). Defaults to both when nil.
     /// - Returns: Updated vote information
     public func vote(
         for feedbackId: UUID,
         email: String? = nil,
-        notifyStatusChange: Bool = false
+        notifyStatusChange: Bool = false,
+        subscribeToMailingList: Bool? = nil,
+        mailingListEmailTypes: [String]? = nil
     ) async throws -> VoteResult {
         let body = VoteRequest(
             userId: userId,
             email: email,
-            notifyStatusChange: email != nil ? notifyStatusChange : false
+            notifyStatusChange: email != nil ? notifyStatusChange : false,
+            subscribeToMailingList: email != nil ? subscribeToMailingList : nil,
+            mailingListEmailTypes: email != nil && subscribeToMailingList == true ? mailingListEmailTypes : nil
         )
         return try await client.post(path: "feedbacks/\(feedbackId)/votes", body: body)
     }
@@ -423,7 +435,7 @@ public final class SwiftlyFeedback: @unchecked Sendable {
     /// - Parameter feedbackId: The ID of the feedback to unvote
     /// - Returns: Updated vote information
     public func unvote(for feedbackId: UUID) async throws -> VoteResult {
-        let body = VoteRequest(userId: userId, email: nil, notifyStatusChange: nil)
+        let body = VoteRequest(userId: userId, email: nil, notifyStatusChange: nil, subscribeToMailingList: nil, mailingListEmailTypes: nil)
         return try await client.delete(path: "feedbacks/\(feedbackId)/votes", body: body)
     }
 
@@ -498,12 +510,16 @@ private struct CreateFeedbackRequest: Encodable {
     let category: FeedbackCategory
     let userId: String
     let userEmail: String?
+    let subscribeToMailingList: Bool?
+    let mailingListEmailTypes: [String]?
 }
 
 private struct VoteRequest: Encodable {
     let userId: String
     let email: String?
     let notifyStatusChange: Bool?
+    let subscribeToMailingList: Bool?
+    let mailingListEmailTypes: [String]?
 }
 
 private struct CreateCommentRequest: Encodable {

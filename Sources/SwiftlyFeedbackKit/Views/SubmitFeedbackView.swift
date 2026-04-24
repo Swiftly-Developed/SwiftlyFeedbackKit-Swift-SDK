@@ -5,8 +5,8 @@ public struct SubmitFeedbackView: View {
     let onDismiss: () -> Void
 
     @State private var viewModel = SubmitFeedbackViewModel()
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.dismiss) private var dismiss
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @FocusState private var focusedField: Field?
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
@@ -58,6 +58,7 @@ public struct SubmitFeedbackView: View {
                         .padding()
                         .background(.regularMaterial)
                         .clipShape(.rect(cornerRadius: 12))
+                        .accessibilityLabel(Strings.accessibilitySubmitting)
                 }
             }
             .onAppear {
@@ -92,6 +93,7 @@ public struct SubmitFeedbackView: View {
                     .focused($focusedField, equals: .title)
                     .submitLabel(.next)
                     .onSubmit { focusedField = .description }
+                    .accessibilityHint(Strings.accessibilityFormRequired)
 
                 Picker(Strings.formCategory, selection: $viewModel.category) {
                     ForEach(FeedbackCategory.allCases, id: \.self) { category in
@@ -105,6 +107,8 @@ public struct SubmitFeedbackView: View {
                 TextEditor(text: $viewModel.description)
                     .focused($focusedField, equals: .description)
                     .frame(minHeight: 120)
+                    .accessibilityLabel(Strings.formDescription)
+                    .accessibilityHint(Strings.accessibilityFormDescriptionHint)
             }
 
             if config.showEmailField {
@@ -117,6 +121,18 @@ public struct SubmitFeedbackView: View {
                         .autocorrectionDisabled()
                         .submitLabel(.done)
                         .onSubmit { submitIfValid() }
+                        .accessibilityHint(Strings.accessibilityFormOptional)
+
+                    if config.showMailingListOptIn && !viewModel.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Toggle(Strings.mailingListOptIn, isOn: $viewModel.subscribeToMailingList)
+
+                        if viewModel.subscribeToMailingList {
+                            Toggle(Strings.mailingListOperational, isOn: $viewModel.operationalEmails)
+                                .padding(.leading, 20)
+                            Toggle(Strings.mailingListMarketing, isOn: $viewModel.marketingEmails)
+                                .padding(.leading, 20)
+                        }
+                    }
                 } header: {
                     Text(Strings.formEmail)
                 } footer: {
@@ -143,6 +159,8 @@ public struct SubmitFeedbackView: View {
                         .focused($focusedField, equals: .title)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit { focusedField = .description }
+                        .accessibilityLabel(Strings.formTitle)
+                        .accessibilityHint(Strings.accessibilityFormRequired)
                 }
 
                 GridRow {
@@ -171,6 +189,8 @@ public struct SubmitFeedbackView: View {
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
                         )
+                        .accessibilityLabel(Strings.formDescription)
+                        .accessibilityHint(Strings.accessibilityFormDescriptionHint)
                 }
 
                 if config.showEmailField {
@@ -182,9 +202,31 @@ public struct SubmitFeedbackView: View {
                                 .textFieldStyle(.roundedBorder)
                                 .textContentType(.emailAddress)
                                 .onSubmit { submitIfValid() }
+                                .accessibilityLabel(Strings.formEmail)
+                                .accessibilityHint(Strings.accessibilityFormOptional)
                             Text(Strings.formEmailFooter)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    if config.showMailingListOptIn && !viewModel.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        GridRow {
+                            Text("")
+                            Toggle(Strings.mailingListOptIn, isOn: $viewModel.subscribeToMailingList)
+                        }
+
+                        if viewModel.subscribeToMailingList {
+                            GridRow {
+                                Text("")
+                                Toggle(Strings.mailingListOperational, isOn: $viewModel.operationalEmails)
+                                    .padding(.leading, 20)
+                            }
+                            GridRow {
+                                Text("")
+                                Toggle(Strings.mailingListMarketing, isOn: $viewModel.marketingEmails)
+                                    .padding(.leading, 20)
+                            }
                         }
                     }
                 }
@@ -215,6 +257,7 @@ public struct SubmitFeedbackView: View {
         }
         .tint(theme.primaryColor.resolve(for: colorScheme))
         .disabled(!viewModel.isValid || viewModel.isSubmitting)
+        .accessibilityHint(viewModel.isValid ? Strings.accessibilitySubmitHint : Strings.accessibilitySubmitDisabledHint)
         #if os(macOS)
         .keyboardShortcut(.return, modifiers: .command)
         #endif
@@ -240,7 +283,10 @@ final class SubmitFeedbackViewModel {
     var title = ""
     var description = ""
     var category: FeedbackCategory = .featureRequest
-    var email = ""
+    var email = SwiftlyFeedback.config.userEmail ?? ""
+    var subscribeToMailingList = SwiftlyFeedback.config.mailingListDefaultOptIn
+    var operationalEmails = true
+    var marketingEmails = true
     var isSubmitting = false
     var isSubmitted = false
     var showingError = false
@@ -250,6 +296,14 @@ final class SubmitFeedbackViewModel {
     var isValid: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func buildEmailTypes() -> [String]? {
+        guard subscribeToMailingList else { return nil }
+        var types: [String] = []
+        if operationalEmails { types.append("operational") }
+        if marketingEmails { types.append("marketing") }
+        return types.isEmpty ? nil : types
     }
 
     func submit(using swiftlyFeedback: SwiftlyFeedback?) async {
@@ -264,7 +318,9 @@ final class SubmitFeedbackViewModel {
                 title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                 description: description.trimmingCharacters(in: .whitespacesAndNewlines),
                 category: category,
-                email: email.isEmpty ? nil : email
+                email: email.isEmpty ? nil : email,
+                subscribeToMailingList: !email.isEmpty ? subscribeToMailingList : nil,
+                mailingListEmailTypes: !email.isEmpty ? buildEmailTypes() : nil
             )
             isSubmitted = true
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
