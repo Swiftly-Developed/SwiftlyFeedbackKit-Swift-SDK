@@ -28,13 +28,10 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         mergedIntoId != nil
     }
 
-    public static func == (lhs: Feedback, rhs: Feedback) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    // Equatable/Hashable are compiler-synthesized over all stored properties.
+    // Whole-value equality is load-bearing for the list's `.animation(value:)`
+    // (a changed voteCount must register as a change); `Identifiable` stays
+    // keyed on `id`, so ForEach/NavigationLink identity is unchanged.
 
     public init(
         id: UUID,
@@ -97,12 +94,12 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
     /// Localized display name for the status
     public var localizedDisplayName: String {
         switch self {
-        case .pending: return Strings.statusPending
-        case .approved: return Strings.statusApproved
-        case .inProgress: return Strings.statusInProgress
-        case .testflight: return Strings.statusTestFlight
-        case .completed: return Strings.statusCompleted
-        case .rejected: return Strings.statusRejected
+        case .pending: return String(localized: .statusPending)
+        case .approved: return String(localized: .statusApproved)
+        case .inProgress: return String(localized: .statusInProgress)
+        case .testflight: return String(localized: .statusTestflight)
+        case .completed: return String(localized: .statusCompleted)
+        case .rejected: return String(localized: .statusRejected)
         }
     }
 
@@ -134,10 +131,10 @@ public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
     /// Localized display name for the category
     public var localizedDisplayName: String {
         switch self {
-        case .featureRequest: return Strings.categoryFeatureRequest
-        case .bugReport: return Strings.categoryBugReport
-        case .improvement: return Strings.categoryImprovement
-        case .other: return Strings.categoryOther
+        case .featureRequest: return String(localized: .categoryFeatureRequest)
+        case .bugReport: return String(localized: .categoryBugReport)
+        case .improvement: return String(localized: .categoryImprovement)
+        case .other: return String(localized: .categoryOther)
         }
     }
 

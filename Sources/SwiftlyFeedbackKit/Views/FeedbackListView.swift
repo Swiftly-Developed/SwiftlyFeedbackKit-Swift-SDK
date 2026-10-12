@@ -3,45 +3,125 @@ import SwiftUI
 /// A ready-to-use view that displays a list of feedback items
 public struct FeedbackListView: View {
     @State private var viewModel: FeedbackListViewModel
+    @State private var translator = FeedbackTranslator()
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.locale) private var locale
 
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    // Owned by the VIEW, not by the preference store: that store is synchronous,
+    // non-observable and holds no translator (TRANSLATION01 §18), so the selection state
+    // has to live where the control does.
+    @State private var supportedTargets: [Locale.Language] = []
+    @State private var chosenTarget: Locale.Language?     // nil == follow the device
+    private let targetStore = TranslationTargetStore()
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
+
+    /// What every derivation site on this surface reads.
+    private var resolvedTarget: Locale.Language {
+        chosenTarget ?? locale.language
+    }
+
+    /// Reading order for the picker's rows. A helper, not an inline filter
+    /// (UI-DESIGN-IOS.md → "Helpers, not inline filters"), and the only place the
+    /// ordering is computed — the control itself computes none (TRANSLATION01 §18).
+    ///
+    /// The ordered list is deliberately not stored back into `supportedTargets`: the
+    /// stored-choice lookup is handed the *supported* set, and ordering drops languages
+    /// with no localized name, so seeding from a pruned set would change what the
+    /// preference is validated against.
+    private var orderedTargets: [Locale.Language] {
+        TranslationTargetOrdering.ordered(supported: supportedTargets, displayLocale: locale)
+    }
 
     public init(swiftlyFeedback: SwiftlyFeedback? = nil) {
         _viewModel = State(wrappedValue: FeedbackListViewModel(swiftlyFeedback: swiftlyFeedback))
     }
 
     public var body: some View {
+        #if os(macOS)
         NavigationStack {
-            Group {
+            listColumn
+        }
+        #else
+        // One container at every width. Compact (outer display, Slide Over) collapses
+        // to the list; regular (inner display, iPad) shows the detail beside it.
+        // The selection lives in this view, so folding does not rebuild the column.
+        NavigationSplitView {
+            listColumn
+        } detail: {
+            ContentUnavailableView(
+                String(localized: .feedbackListTitle),
+                systemImage: "bubble.left.and.bubble.right"
+            )
+        }
+        #endif
+    }
+
+    private var listColumn: some View {
+        Group {
                 if viewModel.hasInvalidApiKey {
-                    InvalidApiKeyView()
-                } else if viewModel.isLoading && viewModel.feedbackItems.isEmpty {
-                    ProgressView()
-                        .accessibilityLabel(Strings.accessibilityLoadingFeedback)
-                } else if viewModel.feedbackItems.isEmpty {
-                    FeedbackEmptyStateView(
-                        onSubmit: { viewModel.showingSubmitSheet = true },
-                        onSubmitDisabled: { viewModel.showingSubmissionDisabledAlert = true }
-                    )
+                    InvalidApiKeyView(onRetry: viewModel.retryAfterInvalidApiKey)
                 } else {
-                    FeedbackListContentView(viewModel: viewModel)
+                    switch viewModel.state {
+                    case .idle, .loading:
+                        // One arm for "not requested yet" and "in flight":
+                        // the honest render for both is the loading skeleton.
+                        // The 150 ms grace flag keeps fast loads from flashing it.
+                        if viewModel.showSkeleton {
+                            FeedbackListSkeletonView()
+                        } else {
+                            Color.clear
+                        }
+                    case .failed(let message):
+                        InlineErrorView(message: message) {
+                            Task { await viewModel.loadFeedback() }
+                        }
+                    case .loaded(let items):
+                        if items.isEmpty {
+                            FeedbackEmptyStateView(
+                                onSubmit: { viewModel.showingSubmitSheet = true },
+                                onSubmitDisabled: { viewModel.showingSubmissionDisabledAlert = true }
+                            )
+                        } else if viewModel.isSearchActive && viewModel.displayedItems.isEmpty {
+                            FeedbackSearchEmptyStateView(query: viewModel.searchText) {
+                                viewModel.clearSearch()
+                            }
+                        } else {
+                            FeedbackListContentView(
+                                viewModel: viewModel,
+                                translator: translator,
+                                target: resolvedTarget
+                            )
+                            .safeAreaInset(edge: .top) {
+                                if viewModel.isRefreshing {
+                                    FeedbackListRefreshIndicatorView()
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            .navigationTitle(Strings.feedbackListTitle)
+            .searchable(
+                text: $viewModel.searchText,
+                tokens: $viewModel.searchTokens,
+                suggestedTokens: .constant(viewModel.suggestedTokens),
+                prompt: Text(String(localized: .searchPrompt))
+            ) { token in
+                Label(token.displayName, systemImage: token.iconName)
+            }
+            .navigationTitle(String(localized: .feedbackListTitle))
+            .tint(theme.primaryColor == .default ? Color.primary : theme.primaryColor.resolve(for: colorScheme))
             .toolbar {
                 if !viewModel.hasInvalidApiKey {
                     #if os(macOS)
                     ToolbarItem(placement: .navigation) {
-                        Button {
+                        Button(String(localized: .toolbarRefresh), systemImage: "arrow.clockwise") {
                             Task { await viewModel.loadFeedback() }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
                         }
-                        .disabled(viewModel.isLoading)
+                        .disabled(viewModel.state == .loading || viewModel.isRefreshing)
                         .keyboardShortcut("r", modifiers: .command)
-                        .help(Strings.toolbarRefresh)
+                        .help(String(localized: .toolbarRefresh))
                     }
                     #endif
 
@@ -53,47 +133,53 @@ public struct FeedbackListView: View {
                                     Text(option.localizedName).tag(option)
                                 }
                             } label: {
-                                Label(Strings.toolbarSort, systemImage: "arrow.up.arrow.down")
+                                Label(String(localized: .toolbarSort), systemImage: "arrow.up.arrow.down")
                             }
 
                             // Status filter (if enabled)
-                            if config.buttons.segmentedControl.display {
+                            if config.buttons.statusFilter.display {
                                 Divider()
 
                                 Picker(selection: $viewModel.selectedStatus) {
-                                    Text(Strings.filterAll).tag(FeedbackStatus?.none)
+                                    Text(String(localized: .filterAll)).tag(FeedbackStatus?.none)
                                     ForEach(FeedbackStatus.allCases, id: \.self) { status in
                                         Text(status.localizedDisplayName).tag(FeedbackStatus?.some(status))
                                     }
                                 } label: {
-                                    Label(Strings.toolbarStatus, systemImage: "line.3.horizontal.decrease.circle")
+                                    Label(String(localized: .toolbarStatus), systemImage: "line.3.horizontal.decrease.circle")
                                 }
                             }
+
+                            TranslationTargetPicker(
+                                targets: orderedTargets,
+                                selection: $chosenTarget,
+                                displayLocale: locale
+                            )
                         } label: {
-                            Label(Strings.toolbarFilter, systemImage: "line.3.horizontal.decrease.circle")
+                            // Authored name: the menu contains both sort and filter,
+                            // so it is named for both — never a "More…"-family default.
+                            Label(String(localized: .toolbarSortAndFilter), systemImage: "line.3.horizontal.decrease.circle")
                         }
                     }
 
                     if config.buttons.addButton.display {
                         ToolbarItem(placement: .primaryAction) {
-                            Button {
+                            Button(String(localized: .feedbackSubmitTitle), systemImage: "plus") {
                                 if config.allowFeedbackSubmission {
                                     viewModel.showingSubmitSheet = true
                                 } else {
                                     viewModel.showingSubmissionDisabledAlert = true
                                 }
-                            } label: {
-                                Image(systemName: "plus")
                             }
                             .tint(theme.primaryColor.resolve(for: colorScheme))
                         }
                     }
                 }
             }
-            .alert(Strings.feedbackSubmissionDisabledTitle, isPresented: $viewModel.showingSubmissionDisabledAlert) {
-                Button(Strings.errorOK, role: .cancel) {}
+            .alert(String(localized: .feedbackSubmissionDisabledTitle), isPresented: $viewModel.showingSubmissionDisabledAlert) {
+                Button(String(localized: .errorOk), role: .cancel) {}
             } message: {
-                Text(config.feedbackSubmissionDisabledMessage ?? Strings.feedbackSubmissionDisabledMessage)
+                Text(config.feedbackSubmissionDisabledMessage ?? String(localized: .feedbackSubmissionDisabledMessage))
             }
             .sheet(isPresented: $viewModel.showingSubmitSheet) {
                 SubmitFeedbackView(swiftlyFeedback: viewModel.swiftlyFeedback) {
@@ -102,466 +188,86 @@ public struct FeedbackListView: View {
                 }
             }
             .refreshable {
-                await viewModel.loadFeedback()
+                // The system pull spinner is the refresh indicator here — the
+                // inset capsule is for programmatic refreshes only (no doubling).
+                await viewModel.loadFeedback(isUserPull: true)
             }
             .task {
                 await viewModel.loadFeedbackIfNeeded()
             }
+            .feedbackTranslationTask(translator)
+            .onChange(of: viewModel.feedbackItems, initial: true) {
+                enqueueTranslations()
+            }
+            .task {
+                // A second task, deliberately not merged into the feedback fetch above:
+                // the supported set is awaited from the translation framework and its
+                // latency is unbounded, so merging would serialise that fetch behind it.
+                //
+                // The set is awaited exactly once per view entry, here. Seeding the
+                // choice from it is what validates a stored value against what the
+                // device actually offers.
+                supportedTargets = await translator.supportedTargets()
+                chosenTarget = targetStore.storedTarget(in: supportedTargets)
+            }
+            .onChange(of: chosenTarget) {
+                targetStore.setTarget(chosenTarget)
+            }
+            .onChange(of: resolvedTarget) {
+                // The target moved, so every cached projection is stale: drop them all,
+                // then re-detect and re-enqueue against the new one. This is the device-
+                // locale arm it replaces, widened — the resolved target already depends
+                // on the environment locale, so today's behaviour is preserved, while a
+                // device-language change made while the reader sits on an explicit target
+                // now correctly invalidates nothing.
+                translator.invalidateAll()
+                enqueueTranslations()
+            }
             .onAppear {
-                if SwiftlyFeedback.config.enableAutomaticViewTracking {
+                if SwiftlyFeedback.configuration.enableAutomaticViewTracking {
                     SwiftlyFeedback.view(.feedbackList)
                 }
             }
-            .alert(Strings.errorTitle, isPresented: $viewModel.showingError) {
-                Button(Strings.errorOK, role: .cancel) {}
+            .alert(String(localized: .errorTitle), isPresented: $viewModel.showingError) {
+                Button(String(localized: .errorOk), role: .cancel) {}
             } message: {
-                Text(viewModel.errorMessage ?? Strings.errorGeneric)
+                Text(viewModel.errorMessage ?? String(localized: .errorGeneric))
             }
             .sheet(isPresented: $viewModel.showingVoteDialog) {
-                ListVoteDialogView(viewModel: viewModel)
-            }
-        }
-    }
-}
-
-struct FeedbackEmptyStateView: View {
-    let onSubmit: () -> Void
-    let onSubmitDisabled: () -> Void
-
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
-
-    var body: some View {
-        ContentUnavailableView {
-            Label(Strings.feedbackListEmpty, systemImage: "bubble.left.and.bubble.right")
-        } description: {
-            Text(Strings.feedbackListEmptyDescription)
-        } actions: {
-            Button(Strings.submitFeedbackTitle) {
-                if config.allowFeedbackSubmission {
-                    onSubmit()
-                } else {
-                    onSubmitDisabled()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(theme.primaryColor.resolve(for: colorScheme))
-        }
-    }
-}
-
-struct InvalidApiKeyView: View {
-    var body: some View {
-        ContentUnavailableView {
-            Label(Strings.errorInvalidApiKeyTitle, systemImage: "exclamationmark.triangle")
-        } description: {
-            Text(Strings.errorInvalidApiKeyMessage)
-        }
-    }
-}
-
-struct FeedbackListContentView: View {
-    @Bindable var viewModel: FeedbackListViewModel
-
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-
-    var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.feedbackItems) { feedback in
-                    let cardView = FeedbackCardView(feedback: feedback) {
-                        Task { await viewModel.toggleVote(for: feedback) }
-                    }
-                    NavigationLink(value: feedback) {
-                        cardView
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(cardView.accessibilityDescription)
-                    .accessibilityHint(Strings.accessibilityViewDetails)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-            }
-            .padding()
-            .animation(.smooth, value: viewModel.feedbackItems)
-        }
-        .navigationDestination(for: Feedback.self) { feedback in
-            FeedbackDetailView(feedback: feedback, swiftlyFeedback: viewModel.swiftlyFeedback)
-        }
-    }
-}
-
-struct ListVoteDialogView: View {
-    @Bindable var viewModel: FeedbackListViewModel
-    @SwiftUI.Environment(\.dismiss) private var dismiss
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-    #if os(iOS)
-    @SwiftUI.Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    #endif
-
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
-
-    private var hasValidEmail: Bool {
-        !viewModel.voteEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    var body: some View {
-        #if os(macOS)
-        macOSContent
-        #else
-        iOSContent
-        #endif
-    }
-
-    // MARK: - iOS & iPadOS Content
-
-    #if !os(macOS)
-    private var iOSContent: some View {
-        NavigationStack {
-            Form {
-                emailSection
-                notificationSection
-            }
-            .navigationTitle(Strings.voteDialogTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(Strings.voteDialogSkip) {
-                        submitAndDismiss(email: nil, notify: false)
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(Strings.voteDialogSubmit) {
-                        submitAndDismiss(
-                            email: viewModel.voteEmail,
-                            notify: viewModel.voteNotifyStatusChange,
-                            subscribeToMailingList: viewModel.voteSubscribeToMailingList
+                VoteDialogView(
+                    email: $viewModel.voteEmail,
+                    notifyStatusChange: $viewModel.voteNotifyStatusChange,
+                    subscribeToMailingList: $viewModel.voteSubscribeToMailingList,
+                    operationalEmails: $viewModel.voteOperationalEmails,
+                    marketingEmails: $viewModel.voteMarketingEmails
+                ) { email, notify, subscribeToMailingList, mailingListEmailTypes in
+                    // List-specific routing: the dialog commits against the
+                    // feedback that opened it, guarded so a stale commit no-ops.
+                    guard let feedbackId = viewModel.pendingVoteFeedbackId else { return }
+                    viewModel.pendingVoteFeedbackId = nil
+                    Task {
+                        await viewModel.submitVote(
+                            for: feedbackId,
+                            email: email,
+                            notify: notify,
+                            subscribeToMailingList: subscribeToMailingList,
+                            mailingListEmailTypes: mailingListEmailTypes
                         )
                     }
-                    .fontWeight(.semibold)
                 }
-            }
-            .tint(theme.primaryColor.resolve(for: colorScheme))
-        }
-        .presentationDetents(presentationDetentsForDevice)
-        .presentationDragIndicator(.visible)
-        .presentationCornerRadius(20)
-        .interactiveDismissDisabled(false)
-        .presentationSizing(.form)
-    }
-
-    private var presentationDetentsForDevice: Set<PresentationDetent> {
-        if horizontalSizeClass == .compact {
-            return [.height(320)]
-        } else {
-            return [.medium]
-        }
-    }
-    #endif
-
-    // MARK: - macOS Content
-
-    #if os(macOS)
-    private var macOSContent: some View {
-        VStack(spacing: 16) {
-            Text(Strings.voteDialogTitle)
-                .font(.headline)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(Strings.voteDialogEmailHeader)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                TextField(Strings.voteDialogEmailPlaceholder, text: $viewModel.voteEmail)
-                    .textFieldStyle(.roundedBorder)
-                    .textContentType(.emailAddress)
-                    .autocorrectionDisabled()
-
-                Text(Strings.voteDialogEmailFooter)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                Toggle(isOn: $viewModel.voteNotifyStatusChange) {
-                    Text(Strings.voteDialogNotifyToggle)
-                }
-                .disabled(!hasValidEmail)
-                .onChange(of: viewModel.voteEmail) { _, newValue in
-                    if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        viewModel.voteNotifyStatusChange = false
-                    }
-                }
-
-                Text(Strings.voteDialogNotifyDescription)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-
-            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
-                Toggle(isOn: $viewModel.voteSubscribeToMailingList) {
-                    Text(Strings.mailingListOptIn)
-                }
-            }
-
-            Spacer()
-
-            Divider()
-
-            HStack {
-                Button(Strings.voteDialogSkip) {
-                    submitAndDismiss(email: nil, notify: false)
-                }
-                .keyboardShortcut(.cancelAction)
-
-                Spacer()
-
-                Button(Strings.voteDialogSubmit) {
-                    submitAndDismiss(
-                        email: viewModel.voteEmail,
-                        notify: viewModel.voteNotifyStatusChange,
-                        subscribeToMailingList: viewModel.voteSubscribeToMailingList
-                    )
-                }
-                .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
-                .tint(theme.primaryColor.resolve(for: colorScheme))
             }
         }
-        .padding(20)
-        .frame(width: 380, height: 300)
-    }
-    #endif
 
-    // MARK: - Shared Sections
-
-    private var emailSection: some View {
-        Section {
-            TextField(Strings.voteDialogEmailPlaceholder, text: $viewModel.voteEmail)
-                .textContentType(.emailAddress)
-                #if !os(macOS)
-                .keyboardType(.emailAddress)
-                .textInputAutocapitalization(.never)
-                #endif
-                .autocorrectionDisabled()
-        } header: {
-            Text(Strings.voteDialogEmailHeader)
-        } footer: {
-            Text(Strings.voteDialogEmailFooter)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+    /// Detects source languages per field across the loaded items and queues the
+    /// uncached remainder toward the reader's resolved target. Skipped entirely when
+    /// that target carries no language code (nothing to translate toward).
+    private func enqueueTranslations() {
+        let target = resolvedTarget
+        guard target.languageCode != nil else { return }
+        let units = viewModel.feedbackItems.flatMap {
+            SourceLanguageDetector.units(for: $0, target: target)
         }
-    }
-
-    private var notificationSection: some View {
-        Section {
-            Toggle(isOn: $viewModel.voteNotifyStatusChange) {
-                Text(Strings.voteDialogNotifyToggle)
-            }
-            .disabled(!hasValidEmail)
-            .onChange(of: viewModel.voteEmail) { _, newValue in
-                if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    viewModel.voteNotifyStatusChange = false
-                }
-            }
-
-            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
-                Toggle(isOn: $viewModel.voteSubscribeToMailingList) {
-                    Text(Strings.mailingListOptIn)
-                }
-            }
-        } footer: {
-            Text(Strings.voteDialogNotifyDescription)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    // MARK: - Actions
-
-    private func submitAndDismiss(email: String?, notify: Bool, subscribeToMailingList: Bool? = nil) {
-        dismiss()
-
-        // Save the email to config for future votes (if a valid email was provided)
-        let trimmedEmail = email?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let validEmail = trimmedEmail, !validEmail.isEmpty {
-            SwiftlyFeedback.config.userEmail = validEmail
-        }
-
-        guard let feedbackId = viewModel.pendingVoteFeedbackId else { return }
-        viewModel.pendingVoteFeedbackId = nil
-
-        Task {
-            await viewModel.submitVote(for: feedbackId, email: email, notify: notify, subscribeToMailingList: subscribeToMailingList)
-        }
+        translator.enqueue(units: units, target: target)
     }
 }
 
-/// Sort options for the feedback list
-public enum FeedbackSortOption: String, CaseIterable, Sendable {
-    case votes = "Votes"
-    case newest = "Newest"
-    case oldest = "Oldest"
-    case comments = "Comments"
-
-    var localizedName: String {
-        switch self {
-        case .votes: return Strings.sortVotes
-        case .newest: return Strings.sortNewest
-        case .oldest: return Strings.sortOldest
-        case .comments: return Strings.sortComments
-        }
-    }
-}
-
-@MainActor
-@Observable
-final class FeedbackListViewModel {
-    var feedbackItems: [Feedback] = []
-    var isLoading = false
-    var showingSubmitSheet = false
-    var showingError = false
-    var errorMessage: String?
-    var showingSubmissionDisabledAlert = false
-    var hasInvalidApiKey = false
-    var selectedStatus: FeedbackStatus? {
-        didSet { Task { await loadFeedback() } }
-    }
-    var selectedSort: FeedbackSortOption = .votes {
-        didSet { sortFeedback() }
-    }
-
-    // Vote dialog state
-    var showingVoteDialog = false
-    var voteEmail = ""
-    var voteNotifyStatusChange = false
-    var voteSubscribeToMailingList = SwiftlyFeedback.config.mailingListDefaultOptIn
-    var pendingVoteFeedbackId: UUID?
-
-    let swiftlyFeedback: SwiftlyFeedback?
-
-    private var loadTask: Task<Void, Never>?
-    private var hasLoadedOnce = false
-
-    init(swiftlyFeedback: SwiftlyFeedback?) {
-        self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
-        self.voteNotifyStatusChange = SwiftlyFeedback.config.voteNotificationDefaultOptIn
-    }
-
-    func loadFeedback() async {
-        guard let sf = swiftlyFeedback else { return }
-        guard !hasInvalidApiKey else { return }
-
-        // Cancel any in-flight request
-        loadTask?.cancel()
-
-        isLoading = true
-
-        let task = Task {
-            do {
-                try Task.checkCancellation()
-                let items = try await sf.getFeedback(status: selectedStatus)
-                try Task.checkCancellation()
-                feedbackItems = items
-                sortFeedback()
-                hasLoadedOnce = true
-            } catch is CancellationError {
-                // Silently ignore cancellation - another request is taking over
-            } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
-                hasInvalidApiKey = true
-            } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-                errorMessage = message ?? Strings.errorFeedbackLimitMessage
-                showingError = true
-            } catch {
-                errorMessage = error.localizedDescription
-                showingError = true
-            }
-            isLoading = false
-        }
-
-        loadTask = task
-        await task.value
-    }
-
-    func loadFeedbackIfNeeded() async {
-        guard !hasLoadedOnce else { return }
-        await loadFeedback()
-    }
-
-    private func sortFeedback() {
-        withAnimation(.smooth) {
-            switch selectedSort {
-            case .votes:
-                feedbackItems.sort { $0.voteCount > $1.voteCount }
-            case .newest:
-                feedbackItems.sort { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
-            case .oldest:
-                feedbackItems.sort { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
-            case .comments:
-                feedbackItems.sort { $0.commentCount > $1.commentCount }
-            }
-        }
-    }
-
-    func toggleVote(for feedback: Feedback) async {
-        guard swiftlyFeedback != nil else { return }
-        guard !hasInvalidApiKey else { return }
-
-        let config = SwiftlyFeedback.config
-
-        if feedback.hasVoted {
-            // Unvoting - no dialog needed
-            if !config.allowUndoVote { return }
-            await submitVote(for: feedback.id, email: nil, notify: false)
-        } else {
-            // Check if userEmail is already configured
-            let configuredEmail = config.userEmail?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let hasConfiguredEmail = configuredEmail?.isEmpty == false
-
-            if hasConfiguredEmail {
-                // Use configured email directly, no dialog needed
-                await submitVote(for: feedback.id, email: configuredEmail, notify: config.voteNotificationDefaultOptIn, subscribeToMailingList: config.mailingListDefaultOptIn)
-            } else if config.showVoteEmailField {
-                // No configured email - show dialog to collect email
-                voteEmail = ""
-                voteNotifyStatusChange = config.voteNotificationDefaultOptIn
-                voteSubscribeToMailingList = config.mailingListDefaultOptIn
-                pendingVoteFeedbackId = feedback.id
-                showingVoteDialog = true
-            } else {
-                // No email configured and dialog disabled - vote without email
-                await submitVote(for: feedback.id, email: nil, notify: false)
-            }
-        }
-    }
-
-    func submitVote(for feedbackId: UUID, email: String?, notify: Bool, subscribeToMailingList: Bool? = nil) async {
-        guard let sf = swiftlyFeedback else { return }
-        guard !hasInvalidApiKey else { return }
-
-        do {
-            // Check if this is an unvote by finding the feedback
-            if let feedback = feedbackItems.first(where: { $0.id == feedbackId }), feedback.hasVoted {
-                _ = try await sf.unvote(for: feedbackId)
-            } else {
-                let trimmedEmail = email?.trimmingCharacters(in: .whitespacesAndNewlines)
-                let validEmail = (trimmedEmail?.isEmpty == false) ? trimmedEmail : nil
-                _ = try await sf.vote(
-                    for: feedbackId,
-                    email: validEmail,
-                    notifyStatusChange: notify && validEmail != nil,
-                    subscribeToMailingList: validEmail != nil ? subscribeToMailingList : nil
-                )
-            }
-            await loadFeedback()
-        } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
-            hasInvalidApiKey = true
-        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? Strings.errorFeedbackLimitMessage
-            showingError = true
-        } catch {
-            errorMessage = error.localizedDescription
-            showingError = true
-        }
-    }
-}

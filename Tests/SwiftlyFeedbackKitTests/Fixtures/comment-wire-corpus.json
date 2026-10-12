@@ -1,0 +1,16 @@
+[
+  {
+    "content" : "Thanks for the report - this ships in 2.4.",
+    "created_at" : "2023-11-14T22:13:20Z",
+    "id" : "11111111-1111-4111-8111-111111111111",
+    "is_admin" : true,
+    "user_id" : "fixture-admin-user"
+  },
+  {
+    "content" : "Please add dark mode.",
+    "created_at" : "2023-11-14T23:13:20Z",
+    "id" : "22222222-2222-4222-8222-222222222222",
+    "is_admin" : false,
+    "user_id" : "fixture-end-user"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "airtable_record_id" : "airtable-47",
+    "airtable_record_url" : "https:\/\/airtable.example.invalid\/r\/47",
+    "asana_task_id" : "asana-48",
+    "asana_task_url" : "https:\/\/asana.example.invalid\/0\/48",
+    "basecamp_bucket_id" : "basecamp-bucket-50",
+    "basecamp_todo_id" : "basecamp-49",
+    "basecamp_todo_url" : "https:\/\/basecamp.example.invalid\/todos\/49",
+    "category" : "feature_request",
+    "clickup_task_id" : "clickup-42",
+    "clickup_task_url" : "https:\/\/clickup.example.invalid\/t\/42",
+    "comment_count" : 3,
+    "created_at" : "2023-11-14T22:13:20Z",
+    "description" : "The list is hard to read at night.",
+    "github_issue_number" : 41,
+    "github_issue_url" : "https:\/\/github.example.invalid\/acme\/app\/issues\/41",
+    "has_voted" : true,
+    "id" : "11111111-1111-4111-8111-111111111111",
+    "is_hidden_over_limit" : true,
+    "linear_issue_id" : "linear-45",
+    "linear_issue_url" : "https:\/\/linear.example.invalid\/issue\/ACM-45",
+    "merged_at" : "2023-11-15T00:13:20Z",
+    "merged_feedback_ids" : [
+      "55555555-5555-4555-8555-555555555555"
+    ],
+    "merged_into_id" : "44444444-4444-4444-8444-444444444444",
+    "monday_item_id" : "monday-44",
+    "monday_item_url" : "https:\/\/monday.example.invalid\/boards\/44",
+    "notion_page_id" : "notion-43",
+    "notion_page_url" : "https:\/\/notion.example.invalid\/p\/43",
+    "rejection_reason" : "Superseded by the theming epic.",
+    "roadmap_note" : "Shipping in 2.5.",
+    "roadmap_target_date" : "2023-11-15T01:13:20Z",
+    "roadmap_visible" : true,
+    "status" : "in_progress",
+    "sync_states" : [
+      {
+        "provider" : "github",
+        "provider_ref_url" : "https:\/\/github.example.invalid\/acme\/app\/issues\/41",
+        "state" : "succeeded"
+      },
+      {
+        "provider" : "linear",
+        "state" : "pending"
+      }
+    ],
+    "title" : "Add a dark theme",
+    "total_mrr" : 250,
+    "trello_card_id" : "trello-46",
+    "trello_card_url" : "https:\/\/trello.example.invalid\/c\/46",
+    "updated_at" : "2023-11-14T23:13:20Z",
+    "user_email" : "fixture-user@example.invalid",
+    "user_id" : "fixture-end-user",
+    "vote_count" : 7
+  },
+  {
+    "category" : "bug_report",
+    "comment_count" : 0,
+    "created_at" : "2023-11-14T22:13:20Z",
+    "description" : "Version 2.4 crashes before the first screen.",
+    "has_voted" : false,
+    "id" : "22222222-2222-4222-8222-222222222222",
+    "is_hidden_over_limit" : false,
+    "roadmap_visible" : false,
+    "status" : "testflight",
+    "sync_states" : [
+
+    ],
+    "title" : "Crash on launch",
+    "updated_at" : "2023-11-14T23:13:20Z",
+    "user_id" : "fixture-reporter",
+    "vote_count" : 0
+  },
+  {
+    "category" : "other",
+    "comment_count" : 0,
+    "created_at" : "2023-11-14T22:13:20Z",
+    "description" : "Version 2.4 crashes before the first screen.",
+    "has_voted" : false,
+    "id" : "33333333-3333-4333-8333-333333333333",
+    "is_hidden_over_limit" : false,
+    "roadmap_visible" : false,
+    "status" : "rejected",
+    "title" : "Crash on launch",
+    "updated_at" : "2023-11-14T23:13:20Z",
+    "user_id" : "fixture-reporter",
+    "vote_count" : 0
+  }
+]

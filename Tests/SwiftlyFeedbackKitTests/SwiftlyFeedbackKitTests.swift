@@ -34,18 +34,15 @@ import Foundation
     #expect(feedback.hasVoted == false)
 }
 
-@Test func testCommentModel() async throws {
-    let comment = Comment(
-        id: UUID(),
-        content: "Great idea!",
-        userId: "user456",
-        isAdmin: false,
-        createdAt: Date()
-    )
-
-    #expect(comment.content == "Great idea!")
-    #expect(comment.isAdmin == false)
-}
+// `testCommentModel` was removed by `QA-UNIT04-COMMENTS` `-10`. It constructed a `Comment`
+// and read back two of the five arguments it had just passed in, so no product change could
+// make it fail. `CommentDecodeTests` covers the same type against the corpus the server
+// actually emits.
+//
+// ⚠️ `docs/testing/L1-CLASSIFICATION.md` §1's `QA-UNIT04-COMMENTS` row still assigns
+// `--filter "testCommentModel"`, which now selects nothing. It must be replaced with
+// `CommentDecodeTests` (here) plus `MergeOriginPrefixTests` and `CommentWireContractTests`
+// on the server target.
 
 @Test func testSwiftlyFeedbackConfiguration() async throws {
     let baseURL = URL(string: "https://api.example.com")!

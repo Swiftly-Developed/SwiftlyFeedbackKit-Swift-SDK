@@ -24,12 +24,24 @@ let package = Package(
             path: "Sources/SwiftlyFeedbackKit",
             resources: [
                 .process("Resources")
+            ],
+            plugins: [
+                .plugin(name: "GenerateStringCatalogSymbols")
             ]
+        ),
+        // Generates typed symbols from Resources/Localizable.xcstrings. This is
+        // a plugin rather than Xcode's STRING_CATALOG_GENERATE_SYMBOLS build
+        // setting because that setting is unreachable for a published SwiftPM
+        // package — see the plugin source for the measurements.
+        .plugin(
+            name: "GenerateStringCatalogSymbols",
+            capability: .buildTool(),
+            path: "Plugins/GenerateStringCatalogSymbols"
         ),
         .testTarget(
             name: "SwiftlyFeedbackKitTests",
             dependencies: ["SwiftlyFeedbackKit"]
         ),
     ],
-    swiftLanguageModes: [.v5]
+    swiftLanguageModes: [.v6]
 )

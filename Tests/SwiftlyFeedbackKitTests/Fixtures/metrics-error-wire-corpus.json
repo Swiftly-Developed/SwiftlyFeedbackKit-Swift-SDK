@@ -1,0 +1,294 @@
+{
+  "enveloped" : [
+    {
+      "error" : {
+        "code" : "METRICS_CUSTOM_EVENTS_REQUIRE_PRO",
+        "field" : "dimension",
+        "message" : "Breaking down metrics by event name requires the Pro plan."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_CUSTOM_EVENTS_REQUIRE_PRO",
+        "message" : "The raw event feed requires the Pro plan."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_MEASURE_REQUIRES_BEARER",
+        "field" : "measures",
+        "message" : "Measure 'mrr_sum' is not available on the API-key surface. Use the authenticated project metrics endpoint."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_UNKNOWN_MEASURE",
+        "field" : "measures",
+        "message" : "Unknown measure 'mrr_sum'. Valid values: feedback_count, vote_count, comment_count, event_count, unique_event_users."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_BUCKET_LIMIT_EXCEEDED",
+        "field" : "granularity",
+        "message" : "Requested range exceeds the maximum of 400 buckets for granularity 'hour'. Narrow the range or use a coarser granularity."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_CONFLICTING_WINDOW_PARAMS",
+        "field" : "days",
+        "message" : "Provide either days or date_from\/date_to, not both."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_FILTER_NOT_AVAILABLE_FOR_ENDPOINT",
+        "field" : "status",
+        "message" : "status is not available on an event_name breakdown."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_CATEGORY",
+        "field" : "category",
+        "message" : "Invalid category 'wishlist'."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_DATE",
+        "field" : "date_from",
+        "message" : "Invalid date_from. Expected an ISO-8601 calendar date, for example 2026-01-31."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_DATE_RANGE",
+        "field" : "date_from",
+        "message" : "date_from must be on or before date_to."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_EVENT_NAME",
+        "field" : "event_name",
+        "message" : "event_name cannot be empty."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_PAGE",
+        "field" : "page",
+        "message" : "page must be 1 or greater."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_PER_PAGE",
+        "field" : "per_page",
+        "message" : "per_page must be between 1 and 200."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_INVALID_STATUS",
+        "field" : "status",
+        "message" : "Invalid status 'shipped'. Valid values: pending, approved, in_progress, testflight, completed, rejected."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_MEASURES_REQUIRED",
+        "field" : "measures",
+        "message" : "At least one measure is required."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_MEASURE_NOT_AVAILABLE_FOR_ENDPOINT",
+        "field" : "measures",
+        "message" : "Measure 'mrr_sum' is not available on this endpoint. Valid values here: feedback_count."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_UNKNOWN_DIMENSION",
+        "field" : "dimension",
+        "message" : "Unknown dimension 'device'. Valid values: status, category, event_name."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    },
+    {
+      "error" : {
+        "code" : "METRICS_UNKNOWN_GRANULARITY",
+        "field" : "granularity",
+        "message" : "Unknown granularity 'fortnight'. Valid values: hour, day, week, month."
+      },
+      "timestamp" : "2023-11-15T01:13:20Z"
+    }
+  ],
+  "middleware" : [
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "Invalid API key"
+      },
+      "http_status" : 401,
+      "source" : "Sources\/App\/Middleware\/ApiKeyProjectResolver.swift"
+    },
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "This project is suspended."
+      },
+      "http_status" : 403,
+      "source" : "Sources\/App\/Middleware\/ApiKeyProjectResolver.swift"
+    },
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "You don't have access to this project"
+      },
+      "http_status" : 403,
+      "source" : "Sources\/App\/Controllers\/Shared\/ProjectAccessResolving.swift"
+    },
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "Project not found"
+      },
+      "http_status" : 404,
+      "source" : "Sources\/App\/Controllers\/Shared\/ProjectAccessResolving.swift"
+    },
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "Too many requests. Try again later."
+      },
+      "http_status" : 429,
+      "source" : "Sources\/App\/Middleware\/RateLimitMiddleware.swift"
+    },
+    {
+      "body" : {
+        "error" : true,
+        "reason" : "metrics_invalid_reporting_timezone"
+      },
+      "http_status" : 500,
+      "source" : "Sources\/App\/Controllers\/MetricsController.swift"
+    }
+  ],
+  "vocabulary" : [
+    {
+      "detailed_token" : "METRICS_BUCKET_LIMIT_EXCEEDED",
+      "http_status" : 400,
+      "wire_token" : "METRICS_BUCKET_LIMIT_EXCEEDED"
+    },
+    {
+      "detailed_token" : "METRICS_CONFLICTING_WINDOW_PARAMS",
+      "http_status" : 400,
+      "wire_token" : "METRICS_CONFLICTING_WINDOW_PARAMS"
+    },
+    {
+      "detailed_token" : "METRICS_CUSTOM_EVENT_DIMENSION_REQUIRES_PRO",
+      "http_status" : 402,
+      "wire_token" : "METRICS_CUSTOM_EVENTS_REQUIRE_PRO"
+    },
+    {
+      "detailed_token" : "METRICS_CUSTOM_EVENT_FILTER_REQUIRES_PRO",
+      "http_status" : 402,
+      "wire_token" : "METRICS_CUSTOM_EVENTS_REQUIRE_PRO"
+    },
+    {
+      "detailed_token" : "METRICS_RAW_EVENT_FEED_REQUIRES_PRO",
+      "http_status" : 402,
+      "wire_token" : "METRICS_CUSTOM_EVENTS_REQUIRE_PRO"
+    },
+    {
+      "detailed_token" : "METRICS_FILTER_NOT_AVAILABLE_FOR_ENDPOINT",
+      "http_status" : 400,
+      "wire_token" : "METRICS_FILTER_NOT_AVAILABLE_FOR_ENDPOINT"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_CATEGORY",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_CATEGORY"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_DATE",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_DATE"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_DATE_RANGE",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_DATE_RANGE"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_EVENT_NAME",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_EVENT_NAME"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_PAGE",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_PAGE"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_PER_PAGE",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_PER_PAGE"
+    },
+    {
+      "detailed_token" : "METRICS_INVALID_STATUS",
+      "http_status" : 400,
+      "wire_token" : "METRICS_INVALID_STATUS"
+    },
+    {
+      "detailed_token" : "METRICS_MEASURES_REQUIRED",
+      "http_status" : 400,
+      "wire_token" : "METRICS_MEASURES_REQUIRED"
+    },
+    {
+      "detailed_token" : "METRICS_MEASURE_NOT_AVAILABLE_FOR_ENDPOINT",
+      "http_status" : 400,
+      "wire_token" : "METRICS_MEASURE_NOT_AVAILABLE_FOR_ENDPOINT"
+    },
+    {
+      "detailed_token" : "METRICS_MEASURE_REQUIRES_BEARER",
+      "http_status" : 403,
+      "wire_token" : "METRICS_MEASURE_REQUIRES_BEARER"
+    },
+    {
+      "detailed_token" : "METRICS_UNKNOWN_DIMENSION",
+      "http_status" : 400,
+      "wire_token" : "METRICS_UNKNOWN_DIMENSION"
+    },
+    {
+      "detailed_token" : "METRICS_UNKNOWN_GRANULARITY",
+      "http_status" : 400,
+      "wire_token" : "METRICS_UNKNOWN_GRANULARITY"
+    },
+    {
+      "detailed_token" : "METRICS_UNKNOWN_MEASURE",
+      "http_status" : 400,
+      "wire_token" : "METRICS_UNKNOWN_MEASURE"
+    }
+  ]
+}
