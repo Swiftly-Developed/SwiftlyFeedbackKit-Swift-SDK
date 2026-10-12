@@ -35,7 +35,8 @@ struct SourceLanguageDetector {
 
     /// Per-field detection over a feedback item's translatable text — title, description,
     /// and a non-nil rejection reason. Only confidently detected fields emit units, and
-    /// fields already in `target` are not applicable (the original text stands).
+    /// fields naming the same language as `target` are not applicable (the original
+    /// text stands).
     static func units(for feedback: Feedback, target: Locale.Language) -> [TranslatableUnit] {
         var fields: [(TranslatableField, String)] = [
             (.title, feedback.title),
@@ -45,15 +46,15 @@ struct SourceLanguageDetector {
             fields.append((.rejectionReason, rejectionReason))
         }
         return fields.compactMap { field, text in
-            guard let source = detect(text), source != target else { return nil }
+            guard let source = detect(text), !source.isSameLanguage(as: target) else { return nil }
             return TranslatableUnit(itemID: feedback.id, field: field, sourceText: text, sourceLanguage: source)
         }
     }
 
     /// Detection over a comment's text, or `nil` when detection is not confident or the
-    /// comment is already in `target`.
+    /// comment names the same language as `target`.
     static func unit(for comment: Comment, target: Locale.Language) -> TranslatableUnit? {
-        guard let source = detect(comment.content), source != target else { return nil }
+        guard let source = detect(comment.content), !source.isSameLanguage(as: target) else { return nil }
         return TranslatableUnit(itemID: comment.id, field: .commentText, sourceText: comment.content, sourceLanguage: source)
     }
 }

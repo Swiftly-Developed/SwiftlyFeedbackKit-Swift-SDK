@@ -52,10 +52,7 @@ struct CommentDecodeTests {
     /// it would decode nothing at all from a snake_case payload and the case would be red
     /// for a reason that has nothing to do with the SDK.
     static func sdkDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return decoder
+        WireCoding.makeDecoder()
     }
 
     // MARK: - -10
@@ -112,8 +109,14 @@ struct CommentDecodeTests {
             .appendingPathComponent("Sources/SwiftlyFeedbackKit/Networking/APIClient.swift")
         let source = try String(contentsOf: apiClient, encoding: .utf8)
 
-        #expect(source.contains("self.decoder.dateDecodingStrategy = .iso8601"))
-        #expect(source.contains("self.decoder.keyDecodingStrategy = .convertFromSnakeCase"))
+        #expect(source.contains("WireCoding.makeDecoder()"))
+        let wire = Self.testsDirectory
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Sources/SwiftlyFeedbackKit/Networking/WireCoding.swift")
+        let wireSource = try String(contentsOf: wire, encoding: .utf8)
+        #expect(wireSource.contains("decoder.keyDecodingStrategy = .convertFromSnakeCase"))
+        #expect(wireSource.contains(".withInternetDateTime"))
     }
 
     /// Non-vacuity for the whole suite: the fixture on disk must be the real corpus, and the

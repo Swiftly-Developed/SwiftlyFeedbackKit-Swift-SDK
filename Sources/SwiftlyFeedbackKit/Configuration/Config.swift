@@ -2,12 +2,12 @@ import Foundation
 
 /// Configuration options for SwiftlyFeedback SDK.
 ///
-/// Access via `SwiftlyFeedback.config`.
+/// Access via `SwiftlyFeedback.configuration` on the main actor.
 ///
 /// Example:
 /// ```swift
-/// SwiftlyFeedback.config.allowUndoVote = true
-/// SwiftlyFeedback.config.showStatusBadge = false
+/// SwiftlyFeedback.configuration.allowUndoVote = true
+/// SwiftlyFeedback.configuration.showStatusBadge = false
 /// ```
 ///
 /// ## Localization
@@ -18,7 +18,8 @@ import Foundation
 ///
 /// Alternatively, you can export the SDK's strings for translation
 /// using Xcode's localization export feature.
-public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
+@MainActor
+public final class SwiftlyFeedbackConfiguration {
 
     // MARK: - Feature Toggles
 
@@ -54,8 +55,8 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Example:
     /// ```swift
     /// // Set user email once at configuration time
-    /// SwiftlyFeedback.config.userEmail = "user@example.com"
-    /// SwiftlyFeedback.config.voteNotificationDefaultOptIn = true
+    /// SwiftlyFeedback.configuration.userEmail = "user@example.com"
+    /// SwiftlyFeedback.configuration.voteNotificationDefaultOptIn = true
     /// ```
     public var userEmail: String? {
         didSet {
@@ -72,7 +73,7 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     ///
     /// Example:
     /// ```swift
-    /// SwiftlyFeedback.config.onUserEmailChanged = { email in
+    /// SwiftlyFeedback.configuration.onUserEmailChanged = { email in
     ///     // Save to your app's settings/UserDefaults
     ///     UserDefaults.standard.set(email ?? "", forKey: "userEmail")
     /// }
@@ -92,7 +93,7 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Example:
     /// ```swift
     /// // Disable vote notification email field
-    /// SwiftlyFeedback.config.showVoteEmailField = false
+    /// SwiftlyFeedback.configuration.showVoteEmailField = false
     /// ```
     public var showVoteEmailField: Bool = true
 
@@ -127,8 +128,8 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Example:
     /// ```swift
     /// // Disable feedback submission for free users
-    /// SwiftlyFeedback.config.allowFeedbackSubmission = user.isPro
-    /// SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feature requests!"
+    /// SwiftlyFeedback.configuration.allowFeedbackSubmission = user.isPro
+    /// SwiftlyFeedback.configuration.feedbackSubmissionDisabledMessage = "Upgrade to Pro to submit feature requests!"
     /// ```
     public var allowFeedbackSubmission: Bool = true
 
@@ -153,9 +154,11 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Example:
     /// ```swift
     /// // Disable SDK logging
-    /// SwiftlyFeedback.config.loggingEnabled = false
+    /// SwiftlyFeedback.configuration.loggingEnabled = false
     /// ```
-    public var loggingEnabled: Bool = true
+    public var loggingEnabled: Bool = true {
+        didSet { SDKLogGate.setEnabled(loggingEnabled) }
+    }
 
     // MARK: - Translation
 
@@ -170,7 +173,7 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// Example:
     /// ```swift
     /// // Disable reader-side translation (and the download prompt)
-    /// SwiftlyFeedback.config.translationEnabled = false
+    /// SwiftlyFeedback.configuration.translationEnabled = false
     /// ```
     public var translationEnabled: Bool = true
 
@@ -184,7 +187,8 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
 
 // MARK: - Buttons Configuration
 
-public final class ButtonsConfiguration: @unchecked Sendable {
+@MainActor
+public final class ButtonsConfiguration {
     /// Add feedback button configuration
     public var addButton = AddButtonConfiguration()
 
@@ -194,14 +198,16 @@ public final class ButtonsConfiguration: @unchecked Sendable {
     internal init() {}
 }
 
-public final class AddButtonConfiguration: @unchecked Sendable {
+@MainActor
+public final class AddButtonConfiguration {
     /// Whether to display the add button. Default: `true`
     public var display: Bool = true
 
     internal init() {}
 }
 
-public final class StatusFilterConfiguration: @unchecked Sendable {
+@MainActor
+public final class StatusFilterConfiguration {
     /// Whether to display the status filter (the status Picker in the list's filter menu). Default: `true`
     public var display: Bool = true
 

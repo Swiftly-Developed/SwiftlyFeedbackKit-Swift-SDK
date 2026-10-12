@@ -9,15 +9,15 @@ public struct SubmitFeedbackView: View {
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @FocusState private var focusedField: Field?
 
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     private enum Field: Hashable {
         case title, description, email
     }
 
     public init(swiftlyFeedback: SwiftlyFeedback? = nil, onDismiss: @escaping () -> Void = {}) {
-        self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
+        self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.current
         self.onDismiss = onDismiss
     }
 
@@ -31,15 +31,19 @@ public struct SubmitFeedbackView: View {
                 }
             }
             .navigationTitle(String(localized: .feedbackSubmitTitle))
+            .tint(theme.primaryColor == .default ? Color.primary : theme.primaryColor.resolve(for: colorScheme))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: .buttonCancel)) {
+                    Button {
                         dismiss()
                         onDismiss()
+                    } label: {
+                        SystemLabel(text: String(localized: .buttonCancel))
                     }
+                    .buttonStyle(.plain)
                 }
                 if !viewModel.hasInvalidApiKey {
                     ToolbarItem(placement: .confirmationAction) {
@@ -63,7 +67,7 @@ public struct SubmitFeedbackView: View {
                 }
             }
             .onAppear {
-                if SwiftlyFeedback.config.enableAutomaticViewTracking {
+                if SwiftlyFeedback.configuration.enableAutomaticViewTracking {
                     SwiftlyFeedback.view(.submitFeedback)
                 }
             }
@@ -96,27 +100,35 @@ public struct SubmitFeedbackView: View {
                     .onSubmit { focusedField = .description }
                     .accessibilityHint(String(localized: .accessibilityFormRequired))
 
-                Picker(String(localized: .feedbackFormCategory), selection: $viewModel.category) {
-                    ForEach(FeedbackCategory.allCases, id: \.self) { category in
-                        Label(category.localizedDisplayName, systemImage: category.iconName)
-                            .tag(category)
+                LabeledContent(String(localized: .feedbackFormCategory)) {
+                    Menu {
+                        ForEach(FeedbackCategory.allCases, id: \.self) { category in
+                            Button(category.localizedDisplayName) {
+                                viewModel.category = category
+                            }
+                        }
+                    } label: {
+                        SystemLabel(text: viewModel.category.localizedDisplayName)
                     }
                 }
             }
             .disabled(viewModel.isSubmitting)
 
             Section {
-                TextEditor(text: $viewModel.description)
-                    .focused($focusedField, equals: .description)
-                    .frame(minHeight: 120)
-                    .accessibilityLabel(String(localized: .feedbackFormDescription))
-                    .accessibilityHint(String(localized: .accessibilityFormDescriptionHint))
+                TextField(
+                    String(localized: .feedbackFormDescription),
+                    text: $viewModel.description,
+                    axis: .vertical
+                )
+                .focused($focusedField, equals: .description)
+                .lineLimit(3...8)
+                .accessibilityLabel(String(localized: .feedbackFormDescription))
+                .accessibilityHint(String(localized: .accessibilityFormDescriptionHint))
             } header: {
-                Text(String(localized: .feedbackFormDescription))
+                SystemLabel(text: String(localized: .feedbackFormDescription))
             } footer: {
                 if let unmetRequirement = viewModel.unmetRequirement {
-                    Text(unmetRequirement)
-                        .font(.caption)
+                    SystemLabel(text: unmetRequirement)
                 }
             }
             .disabled(viewModel.isSubmitting)
@@ -124,6 +136,7 @@ public struct SubmitFeedbackView: View {
             if config.showEmailField {
                 Section {
                     TextField(String(localized: .feedbackFormEmailPlaceholder), text: $viewModel.email)
+                        .font(.body)
                         .focused($focusedField, equals: .email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
@@ -133,22 +146,18 @@ public struct SubmitFeedbackView: View {
                         .onSubmit { submitIfValid() }
                         .accessibilityHint(String(localized: .accessibilityFormOptional))
 
+                    SystemLabel(text: String(localized: .feedbackFormEmailFooter))
+
                     if config.showMailingListOptIn && !viewModel.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Toggle(String(localized: .mailingListOptIn), isOn: $viewModel.subscribeToMailingList)
 
                         if viewModel.subscribeToMailingList {
                             Toggle(String(localized: .mailingListOperational), isOn: $viewModel.operationalEmails)
-                                .padding(.leading, 20)
                             Toggle(String(localized: .mailingListMarketing), isOn: $viewModel.marketingEmails)
-                                .padding(.leading, 20)
                         }
                     }
                 } header: {
-                    Text(String(localized: .feedbackFormEmail))
-                } footer: {
-                    Text(String(localized: .feedbackFormEmailFooter))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    SystemLabel(text: String(localized: .feedbackFormEmail))
                 }
                 .disabled(viewModel.isSubmitting)
             }
@@ -165,10 +174,11 @@ public struct SubmitFeedbackView: View {
 
     #if os(macOS)
     private var macOSForm: some View {
-        VStack(spacing: 0) {
+        ScrollView {
+            VStack(alignment: .leading) {
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 16) {
                 GridRow {
-                    Text("\(String(localized: .feedbackFormTitle)):")
+                    Text(String(localized: .feedbackFormTitle))
                         .gridColumnAlignment(.trailing)
                     TextField(String(localized: .feedbackFormTitlePlaceholder), text: $viewModel.title)
                         .focused($focusedField, equals: .title)
@@ -179,38 +189,35 @@ public struct SubmitFeedbackView: View {
                 }
 
                 GridRow {
-                    Text("\(String(localized: .feedbackFormCategory)):")
-                    Picker("", selection: $viewModel.category) {
+                    Text(String(localized: .feedbackFormCategory))
+                    Picker(String(localized: .feedbackFormCategory), selection: $viewModel.category) {
                         ForEach(FeedbackCategory.allCases, id: \.self) { category in
                             Text(category.localizedDisplayName).tag(category)
                         }
                     }
                     .labelsHidden()
+                    .accessibilityLabel(String(localized: .feedbackFormCategory))
                     .pickerStyle(.menu)
                     .fixedSize()
                 }
 
                 GridRow(alignment: .top) {
-                    Text("\(String(localized: .feedbackFormDescription)):")
-                    TextEditor(text: $viewModel.description)
-                        .focused($focusedField, equals: .description)
-                        .font(.body)
-                        .frame(minHeight: 120, maxHeight: 200)
-                        .scrollContentBackground(.hidden)
-                        .padding(8)
-                        .background(Color(nsColor: .textBackgroundColor))
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
-                        )
-                        .accessibilityLabel(String(localized: .feedbackFormDescription))
-                        .accessibilityHint(String(localized: .accessibilityFormDescriptionHint))
+                    Text(String(localized: .feedbackFormDescription))
+                    TextField(
+                        String(localized: .feedbackFormDescription),
+                        text: $viewModel.description,
+                        axis: .vertical
+                    )
+                    .focused($focusedField, equals: .description)
+                    .lineLimit(3...8)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel(String(localized: .feedbackFormDescription))
+                    .accessibilityHint(String(localized: .accessibilityFormDescriptionHint))
                 }
 
                 if config.showEmailField {
                     GridRow {
-                        Text("\(String(localized: .feedbackFormEmail)):")
+                        Text(String(localized: .feedbackFormEmail))
                         VStack(alignment: .leading, spacing: 4) {
                             TextField(String(localized: .feedbackFormEmailPlaceholder), text: $viewModel.email)
                                 .focused($focusedField, equals: .email)
@@ -220,8 +227,8 @@ public struct SubmitFeedbackView: View {
                                 .accessibilityLabel(String(localized: .feedbackFormEmail))
                                 .accessibilityHint(String(localized: .accessibilityFormOptional))
                             Text(String(localized: .feedbackFormEmailFooter))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.body)
+                                .foregroundStyle(.primary)
                         }
                     }
 
@@ -235,29 +242,26 @@ public struct SubmitFeedbackView: View {
                             GridRow {
                                 Text("")
                                 Toggle(String(localized: .mailingListOperational), isOn: $viewModel.operationalEmails)
-                                    .padding(.leading, 20)
                             }
                             GridRow {
                                 Text("")
                                 Toggle(String(localized: .mailingListMarketing), isOn: $viewModel.marketingEmails)
-                                    .padding(.leading, 20)
                             }
                         }
                     }
                 }
             }
-            .padding(20)
+            .padding()
             .disabled(viewModel.isSubmitting)
 
             if let unmetRequirement = viewModel.unmetRequirement {
                 Text(unmetRequirement)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.body)
+                    .foregroundStyle(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal)
             }
-
-            Spacer()
+            }
         }
     }
     #endif
@@ -265,23 +269,17 @@ public struct SubmitFeedbackView: View {
     // MARK: - Submit Button
 
     private var submitButton: some View {
-        Button {
-            submitIfValid()
-        } label: {
-            #if os(macOS)
-            Text(String(localized: .buttonSubmit))
-            #else
-            if viewModel.isSubmitting {
-                // S1: action progress (submit in flight), not a content load — the spinner is the mandated treatment.
-                ProgressView()
-                    .controlSize(.small)
+        Button(action: submitIfValid) {
+            // Filled with the label color. A prominent `.primary` tint is white on white in dark mode.
+            // A host-supplied theme color stays the color they set.
+            if theme.primaryColor == .default {
+                SystemLabel(text: String(localized: .buttonSubmit), textStyle: .headline, inverted: true)
             } else {
                 Text(String(localized: .buttonSubmit))
             }
-            #endif
         }
-        .tint(theme.primaryColor.resolve(for: colorScheme))
-        .disabled(!viewModel.isValid || viewModel.isSubmitting)
+        .buttonStyle(.plain)
+        .tint(theme.primaryColor == .default ? Color.primary : theme.primaryColor.resolve(for: colorScheme))
         .accessibilityHint(viewModel.isValid ? String(localized: .accessibilitySubmitHint) : (viewModel.unmetRequirement ?? String(localized: .accessibilitySubmitDisabledHint)))
         #if os(macOS)
         .keyboardShortcut(.return, modifiers: .command)
@@ -302,73 +300,3 @@ public struct SubmitFeedbackView: View {
     }
 }
 
-@MainActor
-@Observable
-final class SubmitFeedbackViewModel {
-    var title = ""
-    var description = ""
-    var category: FeedbackCategory = .featureRequest
-    var email = SwiftlyFeedback.config.userEmail ?? ""
-    var subscribeToMailingList = SwiftlyFeedback.config.mailingListDefaultOptIn
-    var operationalEmails = true
-    var marketingEmails = true
-    var isSubmitting = false
-    var isSubmitted = false
-    var showingError = false
-    var errorMessage: String?
-    var hasInvalidApiKey = false
-
-    var isValid: Bool {
-        !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    /// The reason the form cannot be submitted yet, title-first (same trimming
-    /// as `isValid`), or `nil` when the form is valid. Rendered visually under
-    /// the form and read by VoiceOver on the submit button's hint.
-    var unmetRequirement: String? {
-        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return String(localized: .feedbackFormValidationTitleRequired)
-        }
-        if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return String(localized: .feedbackFormValidationDescriptionRequired)
-        }
-        return nil
-    }
-
-    func buildEmailTypes() -> [String]? {
-        guard subscribeToMailingList else { return nil }
-        var types: [String] = []
-        if operationalEmails { types.append("operational") }
-        if marketingEmails { types.append("marketing") }
-        return types.isEmpty ? nil : types
-    }
-
-    func submit(using swiftlyFeedback: SwiftlyFeedback?) async {
-        guard let sf = swiftlyFeedback, isValid else { return }
-        guard !hasInvalidApiKey else { return }
-
-        isSubmitting = true
-        defer { isSubmitting = false }
-
-        do {
-            _ = try await sf.submitFeedback(
-                title: title.trimmingCharacters(in: .whitespacesAndNewlines),
-                description: description.trimmingCharacters(in: .whitespacesAndNewlines),
-                category: category,
-                email: email.isEmpty ? nil : email,
-                subscribeToMailingList: !email.isEmpty ? subscribeToMailingList : nil,
-                mailingListEmailTypes: !email.isEmpty ? buildEmailTypes() : nil
-            )
-            isSubmitted = true
-        } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
-            hasInvalidApiKey = true
-        } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? String(localized: .errorFeedbackLimitMessage)
-            showingError = true
-        } catch {
-            errorMessage = error.localizedDescription
-            showingError = true
-        }
-    }
-}

@@ -10,7 +10,7 @@ struct InlineErrorView: View {
     let onRetry: () -> Void
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     var body: some View {
         ContentUnavailableView {

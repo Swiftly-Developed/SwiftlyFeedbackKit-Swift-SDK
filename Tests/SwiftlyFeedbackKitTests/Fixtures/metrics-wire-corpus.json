@@ -1,0 +1,170 @@
+{
+  "breakdown_event_name_with_overflow" : {
+    "dimension" : "event_name",
+    "items" : [
+      {
+        "is_overflow" : false,
+        "key" : "checkout_completed",
+        "values" : {
+          "event_count" : 1284,
+          "unique_event_users" : 317
+        }
+      },
+      {
+        "is_overflow" : true,
+        "key" : "__other__",
+        "values" : {
+          "event_count" : 402
+        }
+      }
+    ],
+    "meta" : {
+      "date_from" : "2023-10-16T04:00:00Z",
+      "date_to" : "2023-11-14T05:00:00Z",
+      "event_scope" : "all",
+      "granularity" : "day",
+      "measures" : [
+        "event_count",
+        "unique_event_users"
+      ],
+      "retention_clamped" : false,
+      "retention_window_days" : 365,
+      "timezone" : "America\/New_York",
+      "truncated" : true
+    }
+  },
+  "events_page" : {
+    "items" : [
+      {
+        "created_at" : "2023-11-15T00:13:20Z",
+        "event_name" : "checkout_completed",
+        "id" : "13131313-1313-4131-8131-131313131313",
+        "properties" : {
+          "checkout_step" : "payment",
+          "utm_source" : "newsletter"
+        },
+        "user_id" : "fixture-end-user"
+      },
+      {
+        "event_name" : "feedback_detail",
+        "id" : "14141414-1414-4141-8141-141414141414",
+        "user_id" : "fixture-anonymous"
+      }
+    ],
+    "meta" : {
+      "page" : 2,
+      "per_page" : 50,
+      "total" : 137,
+      "total_pages" : 3
+    },
+    "metrics" : {
+      "date_from" : "2023-10-16T04:00:00Z",
+      "date_to" : "2023-11-14T05:00:00Z",
+      "event_scope" : "all",
+      "measures" : [
+
+      ],
+      "retention_clamped" : false,
+      "retention_window_days" : 30,
+      "timezone" : "America\/New_York",
+      "truncated" : false
+    }
+  },
+  "summary_free_scoped_and_clamped" : {
+    "meta" : {
+      "date_from" : "2023-10-16T04:00:00Z",
+      "date_to" : "2023-11-14T05:00:00Z",
+      "event_scope" : "predefined_only",
+      "measures" : [
+        "feedback_count",
+        "vote_count",
+        "comment_count",
+        "event_count",
+        "unique_event_users"
+      ],
+      "retention_clamped" : true,
+      "retention_window_days" : 30,
+      "timezone" : "America\/New_York",
+      "truncated" : false
+    },
+    "values" : {
+      "comment_count" : 6,
+      "event_count" : 311,
+      "feedback_count" : 10,
+      "unique_event_users" : 48,
+      "vote_count" : 24
+    }
+  },
+  "summary_team_all_scope" : {
+    "meta" : {
+      "date_from" : "2022-11-15T05:00:00Z",
+      "date_to" : "2023-11-14T05:00:00Z",
+      "event_scope" : "all",
+      "measures" : [
+        "feedback_count",
+        "vote_count",
+        "comment_count",
+        "event_count",
+        "unique_event_users",
+        "sdk_user_count",
+        "mrr_sum",
+        "mrr_average",
+        "users_with_mrr"
+      ],
+      "retention_clamped" : false,
+      "retention_window_days" : 365,
+      "timezone" : "America\/New_York",
+      "truncated" : false
+    },
+    "values" : {
+      "comment_count" : 907,
+      "event_count" : 58204,
+      "feedback_count" : 412,
+      "mrr_average" : 41.25,
+      "mrr_sum" : 18432.5,
+      "sdk_user_count" : 2045,
+      "unique_event_users" : 1733,
+      "users_with_mrr" : 447,
+      "vote_count" : 3180
+    }
+  },
+  "timeseries_daily" : {
+    "meta" : {
+      "date_from" : "2023-11-12T05:00:00Z",
+      "date_to" : "2023-11-14T05:00:00Z",
+      "event_scope" : "all",
+      "granularity" : "day",
+      "measures" : [
+        "feedback_count",
+        "event_count"
+      ],
+      "retention_clamped" : false,
+      "retention_window_days" : 365,
+      "timezone" : "America\/New_York",
+      "truncated" : false
+    },
+    "series" : [
+      {
+        "bucket" : "2023-11-12",
+        "values" : {
+          "event_count" : 91,
+          "feedback_count" : 7
+        }
+      },
+      {
+        "bucket" : "2023-11-13",
+        "values" : {
+          "event_count" : 0,
+          "feedback_count" : 0
+        }
+      },
+      {
+        "bucket" : "2023-11-14",
+        "values" : {
+          "event_count" : 44,
+          "feedback_count" : 3
+        }
+      }
+    ]
+  }
+}

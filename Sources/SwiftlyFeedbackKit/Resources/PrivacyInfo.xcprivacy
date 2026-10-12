@@ -2,7 +2,26 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- The SDK does not track users across apps/websites owned by other companies -->
+	<!--
+		Privacy manifest for the SwiftlyFeedbackKit Swift package.
+
+		This declares what the SDK transmits off device. The host app's own
+		manifest is separate; App Store Connect aggregates both. FeedbackKit is
+		a processor: data is collected on the app developer's behalf.
+
+		Audited against the request bodies in SwiftlyFeedback.swift and the
+		headers in APIClient.makeRequest (Content-Type, X-API-Key, X-User-Id).
+
+		Not collected by this SDK, and therefore not declared:
+		- Device ID. No IDFA, IDFV, or APNs token is read or sent.
+		- Device model, OS version, app version, or locale. None of those
+		  fields are set on a request. URLSession may attach its own
+		  User-Agent; the SDK does not read it, store it, or add X-App-Version.
+		- Name, phone, address, contacts, photos, location, health.
+		- Crash, performance, or diagnostic data. Logging is OSLog on device.
+		- Metrics reads (summary, timeseries, breakdown, events) only query
+		  data the server already holds. They do not add a collected type.
+	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
 
@@ -10,14 +29,36 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 
-	<!-- No Required Reason APIs are used by this SDK -->
+	<!--
+		Required Reason APIs actually used.
+		UserDefaults.standard holds the feedback-list sort and the translation
+		target (and a DEBUG-only TestFlight simulation flag). No app-group
+		suite, so CA92.1. File timestamps, system boot time, disk space, and
+		active keyboards are not used.
+	-->
 	<key>NSPrivacyAccessedAPITypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
 
-	<!-- Data types collected by this SDK -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
-		<!-- User ID -->
+		<!--
+			User ID: X-User-Id on every request, plus userId in feedback, vote,
+			comment, user-registration, and event bodies. Keychain UUID, the
+			host's custom ID, or (when the host app has CloudKit configured)
+			the iCloud user record name. Used to attach feedback, votes, and
+			comments to a person (app functionality) and to attach events and
+			MRR to that same person (analytics). Not used to track across
+			other companies' apps.
+		-->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeUserID</string>
@@ -28,9 +69,15 @@
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
-		<!-- Email Address (optional, user-provided) -->
+		<!--
+			Email: optional userEmail on feedback submit, optional email on
+			vote. Used for follow-up and status-change mail (app
+			functionality) and, when the person opts in, the project mailing
+			list, which can include marketing (developer advertising).
+		-->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
@@ -41,9 +88,10 @@
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeDeveloperAdvertising</string>
 			</array>
 		</dict>
-		<!-- Feedback content (title, description, comments) -->
+		<!-- Feedback title, description, and comment text. -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
@@ -56,10 +104,51 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
-		<!-- Product interaction (view events, votes) -->
+		<!--
+			Product interaction: votes, and the predefined view events
+			(feedback_list, feedback_detail, submit_feedback). Votes are the
+			product; view events are analytics. Both are linked to the user id.
+		-->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<!--
+			Other usage data: SwiftlyFeedback.view(_:properties:) accepts any
+			event name and any string properties. Those are not limited to the
+			three predefined screens, so they are usage data beyond product
+			interaction. Linked to the user id. Analytics only.
+		-->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<!--
+			Purchase history: SwiftlyFeedback.updateUser(payment:) posts the
+			computed monthly recurring revenue with the user id to
+			users/register. The amount and cadence are the person's purchase,
+			reduced to one MRR number. Analytics for the app developer.
+		-->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePurchaseHistory</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>

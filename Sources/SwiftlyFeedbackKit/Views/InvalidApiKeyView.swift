@@ -18,6 +18,7 @@ struct InvalidApiKeyView: View {
                 Button(String(localized: .errorRetryButton)) {
                     onRetry()
                 }
+                .buttonStyle(.borderedProminent)
             }
         }
     }

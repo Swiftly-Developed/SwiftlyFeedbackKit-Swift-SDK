@@ -1646,6 +1646,150 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Показать перевод" } }
       }
     },
+    "translation.targetDeviceLanguage": {
+      "comment": "First row of the translation-target picker: follow whatever language the device is set to, instead of a fixed choice. This is NOT a language name — do not translate it as one, and do not substitute the name of any particular language.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device Language"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Idioma del dispositivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Langue de l'appareil"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gerätesprache"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "デバイスの言語"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "设备语言"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Idioma do dispositivo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "기기 언어"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lingua del dispositivo"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لغة الجهاز"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Язык устройства"
+          }
+        }
+      }
+    },
+    "translation.targetPickerLabel": {
+      "comment": "Label of the translation-target picker, shown as a row inside the feedback list's sort-and-filter menu. Names the language feedback is translated INTO. Its two sibling rows in the same menu are toolbar.sort ('Sort') and toolbar.status ('Status') — keep it about as short.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate to"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traducir a"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduire en"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Übersetzen in"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "翻訳先"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "翻译为"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduzir para"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "번역 언어"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduci in"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "الترجمة إلى"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Перевести на"
+          }
+        }
+      }
+    },
     "translation.translatedFrom": {
       "comment": "Label above the translation toggle. %@ = localized language name (e.g. German).",
       "extractionState": "manual",
@@ -1666,6 +1810,78 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Tradotto da %@" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "مترجم من %@" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Переведено с %@" } }
+      }
+    },
+    "translation.translatedFromTo": {
+      "comment": "Visible translation affordance when the reader has chosen a target language other than their device language; the one-argument sibling translation.translatedFrom is kept for the device-language case. %1$@ is the localized SOURCE language name, %2$@ the localized TARGET language name — both are already-translated language names, never codes. KEEP THE ARROW: do not rewrite this as a sentence or add a preposition. That is the whole point of this string — \"Translated from %@\" wants an article or a case ending on the language name in French, German, Russian and Portuguese, which a bare placeholder cannot carry, and an arrow wants none. The spoken form for VoiceOver is a SEPARATE key (accessibility.translation.translatedFromTo) and that one IS a sentence, so inflect there instead. RTL (ar): U+2192 RIGHTWARDS ARROW is bidi-neutral and does NOT mirror automatically — author the Arabic value with U+2190 LEFTWARDS ARROW so it still reads source-then-target in an RTL run. Keep the positional %1$@ / %2$@ specifiers.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ← %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        }
       }
     },
     "filter.all": {
@@ -3890,6 +4106,28 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось декодировать ответ: %@" } }
       }
     },
+    "error.forbidden.message": {
+      "comment": "Alert message shown when the server refuses the request because the caller is not permitted to perform it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You don't have permission to do that"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "No tienes permiso para hacer eso" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Vous n'avez pas la permission de faire cela" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Du hast dazu keine Berechtigung" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "この操作を行う権限がありません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "你没有权限执行此操作" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Você não tem permissão para fazer isso" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 작업을 수행할 권한이 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Non hai il permesso di farlo" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "ليس لديك إذن للقيام بذلك" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "У вас нет прав для выполнения этого действия" } }
+      }
+    },
     "error.invalidResponse.message": {
       "comment": "Alert message shown when the server returns a malformed or unexpected response.",
       "extractionState": "manual",
@@ -3932,6 +4170,28 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Impossibile caricare il feedback" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "تعذّر تحميل الملاحظات" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось загрузить отзывы" } }
+      }
+    },
+    "error.measureNotAvailable.message": {
+      "comment": "Alert message shown when a requested metric cannot be read with an API key and needs the authenticated project endpoint instead.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That metric isn't available with an API key"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Esa métrica no está disponible con una clave de API" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Cette métrique n'est pas disponible avec une clé API" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Diese Kennzahl ist mit einem API-Schlüssel nicht verfügbar" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "この指標はAPIキーでは利用できません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "该指标无法通过 API 密钥获取" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Essa métrica não está disponível com uma chave de API" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 지표는 API 키로 사용할 수 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questa metrica non è disponibile con una chiave API" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "هذا المقياس غير متاح باستخدام مفتاح API" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Эта метрика недоступна при использовании API-ключа" } }
       }
     },
     "error.networkError.message": {
@@ -3978,6 +4238,28 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Ресурс не найден" } }
       }
     },
+    "error.rateLimited.message": {
+      "comment": "Alert message shown when the server has received too many requests in a short period and is asking the caller to slow down.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests. Please try again shortly"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Demasiadas solicitudes. Inténtalo de nuevo en breve" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Trop de requêtes. Veuillez réessayer sous peu" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Zu viele Anfragen. Bitte versuche es in Kürze erneut" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "リクエストが多すぎます。しばらくしてからもう一度お試しください" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "请求过多，请稍后重试" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Muitas solicitações. Tente novamente em instantes" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Troppe richieste. Riprova tra poco" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "طلبات كثيرة جدًا. يرجى المحاولة مرة أخرى بعد قليل" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Слишком много запросов. Повторите попытку через некоторое время" } }
+      }
+    },
     "error.retryButton": {
       "comment": "Retry button on inline error states (failed load, invalid API key).",
       "extractionState": "manual",
@@ -4020,6 +4302,28 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Errore del server (codice di stato: %lld)" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "خطأ في الخادم (رمز الحالة: %lld)" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Ошибка сервера (код состояния: %lld)" } }
+      }
+    },
+    "error.tierUpgradeRequired.message": {
+      "comment": "Alert message shown when the requested data is only available on a paid plan.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That data is only available on a paid plan"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Esos datos solo están disponibles en un plan de pago" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ces données ne sont disponibles que dans un forfait payant" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Diese Daten sind nur in einem kostenpflichtigen Plan verfügbar" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "そのデータは有料プランでのみ利用できます" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "该数据仅在付费计划中可用" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Esses dados só estão disponíveis em um plano pago" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "해당 데이터는 유료 요금제에서만 이용할 수 있습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questi dati sono disponibili solo con un piano a pagamento" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "هذه البيانات متاحة فقط في خطة مدفوعة" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Эти данные доступны только на платном тарифе" } }
       }
     },
     "error.unauthorized.message": {
@@ -5371,6 +5675,78 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Passa dal testo tradotto a quello originale." } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "يبدّل بين النص المترجم والنص الأصلي." } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Переключает между переведённым текстом и оригиналом." } }
+      }
+    },
+    "accessibility.translation.translatedFromTo": {
+      "comment": "VoiceOver-only spoken form of the visible arrow affordance translation.translatedFromTo. %1$@ is the source language name, %2$@ the target. This one IS a sentence and SHOULD be inflected naturally — articles and case endings belong here. Sibling of accessibility.translation.toggleHint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translated from %1$@ to %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traducido de %1$@ a %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduit de %1$@ vers %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Übersetzt von %1$@ nach %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@から%2$@に翻訳されました"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已从%1$@翻译为%2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduzido de %1$@ para %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@에서 %2$@(으)로 번역됨"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tradotto da %1$@ a %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تُرجم من %1$@ إلى %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Переведено с %1$@ на %2$@"
+          }
+        }
       }
     }
   },

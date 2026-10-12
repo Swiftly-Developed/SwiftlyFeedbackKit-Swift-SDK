@@ -10,12 +10,12 @@ struct TranslationBatch: Sendable {
 
     /// Groups `units` by detected source language into deterministic batches.
     ///
-    /// Units whose source already equals `target` are dropped (translation is not
-    /// applicable, the original text stands). The remaining units are grouped by source
+    /// Units whose source names the same language as `target` are dropped (translation is
+    /// not applicable, the original text stands). The remaining units are grouped by source
     /// and the batches ordered by `source.minimalIdentifier` so the queue is deterministic
     /// regardless of dictionary iteration order.
     static func batches(from units: [TranslatableUnit], target: Locale.Language) -> [TranslationBatch] {
-        let applicable = units.filter { $0.sourceLanguage != target }
+        let applicable = units.filter { !$0.sourceLanguage.isSameLanguage(as: target) }
         let grouped = Dictionary(grouping: applicable, by: \.sourceLanguage)
         return grouped
             .sorted { $0.key.minimalIdentifier < $1.key.minimalIdentifier }

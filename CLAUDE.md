@@ -15,13 +15,14 @@ swift test --filter TestClassName/testMethodName  # Single test
 - iOS 26+
 - macOS 26+
 - visionOS 26+
+- No watchOS target and no tvOS target
 
 ## Directory Structure
 
 ```
+Plugins/GenerateStringCatalogSymbols/   # Build-tool plugin. No public Strings type.
 Sources/SwiftlyFeedbackKit/
 ├── SwiftlyFeedback.swift        # Main entry point & configuration
-├── Strings.swift                # Localized strings (String Catalog access)
 ├── KeychainHelper.swift         # Secure Keychain storage
 ├── UserIdentifier.swift         # Persistent user identifiers
 ├── Configuration/
@@ -99,7 +100,7 @@ SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 ```swift
 // May be unreliable in some cases (uses AppTransaction with timeout)
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
-    debug: "sf_local_...",        // Optional: dev server
+    debug: "sf_dev_...",          // Optional: development API. Nil uses the testflight key.
     testflight: "sf_staging_...",  // Required: staging server
     production: "sf_prod_..."      // Required: production server
 ))
@@ -111,36 +112,36 @@ SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
 
 ```swift
 // Disable submission (e.g., for free users)
-SwiftlyFeedback.config.allowFeedbackSubmission = false
-SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
+SwiftlyFeedback.configuration.allowFeedbackSubmission = false
+SwiftlyFeedback.configuration.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
 
 // Disable logging
-SwiftlyFeedback.config.loggingEnabled = false
+SwiftlyFeedback.configuration.loggingEnabled = false
 
 // Disable reader-side on-device translation of feedback content (default on;
 // iOS/macOS only — the affordance is simply absent on visionOS and for
 // unsupported language pairs)
-SwiftlyFeedback.config.translationEnabled = false
+SwiftlyFeedback.configuration.translationEnabled = false
 
 // Event tracking
 SwiftlyFeedback.view("feature_details", properties: ["id": "123"])
-SwiftlyFeedback.config.enableAutomaticViewTracking = false
+SwiftlyFeedback.configuration.enableAutomaticViewTracking = false
 ```
 
 ### Vote Notification Options
 
 ```swift
 // Pre-set email (skips dialog when voting)
-SwiftlyFeedback.config.userEmail = "user@example.com"
+SwiftlyFeedback.configuration.userEmail = "user@example.com"
 
 // Show email dialog when voting (only if userEmail is nil)
-SwiftlyFeedback.config.showVoteEmailField = true
+SwiftlyFeedback.configuration.showVoteEmailField = true
 
 // Default state of "notify me" toggle
-SwiftlyFeedback.config.voteNotificationDefaultOptIn = false
+SwiftlyFeedback.configuration.voteNotificationDefaultOptIn = false
 
 // Callback when email is set via vote dialog
-SwiftlyFeedback.config.onUserEmailChanged = { email in
+SwiftlyFeedback.configuration.onUserEmailChanged = { email in
     UserDefaults.standard.set(email ?? "", forKey: "userEmail")
 }
 ```
@@ -159,9 +160,9 @@ FeedbackDetailView(feedback: someFeedback)
 ### Direct API Access
 
 ```swift
-let feedback = try await SwiftlyFeedback.shared?.getFeedback()
-try await SwiftlyFeedback.shared?.submitFeedback(title: "...", description: "...")
-try await SwiftlyFeedback.shared?.vote(for: feedbackId)
+let feedback = try await SwiftlyFeedback.current?.getFeedback()
+try await SwiftlyFeedback.current?.submitFeedback(title: "...", description: "...")
+try await SwiftlyFeedback.current?.vote(for: feedbackId)
 ```
 
 ### Event Tracking
@@ -217,6 +218,9 @@ Sort picker in toolbar menu. Sorting applied client-side with smooth animation.
 - `invalidApiKey` - Distinct from generic unauthorized
 - `notFound`, `conflict`, `serverError(statusCode:)`
 - `networkError(underlying:)`, `decodingError(underlying:)`
+- `feedbackLimitReached(message:)` — a 402 that is not the metrics custom-events code. The Free 10-item cap does not return 402.
+- `forbidden(message:)`, `rateLimited(message:)`
+- `tierUpgradeRequired(code:message:)`, `measureNotAvailable(measure:message:)`
 
 **Invalid API Key Handling:**
 - Views detect `.invalidApiKey` and show `InvalidApiKeyView`
@@ -253,16 +257,7 @@ Follows [Semantic Versioning](https://semver.org/):
 - **MINOR**: New features, backward-compatible additions
 - **PATCH**: Bug fixes, no API changes
 
-> ⚠️ **The next release is a MAJOR bump, and it is owed two CHANGELOG entries.** `LOCALIZATION01`
-> phase 03 **deleted the `public` `Strings` enum** from this package. It was public API in a published
-> library, so its removal is a breaking change under the rule above regardless of there being no
-> in-repo consumer. The same release must also mention the new **`GenerateStringCatalogSymbols`
-> SwiftPM build-tool plugin** (`Plugins/GenerateStringCatalogSymbols`, wired in `Package.swift`),
-> because it changes what a consumer's build *does*: Xcode asks for a one-time confirmation before
-> running a package plugin, and a non-interactive CI consumer needs `-skipPackagePluginValidation`.
-> A *local* package in the same workspace is trusted automatically, which is why this workspace
-> builds green without the flag and an external consumer may not. *(Flagged by phase 03; the bump
-> itself is still owed.)*
+2.0.0 is that major bump. `CHANGELOG.md` records the removed public `Strings` enum and the `GenerateStringCatalogSymbols` plugin. Xcode asks a consumer to trust the plugin once. A non-interactive `xcodebuild` passes `-skipPackagePluginValidation`. A local package in this workspace is trusted automatically. The tag is not published. The public repository's newest tag is 1.1.1.
 
 ### Release Checklist
 
@@ -274,10 +269,12 @@ Follows [Semantic Versioning](https://semver.org/):
 ### SPM Constraints
 
 ```swift
-.package(url: "...", from: "1.0.0")           // Recommended: 1.x.x
-.package(url: "...", .upToNextMinor(from: "1.0.0"))  // 1.0.x only
-.package(url: "...", exact: "1.0.0")          // Exact version
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "2.0.0")
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", .upToNextMinor(from: "2.0.0"))
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", exact: "2.0.0")
 ```
+
+`from: "2.0.0"` resolves after the tag exists. Today the public repository's newest tag is 1.1.1.
 
 ## Adding New Features
 

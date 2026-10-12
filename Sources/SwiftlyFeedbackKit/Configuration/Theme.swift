@@ -2,14 +2,15 @@ import SwiftUI
 
 /// Theme configuration for SwiftlyFeedback SDK.
 ///
-/// Access via `SwiftlyFeedback.theme`.
+/// Access via `SwiftlyFeedback.appearance` on the main actor.
 ///
 /// Example:
 /// ```swift
-/// SwiftlyFeedback.theme.primaryColor = .color(.blue)
-/// SwiftlyFeedback.theme.primaryColor = .set(light: .gray, dark: .white)
+/// SwiftlyFeedback.appearance.primaryColor = .color(.blue)
+/// SwiftlyFeedback.appearance.primaryColor = .set(light: .gray, dark: .white)
 /// ```
-public final class SwiftlyFeedbackTheme: @unchecked Sendable {
+@MainActor
+public final class SwiftlyFeedbackTheme {
 
     // MARK: - Colors
 
@@ -54,7 +55,8 @@ public enum ThemeColor: Sendable, Equatable, Hashable {
 
 // MARK: - Status Colors
 
-public final class StatusColors: @unchecked Sendable {
+@MainActor
+public final class StatusColors {
     public var pending: ThemeColor = .color(.gray)
     public var approved: ThemeColor = .color(.blue)
     public var inProgress: ThemeColor = .color(.orange)
@@ -78,7 +80,8 @@ public final class StatusColors: @unchecked Sendable {
 
 // MARK: - Category Colors
 
-public final class CategoryColors: @unchecked Sendable {
+@MainActor
+public final class CategoryColors {
     public var featureRequest: ThemeColor = .color(.purple)
     public var bugReport: ThemeColor = .color(.red)
     public var improvement: ThemeColor = .color(.teal)

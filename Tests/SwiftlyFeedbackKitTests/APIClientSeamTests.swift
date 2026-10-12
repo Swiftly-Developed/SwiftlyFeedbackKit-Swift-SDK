@@ -39,18 +39,12 @@ struct APIClientSeamTests {
     /// a lowercase `d`, so the round trip is exact — this comment exists so the next author
     /// checks rather than assumes.
     private static func makeSDKEncoder() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        return encoder
+        WireCoding.makeEncoder()
     }
 
-    /// Mirrors `APIClient.init`'s decoder configuration verbatim.
+    /// The decoder `APIClient` installs.
     private static func makeSDKDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return decoder
+        WireCoding.makeDecoder()
     }
 
     /// A whole-second instant: `.iso8601` writes no fractional seconds, so only an integral
@@ -240,7 +234,7 @@ struct APIClientSeamTests {
 
     // MARK: - `-08` · A scripted transport error becomes the SDK's mapped error
 
-    @Test("A scripted transport failure propagates out of the real client unwrapped")
+    @Test("A scripted transport failure surfaces as SwiftlyFeedbackError.networkError")
     func transportErrorPropagatesFromRealClient() async throws {
         let stub = StubURLProtocol.Session()
         let client = try Self.makeClient(stub: stub)
@@ -250,11 +244,12 @@ struct APIClientSeamTests {
         do {
             let _: [Feedback] = try await client.get(path: "feedbacks")
             Issue.record("Expected the scripted transport failure to throw")
-        } catch let error as URLError {
-            // `makeRequest`'s catch-all re-throws the underlying error verbatim — it does
-            // NOT wrap it in `SwiftlyFeedbackError.networkError`. Asserting the SDK's
-            // actual mapping, not the one the error enum's shape suggests.
-            #expect(error.code == .notConnectedToInternet)
+        } catch let error as SwiftlyFeedbackError {
+            guard case .networkError(let underlying) = error else {
+                Issue.record("Expected .networkError, got \(error)")
+                return
+            }
+            #expect((underlying as? URLError)?.code == .notConnectedToInternet)
         } catch {
             Issue.record("Unexpected error type: \(error)")
         }

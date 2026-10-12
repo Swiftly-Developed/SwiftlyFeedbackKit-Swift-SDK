@@ -71,12 +71,10 @@ import Testing
     /// the map never declared.
     @Test("-07 · The SDK's StatusBadge renders no Image, because there is no glyph to render")
     func theSDKStatusBadgeRendersNoGlyph() throws {
-        let source = try WorkspaceSourceTree.sdkSource(
-            "Sources/SwiftlyFeedbackKit/Views/FeedbackRowView.swift"
-        )
-        let badge = try #require(
-            WorkspaceSourceTree.slice(source, from: "struct StatusBadge", to: "struct CategoryBadge"),
-            "Could not isolate StatusBadge in FeedbackRowView.swift — the anchors moved."
+        // StatusBadge moved out of FeedbackRowView into its own file. The
+        // glyph ban is unchanged: the badge is still text and tint only.
+        let badge = try WorkspaceSourceTree.sdkSource(
+            "Sources/SwiftlyFeedbackKit/Views/StatusBadge.swift"
         )
 
         #expect(

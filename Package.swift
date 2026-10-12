@@ -43,5 +43,5 @@ let package = Package(
             dependencies: ["SwiftlyFeedbackKit"]
         ),
     ],
-    swiftLanguageModes: [.v5]
+    swiftLanguageModes: [.v6]
 )

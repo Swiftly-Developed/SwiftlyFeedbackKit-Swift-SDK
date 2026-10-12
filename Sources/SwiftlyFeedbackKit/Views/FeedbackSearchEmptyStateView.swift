@@ -6,22 +6,32 @@ import SwiftUI
 ///
 /// Copy deliberately claims only "no match", never completeness — free-tier
 /// items hidden over the limit may exist without appearing in any read.
+/// A text query uses the system search empty state, which names the query.
+/// Token-only filters keep the catalog copy, because there is no query string.
 struct FeedbackSearchEmptyStateView: View {
+    let query: String
     let onClearSearch: () -> Void
 
     var body: some View {
-        ContentUnavailableView {
-            Label(String(localized: .searchEmptyTitle), systemImage: "magnifyingglass")
-        } description: {
-            Text(String(localized: .searchEmptyDescription))
-        } actions: {
-            Button(String(localized: .searchClearButton)) {
-                onClearSearch()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            ContentUnavailableView {
+                Label(String(localized: .searchEmptyTitle), systemImage: "magnifyingglass")
+            } description: {
+                Text(String(localized: .searchEmptyDescription))
+            } actions: {
+                Button(String(localized: .searchClearButton), action: onClearSearch)
             }
+        } else {
+            ContentUnavailableView.search(text: trimmed)
+                .safeAreaInset(edge: .bottom) {
+                    Button(String(localized: .searchClearButton), action: onClearSearch)
+                        .buttonStyle(.bordered)
+                }
         }
     }
 }
 
 #Preview {
-    FeedbackSearchEmptyStateView {}
+    FeedbackSearchEmptyStateView(query: "dark mode") {}
 }
