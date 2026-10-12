@@ -157,6 +157,23 @@ public final class SwiftlyFeedbackConfiguration: @unchecked Sendable {
     /// ```
     public var loggingEnabled: Bool = true
 
+    // MARK: - Translation
+
+    /// Enable on-device translation of feedback content. Default: `true`
+    ///
+    /// When enabled, SDK views may offer to translate feedback titles, descriptions,
+    /// rejection reasons, and comments into the reader's language using Apple's
+    /// on-device Translation framework. Preparing a language pair for the first time
+    /// can present the system's model-download sheet over your app's UI; set this to
+    /// `false` to opt out of translation entirely and guarantee that sheet never appears.
+    ///
+    /// Example:
+    /// ```swift
+    /// // Disable reader-side translation (and the download prompt)
+    /// SwiftlyFeedback.config.translationEnabled = false
+    /// ```
+    public var translationEnabled: Bool = true
+
     // MARK: - Buttons Configuration
 
     /// Button configuration options
@@ -171,24 +188,21 @@ public final class ButtonsConfiguration: @unchecked Sendable {
     /// Add feedback button configuration
     public var addButton = AddButtonConfiguration()
 
-    /// Segmented control configuration
-    public var segmentedControl = SegmentedControlConfiguration()
+    /// Status filter (the status Picker in the list's filter menu) configuration
+    public var statusFilter = StatusFilterConfiguration()
 
     internal init() {}
 }
 
 public final class AddButtonConfiguration: @unchecked Sendable {
-    /// Bottom padding for the add button. Default: `16`
-    public var bottomPadding: CGFloat = 16
-
     /// Whether to display the add button. Default: `true`
     public var display: Bool = true
 
     internal init() {}
 }
 
-public final class SegmentedControlConfiguration: @unchecked Sendable {
-    /// Whether to display the segmented control. Default: `true`
+public final class StatusFilterConfiguration: @unchecked Sendable {
+    /// Whether to display the status filter (the status Picker in the list's filter menu). Default: `true`
     public var display: Bool = true
 
     internal init() {}

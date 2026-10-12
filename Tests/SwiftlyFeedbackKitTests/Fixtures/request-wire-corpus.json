@@ -1,0 +1,38 @@
+{
+  "create_comment" : {
+    "content" : "Please add dark mode.",
+    "is_admin" : false,
+    "user_id" : "fixture-end-user"
+  },
+  "create_feedback" : {
+    "category" : "feature_request",
+    "description" : "The list is hard to read at night.",
+    "mailing_list_email_types" : [
+      "status_change"
+    ],
+    "subscribe_to_mailing_list" : true,
+    "title" : "Add a dark theme",
+    "user_email" : "fixture-user@example.invalid",
+    "user_id" : "fixture-end-user"
+  },
+  "create_vote" : {
+    "email" : "fixture-user@example.invalid",
+    "mailing_list_email_types" : [
+      "status_change"
+    ],
+    "notify_status_change" : true,
+    "subscribe_to_mailing_list" : true,
+    "user_id" : "fixture-end-user"
+  },
+  "register_sdk_user" : {
+    "mrr" : 42.5,
+    "user_id" : "fixture-end-user"
+  },
+  "track_view_event" : {
+    "event_name" : "feedback_list",
+    "properties" : {
+      "source" : "fixture-tab"
+    },
+    "user_id" : "fixture-end-user"
+  }
+}

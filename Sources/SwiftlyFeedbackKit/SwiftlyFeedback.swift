@@ -26,7 +26,7 @@ import Foundation
 ///
 /// ```swift
 /// SwiftlyFeedback.theme.primaryColor = .color(.blue)
-/// SwiftlyFeedback.theme.statusColors.completed = .green
+/// SwiftlyFeedback.theme.statusColors.completed = .color(.green)
 /// ```
 ///
 /// ## User Data

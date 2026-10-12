@@ -54,6 +54,7 @@ public struct SubmitFeedbackView: View {
             }
             .overlay {
                 if viewModel.isSubmitting {
+                    // S1: action progress (submit in flight), not a content load — the spinner is the mandated treatment.
                     ProgressView()
                         .padding()
                         .background(.regularMaterial)
@@ -102,14 +103,23 @@ public struct SubmitFeedbackView: View {
                     }
                 }
             }
+            .disabled(viewModel.isSubmitting)
 
-            Section(Strings.formDescription) {
+            Section {
                 TextEditor(text: $viewModel.description)
                     .focused($focusedField, equals: .description)
                     .frame(minHeight: 120)
                     .accessibilityLabel(Strings.formDescription)
                     .accessibilityHint(Strings.accessibilityFormDescriptionHint)
+            } header: {
+                Text(Strings.formDescription)
+            } footer: {
+                if let unmetRequirement = viewModel.unmetRequirement {
+                    Text(unmetRequirement)
+                        .font(.caption)
+                }
             }
+            .disabled(viewModel.isSubmitting)
 
             if config.showEmailField {
                 Section {
@@ -140,9 +150,14 @@ public struct SubmitFeedbackView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .disabled(viewModel.isSubmitting)
             }
         }
+        // `scrollDismissesKeyboard` is iOS-family-only and unavailable on
+        // visionOS, which also compiles this `#if !os(macOS)` block.
+        #if os(iOS)
         .scrollDismissesKeyboard(.interactively)
+        #endif
     }
     #endif
 
@@ -232,6 +247,15 @@ public struct SubmitFeedbackView: View {
                 }
             }
             .padding(20)
+            .disabled(viewModel.isSubmitting)
+
+            if let unmetRequirement = viewModel.unmetRequirement {
+                Text(unmetRequirement)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+            }
 
             Spacer()
         }
@@ -248,6 +272,7 @@ public struct SubmitFeedbackView: View {
             Text(Strings.submitButton)
             #else
             if viewModel.isSubmitting {
+                // S1: action progress (submit in flight), not a content load — the spinner is the mandated treatment.
                 ProgressView()
                     .controlSize(.small)
             } else {
@@ -257,7 +282,7 @@ public struct SubmitFeedbackView: View {
         }
         .tint(theme.primaryColor.resolve(for: colorScheme))
         .disabled(!viewModel.isValid || viewModel.isSubmitting)
-        .accessibilityHint(viewModel.isValid ? Strings.accessibilitySubmitHint : Strings.accessibilitySubmitDisabledHint)
+        .accessibilityHint(viewModel.isValid ? Strings.accessibilitySubmitHint : (viewModel.unmetRequirement ?? Strings.accessibilitySubmitDisabledHint))
         #if os(macOS)
         .keyboardShortcut(.return, modifiers: .command)
         #endif
@@ -296,6 +321,19 @@ final class SubmitFeedbackViewModel {
     var isValid: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// The reason the form cannot be submitted yet, title-first (same trimming
+    /// as `isValid`), or `nil` when the form is valid. Rendered visually under
+    /// the form and read by VoiceOver on the submit button's hint.
+    var unmetRequirement: String? {
+        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return Strings.formValidationTitleRequired
+        }
+        if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return Strings.formValidationDescriptionRequired
+        }
+        return nil
     }
 
     func buildEmailTypes() -> [String]? {

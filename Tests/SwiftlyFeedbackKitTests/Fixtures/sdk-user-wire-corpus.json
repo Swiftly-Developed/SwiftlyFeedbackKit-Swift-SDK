@@ -1,0 +1,13 @@
+[
+  {
+    "first_seen_at" : "2023-11-14T22:13:20Z",
+    "id" : "99999999-9999-4999-8999-999999999999",
+    "last_seen_at" : "2023-11-14T23:13:20Z",
+    "mrr" : 42.5,
+    "user_id" : "fixture-end-user"
+  },
+  {
+    "id" : "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+    "user_id" : "fixture-anonymous"
+  }
+]

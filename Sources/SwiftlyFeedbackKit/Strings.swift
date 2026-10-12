@@ -31,16 +31,12 @@ public enum Strings {
 
     // MARK: - Feedback Detail
 
-    public static var feedbackDetailTitle: String {
-        String(localized: "feedback.detail.title", bundle: #bundle)
-    }
-
-    public static var commentsTitle: String {
-        String(localized: "feedback.detail.comments", bundle: #bundle)
-    }
-
     public static var commentsEmpty: String {
         String(localized: "feedback.detail.comments.empty", bundle: #bundle)
+    }
+
+    public static var commentsEmptyDescription: String {
+        String(localized: "feedback.detail.comments.empty.description", bundle: #bundle)
     }
 
     public static var addCommentPlaceholder: String {
@@ -65,10 +61,6 @@ public enum Strings {
         String(localized: "feedback.form.description", bundle: #bundle)
     }
 
-    public static var formDescriptionPlaceholder: String {
-        String(localized: "feedback.form.description.placeholder", bundle: #bundle)
-    }
-
     public static var formCategory: String {
         String(localized: "feedback.form.category", bundle: #bundle)
     }
@@ -85,14 +77,18 @@ public enum Strings {
         String(localized: "feedback.form.email.footer", bundle: #bundle)
     }
 
+    public static var formValidationTitleRequired: String {
+        String(localized: "feedback.form.validation.titleRequired", bundle: #bundle)
+    }
+
+    public static var formValidationDescriptionRequired: String {
+        String(localized: "feedback.form.validation.descriptionRequired", bundle: #bundle)
+    }
+
     // MARK: - Buttons
 
     public static var cancelButton: String {
         String(localized: "button.cancel", bundle: #bundle)
-    }
-
-    public static var sendButton: String {
-        String(localized: "button.send", bundle: #bundle)
     }
 
     public static var voteButton: String {
@@ -101,6 +97,10 @@ public enum Strings {
 
     public static var votedButton: String {
         String(localized: "button.voted", bundle: #bundle)
+    }
+
+    static var sendButton: String {
+        String(localized: "button.send", bundle: #bundle)
     }
 
     // MARK: - Vote Dialog
@@ -143,10 +143,6 @@ public enum Strings {
         String(localized: "mailingList.optIn", bundle: #bundle)
     }
 
-    public static var mailingListOptInDescription: String {
-        String(localized: "mailingList.optIn.description", bundle: #bundle)
-    }
-
     public static var mailingListOperational: String {
         String(localized: "mailingList.operational", bundle: #bundle)
     }
@@ -161,12 +157,20 @@ public enum Strings {
         String(localized: "toolbar.refresh", bundle: #bundle)
     }
 
+    public static var toolbarShare: String {
+        String(localized: "toolbar.share", bundle: #bundle)
+    }
+
     public static var toolbarSort: String {
         String(localized: "toolbar.sort", bundle: #bundle)
     }
 
     public static var toolbarFilter: String {
         String(localized: "toolbar.filter", bundle: #bundle)
+    }
+
+    public static var toolbarSortAndFilter: String {
+        String(localized: "toolbar.sortAndFilter", bundle: #bundle)
     }
 
     public static var toolbarStatus: String {
@@ -177,6 +181,24 @@ public enum Strings {
 
     public static var filterAll: String {
         String(localized: "filter.all", bundle: #bundle)
+    }
+
+    // MARK: - Search
+
+    public static var searchPrompt: String {
+        String(localized: "search.prompt", bundle: #bundle)
+    }
+
+    public static var searchEmptyTitle: String {
+        String(localized: "search.empty.title", bundle: #bundle)
+    }
+
+    public static var searchEmptyDescription: String {
+        String(localized: "search.empty.description", bundle: #bundle)
+    }
+
+    public static var searchClearButton: String {
+        String(localized: "search.clearButton", bundle: #bundle)
     }
 
     // MARK: - Sort
@@ -195,6 +217,21 @@ public enum Strings {
 
     public static var sortComments: String {
         String(localized: "sort.comments", bundle: #bundle)
+    }
+
+    // MARK: - Translation
+
+    static func translatedFrom(_ languageName: String) -> String {
+        let format = String(localized: "translation.translatedFrom", bundle: #bundle)
+        return String(format: format, languageName)
+    }
+
+    static var showOriginal: String {
+        String(localized: "translation.showOriginal", bundle: #bundle)
+    }
+
+    static var showTranslation: String {
+        String(localized: "translation.showTranslation", bundle: #bundle)
     }
 
     // MARK: - Comment Author
@@ -279,12 +316,16 @@ public enum Strings {
         String(localized: "error.invalidApiKey.message", bundle: #bundle)
     }
 
-    public static var errorFeedbackLimitTitle: String {
-        String(localized: "error.feedbackLimit.title", bundle: #bundle)
-    }
-
     public static var errorFeedbackLimitMessage: String {
         String(localized: "error.feedbackLimit.message", bundle: #bundle)
+    }
+
+    public static var errorLoadFailedTitle: String {
+        String(localized: "error.loadFailed.title", bundle: #bundle)
+    }
+
+    public static var errorRetryButton: String {
+        String(localized: "error.retryButton", bundle: #bundle)
     }
 
     // MARK: - Feedback Submission Disabled
@@ -300,11 +341,13 @@ public enum Strings {
     // MARK: - Counts
 
     public static func votesCount(_ count: Int) -> String {
-        String(localized: "votes.count", bundle: #bundle)
+        let format = String(localized: "votes.count", bundle: #bundle)
+        return String(format: format, count)
     }
 
     public static func commentsCount(_ count: Int) -> String {
-        String(localized: "comments.count", bundle: #bundle)
+        let format = String(localized: "comments.count", bundle: #bundle)
+        return String(format: format, count)
     }
 
     // MARK: - Accessibility
@@ -320,6 +363,18 @@ public enum Strings {
 
     static var accessibilityUnvoteHint: String {
         String(localized: "accessibility.unvote.hint", bundle: #bundle)
+    }
+
+    static var accessibilityMailingListMarketingHint: String {
+        String(localized: "accessibility.mailingList.marketing.hint", bundle: #bundle)
+    }
+
+    static var accessibilityMailingListOperationalHint: String {
+        String(localized: "accessibility.mailingList.operational.hint", bundle: #bundle)
+    }
+
+    static var accessibilityVoteDialogNotifyHint: String {
+        String(localized: "accessibility.voteDialog.notify.hint", bundle: #bundle)
     }
 
     static var accessibilityVotingClosed: String {
@@ -361,6 +416,10 @@ public enum Strings {
         String(localized: "accessibility.loading.comments", bundle: #bundle)
     }
 
+    static var accessibilityRefreshingFeedback: String {
+        String(localized: "accessibility.refreshingFeedback", bundle: #bundle)
+    }
+
     static func accessibilityRejectionReason(_ reason: String) -> String {
         let format = String(localized: "accessibility.rejectionReason", bundle: #bundle)
         return String(format: format, reason)
@@ -396,5 +455,9 @@ public enum Strings {
 
     static var accessibilitySubmitting: String {
         String(localized: "accessibility.submitting", bundle: #bundle)
+    }
+
+    static var accessibilityTranslationToggleHint: String {
+        String(localized: "accessibility.translation.toggleHint", bundle: #bundle)
     }
 }

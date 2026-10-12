@@ -15,6 +15,11 @@ enum SDKLogger {
         logger.info("\(message)")
     }
 
+    static func warning(_ message: String) {
+        guard SwiftlyFeedback.config.loggingEnabled else { return }
+        logger.warning("\(message)")
+    }
+
     static func error(_ message: String) {
         guard SwiftlyFeedback.config.loggingEnabled else { return }
         logger.error("\(message)")

@@ -85,17 +85,6 @@ public actor APIClient {
         return try decode(data)
     }
 
-    func patch<T: Decodable, B: Encodable>(path: String, body: B) async throws -> T {
-        let (data, response) = try await makeRequest(path: path, method: "PATCH", body: body)
-        try validateResponse(response, data: data)
-        return try decode(data)
-    }
-
-    func delete(path: String) async throws {
-        let (data, response) = try await makeRequest(path: path, method: "DELETE")
-        try validateResponse(response, data: data)
-    }
-
     func delete<B: Encodable>(path: String, body: B) async throws -> VoteResult {
         let (data, response) = try await makeRequest(path: path, method: "DELETE", body: body)
         try validateResponse(response, data: data)

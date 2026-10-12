@@ -78,7 +78,7 @@ public enum FeedbackEnvironment: Sendable {
 ///
 /// ```swift
 /// SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
-///     debug: "sf_local_...",       // Optional: localhost
+///     debug: "sf_dev_...",         // Optional: dev server
 ///     testflight: "sf_staging_...", // Required: staging server
 ///     production: "sf_prod_..."     // Required: production server
 /// ))
@@ -88,12 +88,13 @@ public enum FeedbackEnvironment: Sendable {
 ///
 /// | Build Type | Server | API Key Used |
 /// |------------|--------|--------------|
-/// | DEBUG | localhost:8080 | `debug` (or `testflight` if nil) |
+/// | DEBUG | dev server | `debug` (or `testflight` if nil) |
 /// | TestFlight | staging server | `testflight` |
 /// | App Store | production server | `production` |
 public struct EnvironmentAPIKeys: Sendable {
 
-    /// API key for DEBUG builds running against localhost.
+    /// API key for DEBUG builds running against the dev server (the explicit
+    /// `.local` environment via `configure(environment:key:)` targets the local server).
     /// If nil, the testflight key will be used for DEBUG builds.
     public let debug: String?
 
@@ -106,7 +107,7 @@ public struct EnvironmentAPIKeys: Sendable {
     /// Creates environment-specific API key configuration.
     ///
     /// - Parameters:
-    ///   - debug: API key for localhost (DEBUG builds). Defaults to nil,
+    ///   - debug: API key for the dev server (DEBUG builds). Defaults to nil,
     ///     which will use the testflight key for DEBUG builds.
     ///   - testflight: API key for the staging server (TestFlight builds).
     ///   - production: API key for the production server (App Store builds).
@@ -150,7 +151,7 @@ public struct EnvironmentAPIKeys: Sendable {
     /// Returns a description of the current environment for logging.
     internal var currentEnvironmentName: String {
         #if DEBUG
-        return "localhost (DEBUG)"
+        return "development (DEBUG)"
         #else
         if BuildEnvironment.isTestFlight {
             return "staging (TestFlight)"

@@ -1,0 +1,17 @@
+[
+  {
+    "created_at" : "2023-11-15T00:13:20Z",
+    "event_name" : "feedback_list",
+    "id" : "BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB",
+    "properties" : {
+      "source" : "fixture-tab"
+    },
+    "user_id" : "fixture-end-user"
+  },
+  {
+    "created_at" : "2023-11-15T00:13:20Z",
+    "event_name" : "submit_feedback",
+    "id" : "CCCCCCCC-CCCC-4CCC-8CCC-CCCCCCCCCCCC",
+    "user_id" : "fixture-anonymous"
+  }
+]

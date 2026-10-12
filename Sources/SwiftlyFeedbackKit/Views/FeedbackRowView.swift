@@ -3,6 +3,15 @@ import SwiftUI
 struct FeedbackCardView: View {
     let feedback: Feedback
     let onVote: () -> Void
+    /// Translated projections, `nil` when no translation is cached (defaults keep
+    /// existing call sites source-compatible). Original text is always the first
+    /// paint — these fill in only when the translation cache does.
+    var translatedTitle: String? = nil
+    var translatedDescription: String? = nil
+    /// Localized source-language name; `nil` means the affordance is absent.
+    var translationSourceName: String? = nil
+    var isShowingOriginal: Bool = false
+    var onToggleTranslation: (() -> Void)? = nil
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
@@ -17,11 +26,34 @@ struct FeedbackCardView: View {
         #endif
     }
 
-    /// Builds a combined accessibility description for VoiceOver
+    /// The title as displayed: the translated projection when present and not
+    /// toggled back to the original.
+    private var displayedTitle: String {
+        if !isShowingOriginal, let translatedTitle { return translatedTitle }
+        return feedback.title
+    }
+
+    /// The description as displayed; same projection rule as ``displayedTitle``.
+    private var displayedDescription: String {
+        if !isShowingOriginal, let translatedDescription { return translatedDescription }
+        return feedback.description
+    }
+
+    /// Whether translated text is currently on screen (drives the appended
+    /// "Translated from" fragment in the composed accessibility label).
+    private var isShowingTranslation: Bool {
+        !isShowingOriginal && (translatedTitle != nil || translatedDescription != nil)
+    }
+
+    /// Builds a combined accessibility description for VoiceOver — reads the
+    /// *displayed* text, so it takes the translation projection as input.
     var accessibilityDescription: String {
         var parts: [String] = []
-        parts.append(feedback.title)
-        parts.append(feedback.description)
+        parts.append(displayedTitle)
+        parts.append(displayedDescription)
+        if isShowingTranslation, let translationSourceName {
+            parts.append(Strings.translatedFrom(translationSourceName))
+        }
         if config.showStatusBadge {
             parts.append(Strings.accessibilityStatus(feedback.status.localizedDisplayName))
         }
@@ -49,16 +81,24 @@ struct FeedbackCardView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(feedback.title)
+                Text(displayedTitle)
                     .font(.headline)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
 
-                Text(feedback.description)
+                Text(displayedDescription)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(config.expandDescriptionInList ? nil : 2)
                     .multilineTextAlignment(.leading)
+
+                if let translationSourceName, let onToggleTranslation {
+                    TranslationAffordanceView(
+                        sourceLanguageName: translationSourceName,
+                        isShowingOriginal: isShowingOriginal,
+                        onToggle: onToggleTranslation
+                    )
+                }
 
                 FeedbackRowMetadataView(feedback: feedback)
             }
@@ -72,43 +112,6 @@ struct FeedbackCardView: View {
         .padding(12)
         .background(cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-struct FeedbackRowView: View {
-    let feedback: Feedback
-    let onVote: () -> Void
-
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            if config.showVoteCount {
-                VoteButton(
-                    voteCount: feedback.voteCount,
-                    hasVoted: feedback.hasVoted,
-                    status: feedback.status,
-                    action: onVote
-                )
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(feedback.title)
-                    .font(.headline)
-                    .lineLimit(2)
-
-                Text(feedback.description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(config.expandDescriptionInList ? nil : 2)
-
-                FeedbackRowMetadataView(feedback: feedback)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }
 
@@ -225,7 +228,7 @@ struct StatusBadge: View {
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     private var statusColor: Color {
-        theme.statusColors.color(for: status)
+        theme.statusColors.color(for: status).resolve(for: colorScheme)
     }
 
     var body: some View {
@@ -249,7 +252,7 @@ struct CategoryBadge: View {
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
 
     private var categoryColor: Color {
-        theme.categoryColors.color(for: category)
+        theme.categoryColors.color(for: category).resolve(for: colorScheme)
     }
 
     var body: some View {

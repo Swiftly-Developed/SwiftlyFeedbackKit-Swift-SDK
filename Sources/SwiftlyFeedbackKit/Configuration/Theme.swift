@@ -6,8 +6,8 @@ import SwiftUI
 ///
 /// Example:
 /// ```swift
-/// SwiftlyFeedback.theme.primaryColor = .blue
-/// SwiftlyFeedback.theme.secondaryColor = .set(light: .gray, dark: .white)
+/// SwiftlyFeedback.theme.primaryColor = .color(.blue)
+/// SwiftlyFeedback.theme.primaryColor = .set(light: .gray, dark: .white)
 /// ```
 public final class SwiftlyFeedbackTheme: @unchecked Sendable {
 
@@ -15,12 +15,6 @@ public final class SwiftlyFeedbackTheme: @unchecked Sendable {
 
     /// Primary color used for buttons and accents. Default: `.accentColor`
     public var primaryColor: ThemeColor = .default
-
-    /// Secondary color used for secondary elements. Default: `.secondary`
-    public var secondaryColor: ThemeColor = .default
-
-    /// Tertiary color used for backgrounds. Default: `.tertiary`
-    public var tertiaryColor: ThemeColor = .default
 
     /// Badge colors for different statuses
     public var statusColors = StatusColors()
@@ -34,7 +28,7 @@ public final class SwiftlyFeedbackTheme: @unchecked Sendable {
 // MARK: - Theme Color
 
 /// A color that can be different for light and dark mode.
-public enum ThemeColor: Sendable {
+public enum ThemeColor: Sendable, Equatable, Hashable {
     case `default`
     case color(Color)
     case adaptive(light: Color, dark: Color)
@@ -61,16 +55,16 @@ public enum ThemeColor: Sendable {
 // MARK: - Status Colors
 
 public final class StatusColors: @unchecked Sendable {
-    public var pending: Color = .gray
-    public var approved: Color = .blue
-    public var inProgress: Color = .orange
-    public var testflight: Color = .cyan
-    public var completed: Color = .green
-    public var rejected: Color = .red
+    public var pending: ThemeColor = .color(.gray)
+    public var approved: ThemeColor = .color(.blue)
+    public var inProgress: ThemeColor = .color(.orange)
+    public var testflight: ThemeColor = .color(.cyan)
+    public var completed: ThemeColor = .color(.green)
+    public var rejected: ThemeColor = .color(.red)
 
     internal init() {}
 
-    public func color(for status: FeedbackStatus) -> Color {
+    public func color(for status: FeedbackStatus) -> ThemeColor {
         switch status {
         case .pending: return pending
         case .approved: return approved
@@ -85,14 +79,14 @@ public final class StatusColors: @unchecked Sendable {
 // MARK: - Category Colors
 
 public final class CategoryColors: @unchecked Sendable {
-    public var featureRequest: Color = .purple
-    public var bugReport: Color = .red
-    public var improvement: Color = .teal
-    public var other: Color = .gray
+    public var featureRequest: ThemeColor = .color(.purple)
+    public var bugReport: ThemeColor = .color(.red)
+    public var improvement: ThemeColor = .color(.teal)
+    public var other: ThemeColor = .color(.gray)
 
     internal init() {}
 
-    public func color(for category: FeedbackCategory) -> Color {
+    public func color(for category: FeedbackCategory) -> ThemeColor {
         switch category {
         case .featureRequest: return featureRequest
         case .bugReport: return bugReport

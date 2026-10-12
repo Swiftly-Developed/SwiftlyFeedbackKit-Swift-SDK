@@ -28,13 +28,10 @@ public struct Feedback: Identifiable, Codable, Sendable, Equatable, Hashable {
         mergedIntoId != nil
     }
 
-    public static func == (lhs: Feedback, rhs: Feedback) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
+    // Equatable/Hashable are compiler-synthesized over all stored properties.
+    // Whole-value equality is load-bearing for the list's `.animation(value:)`
+    // (a changed voteCount must register as a change); `Identifiable` stays
+    // keyed on `id`, so ForEach/NavigationLink identity is unchanged.
 
     public init(
         id: UUID,

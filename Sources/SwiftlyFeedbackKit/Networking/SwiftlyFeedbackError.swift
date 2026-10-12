@@ -15,25 +15,25 @@ public enum SwiftlyFeedbackError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "Invalid response from server"
+            return String(localized: "error.invalidResponse.message", bundle: #bundle)
         case .badRequest(let message):
-            return message ?? "Bad request"
+            return message ?? String(localized: "error.badRequest.message", bundle: #bundle)
         case .unauthorized:
-            return "Invalid API key or unauthorized access"
+            return String(localized: "error.unauthorized.message", bundle: #bundle)
         case .invalidApiKey:
-            return String(localized: "error.invalidApiKey.message", bundle: .module)
+            return String(localized: "error.invalidApiKey.message", bundle: #bundle)
         case .notFound:
-            return "Resource not found"
+            return String(localized: "error.notFound.message", bundle: #bundle)
         case .conflict:
-            return "Conflict - resource already exists"
+            return String(localized: "error.conflict.message", bundle: #bundle)
         case .serverError(let statusCode):
-            return "Server error (status code: \(statusCode))"
+            return String(format: String(localized: "error.serverError.message", bundle: #bundle), statusCode)
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return String(format: String(localized: "error.networkError.message", bundle: #bundle), error.localizedDescription)
         case .decodingError(let error):
-            return "Failed to decode response: \(error.localizedDescription)"
+            return String(format: String(localized: "error.decodingError.message", bundle: #bundle), error.localizedDescription)
         case .feedbackLimitReached(let message):
-            return message ?? String(localized: "error.feedbackLimit.message", bundle: .module)
+            return message ?? String(localized: "error.feedbackLimit.message", bundle: #bundle)
         }
     }
 

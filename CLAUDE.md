@@ -21,11 +21,16 @@ swift test --filter TestClassName/testMethodName  # Single test
 ```
 Sources/SwiftlyFeedbackKit/
 ├── SwiftlyFeedback.swift        # Main entry point & configuration
+├── Strings.swift                # Localized strings (String Catalog access)
+├── KeychainHelper.swift         # Secure Keychain storage
+├── UserIdentifier.swift         # Persistent user identifiers
 ├── Configuration/
 │   ├── Config.swift             # SDK options
-│   └── EnvironmentAPIKeys.swift # Multi-environment keys
+│   ├── EnvironmentAPIKeys.swift # Multi-environment keys
+│   └── Theme.swift              # Theme configuration
 ├── Utilities/
-│   └── BuildEnvironment.swift   # Build type detection
+│   ├── BuildEnvironment.swift   # Build type detection
+│   └── SDKLogger.swift          # Internal logging
 ├── Models/
 │   ├── Feedback.swift           # Feedback model
 │   ├── Comment.swift            # Comment model
@@ -34,11 +39,33 @@ Sources/SwiftlyFeedbackKit/
 ├── Networking/
 │   ├── APIClient.swift          # HTTP client
 │   └── SwiftlyFeedbackError.swift
+├── Translation/                 # On-device translation (iOS/macOS; visionOS gets the no-op arm)
+│   ├── FeedbackTranslator.swift # Batch queue + cache; owns the .translationTask configuration
+│   ├── SourceLanguageDetector.swift
+│   ├── TranslatableField.swift
+│   ├── TranslatableUnit.swift
+│   ├── TranslationAvailability.swift
+│   ├── TranslationBatch.swift
+│   ├── TranslationCache.swift
+│   ├── LocaleLanguageDisplayName.swift
+│   └── TranslationTaskViewModifier.swift  # The one platform-guarded wiring seam
+├── Resources/
+│   ├── Localizable.xcstrings    # String Catalog
+│   └── PrivacyInfo.xcprivacy    # Privacy manifest
 └── Views/
     ├── FeedbackListView.swift
     ├── FeedbackRowView.swift
     ├── FeedbackDetailView.swift
-    └── SubmitFeedbackView.swift
+    ├── SubmitFeedbackView.swift
+    ├── VoteDialogView.swift
+    ├── TranslationAffordanceView.swift    # "Translated from …" + Show original toggle
+    ├── FeedbackListSkeletonView.swift
+    ├── FeedbackCardSkeletonView.swift
+    ├── FeedbackListRefreshIndicatorView.swift
+    ├── FeedbackSearchEmptyStateView.swift
+    ├── CommentsEmptyStateView.swift
+    ├── InlineErrorView.swift
+    └── InvalidApiKeyView.swift
 ```
 
 ## SDK Configuration
@@ -60,7 +87,8 @@ SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 
 | Environment | Server |
 |-------------|--------|
-| `.development` | localhost:8080 |
+| `.local` | localhost:8080 |
+| `.development` | dev server |
 | `.testflight` | staging server |
 | `.production` | production server |
 
@@ -71,7 +99,7 @@ SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 ```swift
 // May be unreliable in some cases (uses AppTransaction with timeout)
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
-    debug: "sf_local_...",        // Optional: localhost
+    debug: "sf_local_...",        // Optional: dev server
     testflight: "sf_staging_...",  // Required: staging server
     production: "sf_prod_..."      // Required: production server
 ))
@@ -88,6 +116,11 @@ SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
 
 // Disable logging
 SwiftlyFeedback.config.loggingEnabled = false
+
+// Disable reader-side on-device translation of feedback content (default on;
+// iOS/macOS only — the affordance is simply absent on visionOS and for
+// unsupported language pairs)
+SwiftlyFeedback.config.translationEnabled = false
 
 // Event tracking
 SwiftlyFeedback.view("feature_details", properties: ["id": "123"])

@@ -285,219 +285,6 @@
         }
       }
     },
-    "feedback.submit.button": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Submit"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Envoyer"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Senden"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "送信"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "提交"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "제출"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invia"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "إرسال"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить"
-          }
-        }
-      }
-    },
-    "feedback.detail.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Details"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detalles"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Détails"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Details"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "詳細"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "详情"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detalhes"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "상세"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dettagli"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "التفاصيل"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подробности"
-          }
-        }
-      }
-    },
-    "feedback.detail.comments": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comments"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comentarios"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commentaires"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kommentare"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コメント"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "评论"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comentários"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "댓글"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commenti"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "التعليقات"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Комментарии"
-          }
-        }
-      }
-    },
     "feedback.detail.comments.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -567,6 +354,28 @@
             "value": "Комментариев пока нет"
           }
         }
+      }
+    },
+    "feedback.detail.comments.empty.description": {
+      "comment": "Encouragement shown below the empty-comments title on the feedback detail screen, inviting the user to post the first comment via the composer directly beneath it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Be the first to share your thoughts."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Sé el primero en compartir tu opinión." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Soyez le premier à partager votre avis." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Sei der Erste, der seine Meinung teilt." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "最初に感想をシェアしましょう。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "抢先分享你的想法。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Seja o primeiro a compartilhar sua opinião." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "가장 먼저 의견을 남겨보세요." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Sii il primo a condividere la tua opinione." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "كن أول من يشارك رأيه." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Поделитесь своим мнением первым." } }
       }
     },
     "feedback.detail.comments.add": {
@@ -1279,6 +1088,50 @@
         }
       }
     },
+    "feedback.form.validation.descriptionRequired": {
+      "comment": "Caption under the submit form explaining why the Submit button is disabled: the required description field is still empty. Also read by VoiceOver as the submit button's hint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a description to submit your feedback."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Agrega una descripción para enviar tu comentario." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ajoutez une description pour envoyer votre retour." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Füge eine Beschreibung hinzu, um dein Feedback zu senden." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "フィードバックを送信するには説明を入力してください。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "添加描述以提交反馈。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Adicione uma descrição para enviar seu feedback." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "피드백을 제출하려면 설명을 추가하세요." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Aggiungi una descrizione per inviare il tuo feedback." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "أضف وصفًا لإرسال ملاحظاتك." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Добавьте описание, чтобы отправить отзыв." } }
+      }
+    },
+    "feedback.form.validation.titleRequired": {
+      "comment": "Caption under the submit form explaining why the Submit button is disabled: the required title field is still empty. Also read by VoiceOver as the submit button's hint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a title to submit your feedback."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Agrega un título para enviar tu comentario." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ajoutez un titre pour envoyer votre retour." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Füge einen Titel hinzu, um dein Feedback zu senden." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "フィードバックを送信するにはタイトルを入力してください。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "添加标题以提交反馈。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Adicione um título para enviar seu feedback." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "피드백을 제출하려면 제목을 추가하세요." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Aggiungi un titolo per inviare il tuo feedback." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "أضف عنوانًا لإرسال ملاحظاتك." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Добавьте заголовок, чтобы отправить отзыв." } }
+      }
+    },
     "button.cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -1705,6 +1558,28 @@
         }
       }
     },
+    "toolbar.share": {
+      "comment": "Accessible name of the detail screen's toolbar share action (icon-only share button); shares the feedback's title and description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Compartir" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Partager" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Teilen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "共有" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "分享" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Compartilhar" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "공유" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Condividi" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "مشاركة" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Поделиться" } }
+      }
+    },
     "toolbar.sort": {
       "extractionState": "manual",
       "localizations": {
@@ -1774,6 +1649,28 @@
             "value": "Сортировка"
           }
         }
+      }
+    },
+    "toolbar.sortAndFilter": {
+      "comment": "Accessible name of the toolbar menu containing both the sort picker and the status filter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sort & Filter"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Ordenar y filtrar" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Trier et filtrer" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Sortieren & Filtern" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "並べ替えとフィルター" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "排序与筛选" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Ordenar e filtrar" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "정렬 및 필터" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Ordina e filtra" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "الترتيب والتصفية" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Сортировка и фильтр" } }
       }
     },
     "toolbar.filter": {
@@ -1918,6 +1815,72 @@
         }
       }
     },
+    "translation.showOriginal": {
+      "comment": "Button that switches a translated feedback item back to its original-language text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show original"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Mostrar original" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Afficher l'original" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Original anzeigen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "原文を表示" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "显示原文" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Mostrar original" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "원문 보기" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Mostra originale" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "إظهار النص الأصلي" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Показать оригинал" } }
+      }
+    },
+    "translation.showTranslation": {
+      "comment": "Button that switches a feedback item from its original-language text back to the translation.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show translation"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Mostrar traducción" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Afficher la traduction" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Übersetzung anzeigen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "翻訳を表示" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "显示译文" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Mostrar tradução" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "번역 보기" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Mostra traduzione" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "إظهار الترجمة" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Показать перевод" } }
+      }
+    },
+    "translation.translatedFrom": {
+      "comment": "Label above the translation toggle. %@ = localized language name (e.g. German).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translated from %@"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Traducido de %@" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Traduit de %@" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Übersetzt aus %@" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "%@から翻訳済み" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "翻译自%@" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Traduzido de %@" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "%@에서 번역됨" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Tradotto da %@" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "مترجم من %@" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Переведено с %@" } }
+      }
+    },
     "filter.all": {
       "extractionState": "manual",
       "localizations": {
@@ -1987,6 +1950,94 @@
             "value": "Все"
           }
         }
+      }
+    },
+    "search.clearButton": {
+      "comment": "Button in the no-results state that clears the active search text and scope tokens.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Search"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Borrar búsqueda" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Effacer la recherche" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Suche löschen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "検索をクリア" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "清除搜索" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Limpar busca" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "검색 지우기" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Cancella ricerca" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "مسح البحث" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Очистить поиск" } }
+      }
+    },
+    "search.empty.description": {
+      "comment": "Description in the no-results state when a search matches nothing. Claims only 'no match' — never completeness.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No feedback matches your search."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Ningún comentario coincide con tu búsqueda." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Aucun retour ne correspond à votre recherche." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Kein Feedback entspricht deiner Suche." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "検索条件に一致するフィードバックはありません。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "没有与你的搜索匹配的反馈。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Nenhum feedback corresponde à sua busca." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "검색과 일치하는 피드백이 없습니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Nessun feedback corrisponde alla tua ricerca." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "لا توجد ملاحظات تطابق بحثك." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Отзывы, соответствующие вашему запросу, не найдены." } }
+      }
+    },
+    "search.empty.title": {
+      "comment": "Title of the no-results state shown when a search matches no feedback.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Results"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Sin resultados" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Aucun résultat" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Keine Ergebnisse" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "検索結果なし" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "无结果" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Nenhum resultado" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "결과 없음" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Nessun risultato" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "لا توجد نتائج" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Нет результатов" } }
+      }
+    },
+    "search.prompt": {
+      "comment": "Placeholder prompt inside the feedback list's search field.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search Feedback"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Buscar comentarios" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Rechercher des retours" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Feedback durchsuchen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "フィードバックを検索" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "搜索反馈" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Buscar feedback" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "피드백 검색" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Cerca feedback" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "البحث في الملاحظات" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Поиск отзывов" } }
       }
     },
     "sort.votes": {
@@ -3977,6 +4028,226 @@
         }
       }
     },
+    "error.badRequest.message": {
+      "comment": "Alert message shown when the server rejects a request and supplies no message of its own.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bad request"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Solicitud incorrecta" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Requête incorrecte" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Ungültige Anfrage" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "不正なリクエストです" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "请求有误" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Solicitação inválida" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "잘못된 요청" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Richiesta non valida" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "طلب غير صالح" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Некорректный запрос" } }
+      }
+    },
+    "error.conflict.message": {
+      "comment": "Alert message shown when a submission conflicts with a resource that already exists on the server.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conflict - resource already exists"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Conflicto: el recurso ya existe" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Conflit : la ressource existe déjà" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Konflikt – die Ressource existiert bereits" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "競合が発生しました。リソースは既に存在します" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "冲突：资源已存在" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Conflito: o recurso já existe" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "충돌: 이미 존재하는 리소스입니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Conflitto: la risorsa esiste già" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "تعارض - المورد موجود بالفعل" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Конфликт: ресурс уже существует" } }
+      }
+    },
+    "error.decodingError.message": {
+      "comment": "Alert message shown when the server response cannot be decoded. %@ is the underlying error description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to decode response: %@"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Error al decodificar la respuesta: %@" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Échec du décodage de la réponse : %@" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Antwort konnte nicht decodiert werden: %@" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "レスポンスのデコードに失敗しました: %@" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "响应解码失败：%@" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Falha ao decodificar a resposta: %@" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "응답을 디코딩하지 못했습니다: %@" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Impossibile decodificare la risposta: %@" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "فشل فك ترميز الاستجابة: %@" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось декодировать ответ: %@" } }
+      }
+    },
+    "error.invalidResponse.message": {
+      "comment": "Alert message shown when the server returns a malformed or unexpected response.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid response from server"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Respuesta inválida del servidor" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Réponse invalide du serveur" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Ungültige Antwort vom Server" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "サーバーから無効な応答がありました" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "服务器返回了无效响应" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Resposta inválida do servidor" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "서버로부터 잘못된 응답을 받았습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Risposta non valida dal server" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "استجابة غير صالحة من الخادم" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Недопустимый ответ от сервера" } }
+      }
+    },
+    "error.loadFailed.title": {
+      "comment": "Title of the inline error state shown when the feedback list's initial load fails.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't Load Feedback"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "No se pudieron cargar los comentarios" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Impossible de charger les retours" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Feedback konnte nicht geladen werden" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "フィードバックを読み込めませんでした" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "无法加载反馈" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Não foi possível carregar o feedback" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "피드백을 불러올 수 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Impossibile caricare il feedback" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "تعذّر تحميل الملاحظات" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось загрузить отзывы" } }
+      }
+    },
+    "error.networkError.message": {
+      "comment": "Alert message shown when a network request fails. %@ is the underlying error description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network error: %@"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Error de red: %@" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Erreur réseau : %@" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Netzwerkfehler: %@" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "ネットワークエラー: %@" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "网络错误：%@" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Erro de rede: %@" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "네트워크 오류: %@" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Errore di rete: %@" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "خطأ في الشبكة: %@" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Ошибка сети: %@" } }
+      }
+    },
+    "error.notFound.message": {
+      "comment": "Alert message shown when the requested resource does not exist on the server.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resource not found"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Recurso no encontrado" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ressource introuvable" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Ressource nicht gefunden" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "リソースが見つかりません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "未找到资源" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Recurso não encontrado" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "리소스를 찾을 수 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Risorsa non trovata" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "المورد غير موجود" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Ресурс не найден" } }
+      }
+    },
+    "error.retryButton": {
+      "comment": "Retry button on inline error states (failed load, invalid API key).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Reintentar" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Réessayer" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Erneut versuchen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "再試行" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "重试" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Tentar novamente" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "다시 시도" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Riprova" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "إعادة المحاولة" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Повторить" } }
+      }
+    },
+    "error.serverError.message": {
+      "comment": "Alert message shown when the server responds with an HTTP error. %lld is the HTTP status code.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server error (status code: %lld)"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Error del servidor (código de estado: %lld)" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Erreur du serveur (code d'état : %lld)" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Serverfehler (Statuscode: %lld)" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "サーバーエラー（ステータスコード: %lld）" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "服务器错误（状态码：%lld）" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Erro do servidor (código de status: %lld)" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "서버 오류 (상태 코드: %lld)" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Errore del server (codice di stato: %lld)" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "خطأ في الخادم (رمز الحالة: %lld)" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Ошибка сервера (код состояния: %lld)" } }
+      }
+    },
+    "error.unauthorized.message": {
+      "comment": "Alert message shown when the API key is invalid or access is unauthorized.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid API key or unauthorized access"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Clave de API inválida o acceso no autorizado" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Clé API invalide ou accès non autorisé" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Ungültiger API-Schlüssel oder nicht autorisierter Zugriff" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "APIキーが無効か、アクセスが許可されていません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "API 密钥无效或访问未经授权" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Chave de API inválida ou acesso não autorizado" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "잘못된 API 키 또는 권한이 없는 액세스입니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Chiave API non valida o accesso non autorizzato" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "مفتاح API غير صالح أو وصول غير مصرح به" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Недействительный API-ключ или неавторизованный доступ" } }
+      }
+    },
     "vote.dialog.title": {
       "extractionState": "manual",
       "localizations": {
@@ -4941,6 +5212,72 @@
         "ru": { "stringUnit": { "state": "translated", "value": "Нажмите дважды, чтобы отменить голос" } }
       }
     },
+    "accessibility.mailingList.marketing.hint": {
+      "comment": "VoiceOver hint on the vote dialog's marketing-emails sub-toggle, shown when the mailing-list opt-in is enabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscribes this email address to product news and promotional emails."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Suscribe este correo electrónico a novedades del producto y correos promocionales." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Abonne cette adresse e-mail aux actualités produit et aux e-mails promotionnels." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Meldet diese E-Mail-Adresse für Produktneuigkeiten und Werbe-E-Mails an." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "このメールアドレスを製品ニュースやプロモーションメールに登録します。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "将此电子邮件地址订阅产品资讯和促销邮件。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Inscreve este endereço de e-mail para receber novidades do produto e e-mails promocionais." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 이메일 주소를 제품 소식 및 프로모션 이메일에 구독합니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Iscrive questo indirizzo email alle novità sul prodotto e alle email promozionali." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "يشترك هذا البريد الإلكتروني في أخبار المنتج والرسائل الترويجية." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Подписывает этот адрес электронной почты на новости продукта и рекламные рассылки." } }
+      }
+    },
+    "accessibility.mailingList.operational.hint": {
+      "comment": "VoiceOver hint on the vote dialog's operational-emails sub-toggle, shown when the mailing-list opt-in is enabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscribes this email address to service and account emails."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Suscribe este correo electrónico a correos de servicio y de la cuenta." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Abonne cette adresse e-mail aux e-mails de service et de compte." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Meldet diese E-Mail-Adresse für Service- und Konto-E-Mails an." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "このメールアドレスをサービスおよびアカウント関連のメールに登録します。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "将此电子邮件地址订阅服务及账户邮件。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Inscreve este endereço de e-mail para receber e-mails de serviço e da conta." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 이메일 주소를 서비스 및 계정 이메일에 구독합니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Iscrive questo indirizzo email alle email di servizio e dell'account." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "يشترك هذا البريد الإلكتروني في رسائل الخدمة والحساب." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Подписывает этот адрес электронной почты на служебные и учётные уведомления." } }
+      }
+    },
+    "accessibility.voteDialog.notify.hint": {
+      "comment": "VoiceOver hint on the vote dialog's notify-on-status-change toggle. Also explains why the toggle is disabled while no email address is entered.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requires an email address. Sends an email when this feedback's status changes."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Requiere un correo electrónico. Envía un correo cuando cambie el estado de este comentario." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Nécessite une adresse e-mail. Envoie un e-mail lorsque le statut de ce retour change." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Erfordert eine E-Mail-Adresse. Sendet eine E-Mail, wenn sich der Status dieses Feedbacks ändert." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "メールアドレスが必要です。このフィードバックのステータスが変わるとメールを送信します。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "需要电子邮件地址。此反馈的状态发生变化时会发送邮件。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Requer um endereço de e-mail. Envia um e-mail quando o status deste feedback mudar." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이메일 주소가 필요합니다. 이 피드백의 상태가 변경되면 이메일을 보냅니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Richiede un indirizzo email. Invia un'email quando lo stato di questo feedback cambia." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "يتطلب عنوان بريد إلكتروني. يرسل بريدًا إلكترونيًا عند تغيّر حالة هذه الملاحظة." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Требуется адрес электронной почты. Отправляет письмо при изменении статуса этого отзыва." } }
+      }
+    },
     "accessibility.voting.closed": {
       "extractionState": "manual",
       "localizations": {
@@ -5035,6 +5372,28 @@
         "it": { "stringUnit": { "state": "translated", "value": "Caricamento commenti" } },
         "ar": { "stringUnit": { "state": "translated", "value": "جارٍ تحميل التعليقات" } },
         "ru": { "stringUnit": { "state": "translated", "value": "Загрузка комментариев" } }
+      }
+    },
+    "accessibility.refreshingFeedback": {
+      "comment": "VoiceOver label for the small indicator shown while the feedback list refreshes with rows still on screen. Trailing ellipsis conveys an ongoing action.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refreshing feedback…"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Actualizando comentarios…" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Actualisation des retours…" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Feedback wird aktualisiert…" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "フィードバックを更新中…" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "正在刷新反馈…" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Atualizando feedback…" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "피드백 새로고침 중…" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Aggiornamento feedback…" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "جارٍ تحديث الملاحظات…" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Обновление отзывов…" } }
       }
     },
     "accessibility.addComment": {
@@ -5163,6 +5522,28 @@
         "it": { "stringUnit": { "state": "translated", "value": "Invio feedback in corso" } },
         "ar": { "stringUnit": { "state": "translated", "value": "جارٍ إرسال الملاحظات" } },
         "ru": { "stringUnit": { "state": "translated", "value": "Отправка отзыва" } }
+      }
+    },
+    "accessibility.translation.toggleHint": {
+      "comment": "VoiceOver hint on the Show original / Show translation button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switches between the translated text and the original."
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Alterna entre el texto traducido y el original." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Bascule entre le texte traduit et l'original." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Wechselt zwischen dem übersetzten Text und dem Original." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "翻訳されたテキストと原文を切り替えます。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "在译文和原文之间切换。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Alterna entre o texto traduzido e o original." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "번역된 텍스트와 원문 사이를 전환합니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Passa dal testo tradotto a quello originale." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "يبدّل بين النص المترجم والنص الأصلي." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Переключает между переведённым текстом и оригиналом." } }
       }
     }
   },
