@@ -94,12 +94,12 @@ public enum FeedbackStatus: String, Codable, Sendable, CaseIterable {
     /// Localized display name for the status
     public var localizedDisplayName: String {
         switch self {
-        case .pending: return Strings.statusPending
-        case .approved: return Strings.statusApproved
-        case .inProgress: return Strings.statusInProgress
-        case .testflight: return Strings.statusTestFlight
-        case .completed: return Strings.statusCompleted
-        case .rejected: return Strings.statusRejected
+        case .pending: return String(localized: .statusPending)
+        case .approved: return String(localized: .statusApproved)
+        case .inProgress: return String(localized: .statusInProgress)
+        case .testflight: return String(localized: .statusTestflight)
+        case .completed: return String(localized: .statusCompleted)
+        case .rejected: return String(localized: .statusRejected)
         }
     }
 
@@ -131,10 +131,21 @@ public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
     /// Localized display name for the category
     public var localizedDisplayName: String {
         switch self {
-        case .featureRequest: return Strings.categoryFeatureRequest
-        case .bugReport: return Strings.categoryBugReport
-        case .improvement: return Strings.categoryImprovement
-        case .other: return Strings.categoryOther
+        case .featureRequest: return String(localized: .categoryFeatureRequest)
+        case .bugReport: return String(localized: .categoryBugReport)
+        case .improvement: return String(localized: .categoryImprovement)
+        case .other: return String(localized: .categoryOther)
+        }
+    }
+
+    /// Localized name for the set of requests in this category ("Bug Reports"), used by
+    /// the list's Category filter and its "Filtered by" row.
+    var localizedPluralName: String {
+        switch self {
+        case .featureRequest: return String(localized: .categoryPluralFeatureRequest)
+        case .bugReport: return String(localized: .categoryPluralBugReport)
+        case .improvement: return String(localized: .categoryPluralImprovement)
+        case .other: return String(localized: .categoryPluralOther)
         }
     }
 
@@ -142,7 +153,7 @@ public enum FeedbackCategory: String, Codable, Sendable, CaseIterable {
         switch self {
         case .featureRequest: return "lightbulb"
         case .bugReport: return "ladybug"
-        case .improvement: return "arrow.up.circle"
+        case .improvement: return "slider.horizontal.3"
         case .other: return "ellipsis.circle"
         }
     }

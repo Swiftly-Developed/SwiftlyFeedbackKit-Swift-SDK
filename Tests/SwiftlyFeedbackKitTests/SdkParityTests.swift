@@ -47,33 +47,22 @@ private enum ParityFixtures {
 @Suite("SdkParityListTolerance")
 struct SdkParityListToleranceTests {
 
-    /// ⚠️ RECORDED AS SHIPPED. One unknown-status row poisons the ENTIRE `[Feedback]`
-    /// decode: the SDK's `Feedback.status` is a strict enum, `APIClient.decode` is a bare
-    /// `decoder.decode`, and no tolerant element-drop wrapper exists (`AGENTS.md` line 82;
-    /// F1 — zero of six SDKs implement it; Flutter gained one on 2026-08-15 and is now the
-    /// only SDK that drops the row). The integrator-visible consequence: the day the server
-    /// adds a seventh status, every list screen in every shipped iOS app dead-ends.
-    ///
-    /// When the wrapper lands in `APIClient.decode<T>`, this case reddens — deliberately.
-    @Test("The tolerance corpus poisons the whole list decode — recorded as shipped")
-    func unknownStatusRowPoisonsTheWholeArray() async throws {
+    /// One unknown-status row is dropped. The other three rows survive, in order.
+    /// `testflight` is a known status and is not dropped. A single `getFeedback(id:)` of an
+    /// unknown status still fails; only the list wrapper skips the bad row.
+    @Test("An unknown status row is dropped and the other rows survive in order")
+    func unknownStatusRowIsDroppedFromTheList() async throws {
         let stub = StubURLProtocol.Session()
         let client = try ParityFixtures.makeClient(stub: stub)
         stub.enqueueResponse(data: try ParityFixtures.corpus("feedback-tolerance-corpus.json"))
 
-        do {
-            let _: [Feedback] = try await client.get(path: "feedbacks")
-            Issue.record("""
-                The whole-array decode SUCCEEDED. Either the tolerant element-drop wrapper \
-                has landed (update this RECORDED case to assert the drop: three survivors, \
-                in order, titles one/two/four) or the corpus lost its unknown-status row.
-                """)
-        } catch let error as SwiftlyFeedbackError {
-            guard case .decodingError = error else {
-                Issue.record("Expected .decodingError, got \(error)")
-                return
-            }
-        }
+        let decoded: [Feedback] = try await client.get(path: "feedbacks")
+        #expect(decoded.map(\.title) == [
+            "Tolerance row one",
+            "Tolerance row two",
+            "Tolerance row four"
+        ])
+        #expect(decoded.map(\.status) == [.pending, .testflight, .completed])
     }
 
     /// The paired positive: the same corpus minus its unknown-status row decodes fully,
@@ -150,19 +139,28 @@ struct SdkParityErrorMapTests {
         // ⚠️ RECORDED AS SHIPPED: project-count and member-count 402s surface under the
         // same case name. The naming is a client-side finding; the tier arithmetic is
         // QA-UNIT11's.
+        //
+        // 🔴 UNCHANGED by METRICS03-05, and that is a design constraint rather than luck.
+        // The metrics tier refusal is keyed on the ENVELOPE's `error.code`, not on the
+        // status, so every 402 in this boolean shape — which is every 402 the feedback,
+        // project and member caps raise — keeps this arm. Widening the 402 arm by status
+        // would redden a pin that has nothing to do with metrics.
         let error = try await thrownError(status: 402, body: #"{"error":true,"reason":"Upgrade required"}"#)
         #expect(error == .feedbackLimitReached(message: "Upgrade required"))
     }
 
-    @Test("403 maps to .serverError(403) — the Swift SDK has NO forbidden concept")
+    @Test("403 in the boolean body shape maps to .forbidden — RE-ANCHORED by METRICS03-05")
     func status403() async throws {
-        // ⚠️ RECORDED AS SHIPPED. Every role-gate refusal — an archived-project write, a
-        // vote on completed/rejected feedback — surfaces to an iOS integrator as "server
-        // error". The Swift SDK is the only one of six without a 403 arm; the Vapor SDK,
-        // in the same language, has `.forbidden`. When a forbidden case is added to
-        // SwiftlyFeedbackError, this pin reddens — deliberately.
+        // 🔴 RE-ANCHORED 2026-08-25. This pin previously asserted `.serverError(403)` and
+        // its own comment said it would redden the day a forbidden case was added. It did.
+        //
+        // The body here is the SHARED MIDDLEWARE shape — `error` a boolean, no code — i.e.
+        // exactly the role / access / suspension refusal. It must land on `.forbidden`. The
+        // metrics API's 403 arrives in the OTHER shape and lands on `.measureNotAvailable`;
+        // keeping the two distinguishable is the contract, and `MetricsErrorMapTests` pins
+        // the pair against the generated error corpus.
         let error = try await thrownError(status: 403, body: #"{"error":true,"reason":"Read-only project"}"#)
-        #expect(error == .serverError(statusCode: 403))
+        #expect(error == .forbidden(message: "Read-only project"))
     }
 
     @Test("404 maps to .notFound and 409 to .conflict")
@@ -179,11 +177,15 @@ struct SdkParityErrorMapTests {
         #expect(error == .serverError(statusCode: 422))
     }
 
-    @Test("429 and 5xx map to .serverError carrying the actual status code")
+    @Test("429 maps to .rateLimited (RE-ANCHORED); 5xx still to .serverError with its status")
     func status429And5xx() async throws {
-        // The status code SURVIVES here — Kotlin's UnknownError is the one SDK that
-        // discards it (statusCode == null), recorded in that lane.
-        #expect(try await thrownError(status: 429, body: "{}") == .serverError(statusCode: 429))
+        // 🔴 RE-ANCHORED 2026-08-25: 429 was `.serverError(429)` and is now `.rateLimited`.
+        // The `X-API-Key` metrics family is budgeted at 60 requests / 60 s, and a host app
+        // needs to back off rather than treat the answer as a server fault. The body is the
+        // middleware's, which carries no prose here — so the message is nil, not "{}".
+        #expect(try await thrownError(status: 429, body: "{}") == .rateLimited(message: nil))
+        // Unchanged: the status code SURVIVES on 5xx — Kotlin's UnknownError is the one SDK
+        // that discards it (statusCode == null), recorded in that lane.
         #expect(try await thrownError(status: 500, body: "{}") == .serverError(statusCode: 500))
         #expect(try await thrownError(status: 503, body: "{}") == .serverError(statusCode: 503))
     }
@@ -286,18 +288,14 @@ struct SdkParityConfigTests {
         #expect(recorded.header("X-API-Key") == "")
     }
 
-    /// `-18`'s timeout row: the Swift SDK configures NO request timeout anywhere — the
-    /// other four declare 30 000 ms. Asserted as a source negative with a paired positive
-    /// (the files really are the client and configuration).
-    @Test("-18 · the Swift SDK declares no timeout while four SDKs declare 30s")
-    func noTimeoutDeclared() throws {
+    /// `-18`'s timeout row. The request timeout is 30 seconds, matching the other SDKs.
+    /// It is set on the `URLRequest`, not on `URLSession.shared`.
+    @Test("-18 · each request times out after 30 seconds")
+    func requestTimeoutIsThirtySeconds() throws {
         let client = try sdkSource("Networking/APIClient.swift")
-        let config = try sdkSource("Configuration/Config.swift")
-        #expect(!client.contains("timeoutInterval"))
-        #expect(!config.localizedCaseInsensitiveContains("timeout"))
-        // Paired positives — the negatives above are about THESE files.
-        #expect(client.contains("actor APIClient"))
-        #expect(config.contains("SwiftlyFeedbackConfiguration"))
+        #expect(client.contains("request.timeoutInterval = Self.requestTimeout"))
+        #expect(client.contains("static let requestTimeout: TimeInterval = 30"))
+        #expect(APIClient.requestTimeout == 30)
     }
 }
 

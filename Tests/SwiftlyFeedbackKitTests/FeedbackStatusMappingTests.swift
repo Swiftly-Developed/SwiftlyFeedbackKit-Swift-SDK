@@ -180,7 +180,7 @@ import Testing
     ///
     /// The claim is *the map has six different arms*, which is pure. Whether the German is
     /// idiomatic is `LOCALIZATION02`'s and whether it fits the badge is `QA-UI08`'s; neither
-    /// can be answered here and neither needs to be, to catch a `Strings.statusTestFlight`
+    /// can be answered here and neither needs to be, to catch a `String(localized: .statusTestflight)`
     /// arm pointing at `.completed`'s key. Two rendered strings would both be real, non-empty
     /// and plausible — only distinctness sees it.
     ///
@@ -204,13 +204,20 @@ import Testing
     ///
     /// Distinctness catches two arms sharing one key. It does **not** catch the whole map
     /// being shifted by one — six distinct keys, every one wrong, every rendered string real.
-    /// That is a `case → Strings.member → catalog key` composition, and the composition is
-    /// read out of the two source files rather than exercised, because the runtime path is
-    /// the one the uncompiled-catalog fallback above disables.
+    ///
+    /// This was a two-hop `case → Strings.member → catalog key` composition read out of the
+    /// model plus the hand-written facade. Phase 03 deleted that facade: an arm now names the
+    /// catalog key's **generated symbol** directly, so the composition collapsed to one hop
+    /// and the middle file no longer exists. The symbol is a pure function of the key (split
+    /// on `.`, capitalize each segment after the first, concatenate), so this derives the
+    /// symbol each row *must* name and compares it to the one the arm actually names —
+    /// exactly the shifted-by-one defect the two-hop version caught.
+    ///
+    /// Still read as source text rather than exercised: the runtime path is the one the
+    /// uncompiled-catalog fallback described above disables under SwiftPM.
     @Test("-03 · Every status arm composes onto its own catalog key")
     func everyStatusArmComposesOntoItsOwnCatalogKey() throws {
         let model = try WorkspaceSourceTree.sdkSource("Sources/SwiftlyFeedbackKit/Models/Feedback.swift")
-        let strings = try WorkspaceSourceTree.sdkSource("Sources/SwiftlyFeedbackKit/Strings.swift")
 
         let armSlice = try #require(
             WorkspaceSourceTree.slice(
@@ -220,31 +227,29 @@ import Testing
         )
 
         for (index, row) in Self.expected.enumerated() {
-            // Hop 1: the switch arm names a Strings member.
             let caseName = String(describing: FeedbackStatus.allCases[index])
             let armLine = try #require(
                 armSlice.components(separatedBy: .newlines)
                     .first { $0.contains("case .\(caseName):") },
                 "FeedbackStatus.localizedDisplayName has no arm for .\(caseName)."
             )
-            let member = try #require(
-                armLine.components(separatedBy: "Strings.").last?
-                    .trimmingCharacters(in: .whitespacesAndNewlines),
-                "\(caseName)'s arm does not resolve through Strings."
-            )
 
-            // Hop 2: that Strings member is declared against this status's catalog key.
-            let memberSlice = try #require(
-                WorkspaceSourceTree.slice(strings, from: "static var \(member): String", to: "}"),
-                "Strings.\(member) is not declared — \(caseName)'s arm points at nothing."
-            )
+            // The symbol this row's key generates — derived, never hand-listed, so the
+            // expectation cannot drift away from `localizationKeys` above.
+            let key = Self.localizationKeys[index]
+            let segments = key.components(separatedBy: ".")
+            let expectedSymbol = segments.enumerated()
+                .map { $0.offset == 0 ? $0.element : $0.element.prefix(1).uppercased() + $0.element.dropFirst() }
+                .joined()
+
             #expect(
-                memberSlice.contains("\"\(Self.localizationKeys[index])\""),
+                armLine.contains("String(localized: .\(expectedSymbol))"),
                 """
-                FeedbackStatus.\(caseName) resolves through Strings.\(member), which looks up \
-                a key other than \(Self.localizationKeys[index]). A map shifted by one arm \
-                renders six real, plausible, wrong strings and passes every distinctness and \
-                non-empty check ever written. (row: \(row.english))
+                FeedbackStatus.\(caseName)'s arm does not name .\(expectedSymbol), the symbol \
+                generated from its own key \(key). A map shifted by one arm renders six real, \
+                plausible, wrong strings and passes every distinctness and non-empty check ever \
+                written. Arm as written: \(armLine.trimmingCharacters(in: .whitespaces)) \
+                (row: \(row.english))
                 """
             )
         }

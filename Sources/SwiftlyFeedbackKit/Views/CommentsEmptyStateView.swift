@@ -9,9 +9,9 @@ import SwiftUI
 struct CommentsEmptyStateView: View {
     var body: some View {
         ContentUnavailableView {
-            Label(Strings.commentsEmpty, systemImage: "bubble.right")
+            Label(String(localized: .feedbackDetailCommentsEmpty), systemImage: "bubble.right")
         } description: {
-            Text(Strings.commentsEmptyDescription)
+            Text(String(localized: .feedbackDetailCommentsEmptyDescription))
         }
     }
 }

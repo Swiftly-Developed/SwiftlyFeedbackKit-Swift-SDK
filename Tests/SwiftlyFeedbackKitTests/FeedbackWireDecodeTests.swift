@@ -23,10 +23,7 @@ import Testing
     /// and asserts it still installs these two, which is what makes the replica a *checked*
     /// copy rather than a second definition.
     static func clientDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return decoder
+        WireCoding.makeDecoder()
     }
 
     static var corpusURL: URL {
@@ -129,9 +126,14 @@ import Testing
             "Sources/SwiftlyFeedbackKit/Networking/APIClient.swift"
         )
 
-        #expect(source.contains("self.decoder.keyDecodingStrategy = .convertFromSnakeCase"))
-        #expect(source.contains("self.decoder.dateDecodingStrategy = .iso8601"))
-        #expect(source.contains("self.encoder.keyEncodingStrategy = .convertToSnakeCase"))
+        #expect(source.contains("WireCoding.makeDecoder()"))
+        #expect(source.contains("WireCoding.makeEncoder()"))
+        let wire = try WorkspaceSourceTree.sdkSource(
+            "Sources/SwiftlyFeedbackKit/Networking/WireCoding.swift"
+        )
+        #expect(wire.contains("decoder.keyDecodingStrategy = .convertFromSnakeCase"))
+        #expect(wire.contains(".withFractionalSeconds"))
+        #expect(wire.contains("encoder.keyEncodingStrategy = .convertToSnakeCase"))
     }
 
     /// `-12` — non-vacuity for this whole file: the fixture on disk is the real corpus, it

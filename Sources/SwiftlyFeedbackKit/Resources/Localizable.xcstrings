@@ -733,77 +733,6 @@
         }
       }
     },
-    "feedback.form.description.placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Provide more details..."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Proporciona más detalles..."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fournissez plus de détails..."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Geben Sie weitere Details an..."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "詳細を入力してください..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "提供更多详情..."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Forneça mais detalhes..."
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "자세한 내용을 입력하세요..."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fornisci più dettagli..."
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "قدم المزيد من التفاصيل..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Укажите подробности..."
-          }
-        }
-      }
-    },
     "feedback.form.category": {
       "extractionState": "manual",
       "localizations": {
@@ -1274,77 +1203,6 @@
         }
       }
     },
-    "button.send": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Envoyer"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Senden"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "送信"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "发送"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "보내기"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invia"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "إرسال"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить"
-          }
-        }
-      }
-    },
     "button.vote": {
       "extractionState": "manual",
       "localizations": {
@@ -1673,77 +1531,6 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Сортировка и фильтр" } }
       }
     },
-    "toolbar.filter": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filter"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filtrar"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filtrer"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filtern"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "フィルター"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "筛选"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filtrar"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "필터"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filtra"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تصفية"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Фильтр"
-          }
-        }
-      }
-    },
     "toolbar.status": {
       "extractionState": "manual",
       "localizations": {
@@ -1859,6 +1646,150 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Показать перевод" } }
       }
     },
+    "translation.targetDeviceLanguage": {
+      "comment": "First row of the translation-target picker: follow whatever language the device is set to, instead of a fixed choice. This is NOT a language name — do not translate it as one, and do not substitute the name of any particular language.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device Language"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Idioma del dispositivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Langue de l'appareil"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Gerätesprache"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "デバイスの言語"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "设备语言"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Idioma do dispositivo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "기기 언어"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Lingua del dispositivo"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "لغة الجهاز"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Язык устройства"
+          }
+        }
+      }
+    },
+    "translation.targetPickerLabel": {
+      "comment": "Label of the translation-target picker, shown as a row inside the feedback list's sort-and-filter menu. Names the language feedback is translated INTO. Its two sibling rows in the same menu are toolbar.sort ('Sort') and toolbar.status ('Status') — keep it about as short.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate to"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traducir a"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduire en"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Übersetzen in"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "翻訳先"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "翻译为"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduzir para"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "번역 언어"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduci in"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "الترجمة إلى"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Перевести на"
+          }
+        }
+      }
+    },
     "translation.translatedFrom": {
       "comment": "Label above the translation toggle. %@ = localized language name (e.g. German).",
       "extractionState": "manual",
@@ -1879,6 +1810,78 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Tradotto da %@" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "مترجم من %@" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Переведено с %@" } }
+      }
+    },
+    "translation.translatedFromTo": {
+      "comment": "Visible translation affordance when the reader has chosen a target language other than their device language; the one-argument sibling translation.translatedFrom is kept for the device-language case. %1$@ is the localized SOURCE language name, %2$@ the localized TARGET language name — both are already-translated language names, never codes. KEEP THE ARROW: do not rewrite this as a sentence or add a preposition. That is the whole point of this string — \"Translated from %@\" wants an article or a case ending on the language name in French, German, Russian and Portuguese, which a bare placeholder cannot carry, and an arrow wants none. The spoken form for VoiceOver is a SEPARATE key (accessibility.translation.translatedFromTo) and that one IS a sentence, so inflect there instead. RTL (ar): U+2192 RIGHTWARDS ARROW is bidi-neutral and does NOT mirror automatically — author the Arabic value with U+2190 LEFTWARDS ARROW so it still reads source-then-target in an RTL run. Keep the positional %1$@ / %2$@ specifiers.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ ← %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@ → %2$@"
+          }
+        }
       }
     },
     "filter.all": {
@@ -2322,6 +2325,40 @@
             "value": "Комментарии"
           }
         }
+      }
+    },
+    "comment.author.admin": {
+      "comment": "Byline on a comment written by an admin who is not the current person. Contrasts with Me and User.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Admin" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Administrador" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Admin" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Admin" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "管理者" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "管理员" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Admin" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "관리자" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Amministratore" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "مسؤول" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Администратор" } }
+      }
+    },
+    "comment.author.me": {
+      "comment": "Byline on a comment written by the current person. Contrasts with Admin and User.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Me" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Yo" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Moi" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Ich" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "自分" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "我" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Eu" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "나" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Io" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "أنا" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Я" } }
       }
     },
     "comment.author.team": {
@@ -2869,7 +2906,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "거b됨"
+            "value": "거부됨"
           }
         },
         "it": {
@@ -3602,144 +3639,224 @@
         }
       }
     },
-    "votes.count": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld votes"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld votos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld votes"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Stimmen"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld票"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld票"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld votos"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld표"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld voti"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld أصوات"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld голосов"
-          }
-        }
-      }
-    },
     "comments.count": {
+      "comment": "Header for the comments section on the feedback detail screen. %lld is the number of comments.",
       "extractionState": "manual",
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld comments"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld comment"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld comments"
+                }
+              }
+            }
           }
         },
         "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld comentarios"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld comentario"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld comentarios"
+                }
+              }
+            }
           }
         },
         "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld commentaires"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld commentaire"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld commentaires"
+                }
+              }
+            }
           }
         },
         "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld Kommentare"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld Kommentar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld Kommentare"
+                }
+              }
+            }
           }
         },
         "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lldコメント"
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lldコメント"
+                }
+              }
+            }
           }
         },
         "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld条评论"
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld条评论"
+                }
+              }
+            }
           }
         },
         "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld comentários"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld comentário"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld comentários"
+                }
+              }
+            }
           }
         },
         "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld개 댓글"
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld개 댓글"
+                }
+              }
+            }
           }
         },
         "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld commenti"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld commento"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld commenti"
+                }
+              }
+            }
           }
         },
         "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld تعليقات"
+          "variations": {
+            "plural": {
+              "zero": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld تعليق"
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "تعليق واحد"
+                }
+              },
+              "two": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "تعليقان"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld تعليقات"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld تعليقًا"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld تعليق"
+                }
+              }
+            }
           }
         },
         "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld комментариев"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld комментарий"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld комментария"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld комментариев"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld комментария"
+                }
+              }
+            }
           }
         }
       }
@@ -3886,77 +4003,6 @@
         }
       }
     },
-    "error.feedbackLimit.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feedback Limit Reached"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Límite de comentarios alcanzado"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limite de retours atteinte"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feedback-Limit erreicht"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "フィードバック上限に達しました"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "反馈数量已达上限"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limite de feedback atingido"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "피드백 한도 도달"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limite feedback raggiunto"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تم الوصول لحد الملاحظات"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Достигнут лимит отзывов"
-          }
-        }
-      }
-    },
     "error.feedbackLimit.message": {
       "extractionState": "manual",
       "localizations": {
@@ -4094,6 +4140,28 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось декодировать ответ: %@" } }
       }
     },
+    "error.forbidden.message": {
+      "comment": "Alert message shown when the server refuses the request because the caller is not permitted to perform it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You don't have permission to do that"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "No tienes permiso para hacer eso" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Vous n'avez pas la permission de faire cela" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Du hast dazu keine Berechtigung" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "この操作を行う権限がありません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "你没有权限执行此操作" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Você não tem permissão para fazer isso" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 작업을 수행할 권한이 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Non hai il permesso di farlo" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "ليس لديك إذن للقيام بذلك" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "У вас нет прав для выполнения этого действия" } }
+      }
+    },
     "error.invalidResponse.message": {
       "comment": "Alert message shown when the server returns a malformed or unexpected response.",
       "extractionState": "manual",
@@ -4136,6 +4204,28 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Impossibile caricare il feedback" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "تعذّر تحميل الملاحظات" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Не удалось загрузить отзывы" } }
+      }
+    },
+    "error.measureNotAvailable.message": {
+      "comment": "Alert message shown when a requested metric cannot be read with an API key and needs the authenticated project endpoint instead.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That metric isn't available with an API key"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Esa métrica no está disponible con una clave de API" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Cette métrique n'est pas disponible avec une clé API" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Diese Kennzahl ist mit einem API-Schlüssel nicht verfügbar" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "この指標はAPIキーでは利用できません" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "该指标无法通过 API 密钥获取" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Essa métrica não está disponível com uma chave de API" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 지표는 API 키로 사용할 수 없습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questa metrica non è disponibile con una chiave API" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "هذا المقياس غير متاح باستخدام مفتاح API" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Эта метрика недоступна при использовании API-ключа" } }
       }
     },
     "error.networkError.message": {
@@ -4182,6 +4272,28 @@
         "ru": { "stringUnit": { "state": "needs_review", "value": "Ресурс не найден" } }
       }
     },
+    "error.rateLimited.message": {
+      "comment": "Alert message shown when the server has received too many requests in a short period and is asking the caller to slow down.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests. Please try again shortly"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Demasiadas solicitudes. Inténtalo de nuevo en breve" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Trop de requêtes. Veuillez réessayer sous peu" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Zu viele Anfragen. Bitte versuche es in Kürze erneut" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "リクエストが多すぎます。しばらくしてからもう一度お試しください" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "请求过多，请稍后重试" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Muitas solicitações. Tente novamente em instantes" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Troppe richieste. Riprova tra poco" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "طلبات كثيرة جدًا. يرجى المحاولة مرة أخرى بعد قليل" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Слишком много запросов. Повторите попытку через некоторое время" } }
+      }
+    },
     "error.retryButton": {
       "comment": "Retry button on inline error states (failed load, invalid API key).",
       "extractionState": "manual",
@@ -4224,6 +4336,28 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Errore del server (codice di stato: %lld)" } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "خطأ في الخادم (رمز الحالة: %lld)" } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Ошибка сервера (код состояния: %lld)" } }
+      }
+    },
+    "error.tierUpgradeRequired.message": {
+      "comment": "Alert message shown when the requested data is only available on a paid plan.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That data is only available on a paid plan"
+          }
+        },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Esos datos solo están disponibles en un plan de pago" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ces données ne sont disponibles que dans un forfait payant" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Diese Daten sind nur in einem kostenpflichtigen Plan verfügbar" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "そのデータは有料プランでのみ利用できます" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "该数据仅在付费计划中可用" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Esses dados só estão disponíveis em um plano pago" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "해당 데이터는 유료 요금제에서만 이용할 수 있습니다" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questi dati sono disponibili solo con un piano a pagamento" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "هذه البيانات متاحة فقط في خطة مدفوعة" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Эти данные доступны только на платном тарифе" } }
       }
     },
     "error.unauthorized.message": {
@@ -4722,7 +4856,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "건b뛰기"
+            "value": "건너뛰기"
           }
         },
         "it": {
@@ -4887,77 +5021,6 @@
         }
       }
     },
-    "mailingList.optIn.description": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Receive product updates and announcements"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recibir actualizaciones del producto y anuncios"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Recevoir les mises à jour et annonces du produit"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Produktupdates und Ankündigungen erhalten"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ricevi aggiornamenti e annunci sul prodotto"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Receber atualizações e anúncios do produto"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "製品のアップデートやお知らせを受け取る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "제품 업데이트 및 공지 수신"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "接收产品更新和公告"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Получать обновления и объявления о продукте"
-          }
-        },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تلقي تحديثات المنتج والإعلانات"
-          }
-        }
-      }
-    },
     "mailingList.operational": {
       "extractionState": "manual",
       "localizations": {
@@ -5101,19 +5164,70 @@
       }
     },
     "accessibility.vote.count": {
+      "comment": "VoiceOver announcement for the vote count on a feedback row. %lld is the number of votes.",
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "%lld votes" } },
-        "es": { "stringUnit": { "state": "translated", "value": "%lld votos" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "%lld votes" } },
-        "de": { "stringUnit": { "state": "translated", "value": "%lld Stimmen" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "%lld票" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld票" } },
-        "pt-BR": { "stringUnit": { "state": "translated", "value": "%lld votos" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "%lld표" } },
-        "it": { "stringUnit": { "state": "translated", "value": "%lld voti" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "%lld صوت" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "%lld голосов" } }
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld vote"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld votes"
+                }
+              }
+            }
+          }
+        },
+        "es": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld voto" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld votos" } }
+        } } },
+        "fr": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld vote" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld votes" } }
+        } } },
+        "de": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld Stimme" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld Stimmen" } }
+        } } },
+        "ja": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld票" } }
+        } } },
+        "zh-Hans": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld票" } }
+        } } },
+        "pt-BR": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld voto" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld votos" } }
+        } } },
+        "ko": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld표" } }
+        } } },
+        "it": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld voto" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld voti" } }
+        } } },
+        "ar": { "variations": { "plural": {
+          "zero": { "stringUnit": { "state": "needs_review", "value": "%lld صوت" } },
+          "one": { "stringUnit": { "state": "needs_review", "value": "صوت واحد" } },
+          "two": { "stringUnit": { "state": "needs_review", "value": "صوتان" } },
+          "few": { "stringUnit": { "state": "needs_review", "value": "%lld أصوات" } },
+          "many": { "stringUnit": { "state": "needs_review", "value": "%lld صوتًا" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld صوت" } }
+        } } },
+        "ru": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld голос" } },
+          "few": { "stringUnit": { "state": "needs_review", "value": "%lld голоса" } },
+          "many": { "stringUnit": { "state": "needs_review", "value": "%lld голосов" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld голоса" } }
+        } } }
       }
     },
     "accessibility.status": {
@@ -5149,19 +5263,70 @@
       }
     },
     "accessibility.comment.count": {
+      "comment": "VoiceOver announcement for the comment count on a feedback row. %lld is the number of comments.",
       "extractionState": "manual",
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "%lld comments" } },
-        "es": { "stringUnit": { "state": "translated", "value": "%lld comentarios" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "%lld commentaires" } },
-        "de": { "stringUnit": { "state": "translated", "value": "%lld Kommentare" } },
-        "ja": { "stringUnit": { "state": "translated", "value": "%lld件のコメント" } },
-        "zh-Hans": { "stringUnit": { "state": "translated", "value": "%lld条评论" } },
-        "pt-BR": { "stringUnit": { "state": "translated", "value": "%lld comentários" } },
-        "ko": { "stringUnit": { "state": "translated", "value": "댓글 %lld개" } },
-        "it": { "stringUnit": { "state": "translated", "value": "%lld commenti" } },
-        "ar": { "stringUnit": { "state": "translated", "value": "%lld تعليق" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "%lld комментариев" } }
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld comment"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld comments"
+                }
+              }
+            }
+          }
+        },
+        "es": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld comentario" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld comentarios" } }
+        } } },
+        "fr": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld commentaire" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld commentaires" } }
+        } } },
+        "de": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld Kommentar" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld Kommentare" } }
+        } } },
+        "ja": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld件のコメント" } }
+        } } },
+        "zh-Hans": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld条评论" } }
+        } } },
+        "pt-BR": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld comentário" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld comentários" } }
+        } } },
+        "ko": { "variations": { "plural": {
+          "other": { "stringUnit": { "state": "needs_review", "value": "댓글 %lld개" } }
+        } } },
+        "it": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld commento" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld commenti" } }
+        } } },
+        "ar": { "variations": { "plural": {
+          "zero": { "stringUnit": { "state": "needs_review", "value": "%lld تعليق" } },
+          "one": { "stringUnit": { "state": "needs_review", "value": "تعليق واحد" } },
+          "two": { "stringUnit": { "state": "needs_review", "value": "تعليقان" } },
+          "few": { "stringUnit": { "state": "needs_review", "value": "%lld تعليقات" } },
+          "many": { "stringUnit": { "state": "needs_review", "value": "%lld تعليقًا" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld تعليق" } }
+        } } },
+        "ru": { "variations": { "plural": {
+          "one": { "stringUnit": { "state": "needs_review", "value": "%lld комментарий" } },
+          "few": { "stringUnit": { "state": "needs_review", "value": "%lld комментария" } },
+          "many": { "stringUnit": { "state": "needs_review", "value": "%lld комментариев" } },
+          "other": { "stringUnit": { "state": "needs_review", "value": "%lld комментария" } }
+        } } }
       }
     },
     "accessibility.rejectionReason": {
@@ -5544,6 +5709,1446 @@
         "it": { "stringUnit": { "state": "needs_review", "value": "Passa dal testo tradotto a quello originale." } },
         "ar": { "stringUnit": { "state": "needs_review", "value": "يبدّل بين النص المترجم والنص الأصلي." } },
         "ru": { "stringUnit": { "state": "needs_review", "value": "Переключает между переведённым текстом и оригиналом." } }
+      }
+    },
+    "accessibility.translation.translatedFromTo": {
+      "comment": "VoiceOver-only spoken form of the visible arrow affordance translation.translatedFromTo. %1$@ is the source language name, %2$@ the target. This one IS a sentence and SHOULD be inflected naturally — articles and case endings belong here. Sibling of accessibility.translation.toggleHint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translated from %1$@ to %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traducido de %1$@ a %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduit de %1$@ vers %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Übersetzt von %1$@ nach %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@から%2$@に翻訳されました"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "已从%1$@翻译为%2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Traduzido de %1$@ para %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@에서 %2$@(으)로 번역됨"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Tradotto da %1$@ a %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "تُرجم من %1$@ إلى %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Переведено с %1$@ на %2$@"
+          }
+        }
+      }
+    },
+    "menu.sortBy": {
+      "comment": "Section heading in the list Sort & Filter menu above the four sort options.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sort By"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar por"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier par"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortieren nach"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "並べ替え"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排序方式"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar por"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정렬 기준"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordina per"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الترتيب حسب"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сортировка"
+          }
+        }
+      }
+    },
+    "menu.filter": {
+      "comment": "Section heading in the list Sort & Filter menu above the Status and Category submenus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtern"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フィルタ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "필터"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtra"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تصفية"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фильтр"
+          }
+        }
+      }
+    },
+    "toolbar.category": {
+      "comment": "Label of the Category submenu picker in the list Sort & Filter menu.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categoría"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catégorie"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategorie"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カテゴリ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "类别"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categoria"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카테고리"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categoria"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الفئة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Категория"
+          }
+        }
+      }
+    },
+    "filter.allStatuses": {
+      "comment": "Status submenu option that removes the status filter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Statuses"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los estados"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les statuts"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Status"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのステータス"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有状态"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos os status"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 상태"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutti gli stati"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل الحالات"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все статусы"
+          }
+        }
+      }
+    },
+    "filter.allCategories": {
+      "comment": "Category submenu option that removes the category filter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Categories"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las categorías"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les catégories"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Kategorien"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのカテゴリ"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有类别"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as categorias"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 카테고리"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutte le categorie"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كل الفئات"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все категории"
+          }
+        }
+      }
+    },
+    "filter.clearFilters": {
+      "comment": "Destructive menu item, and the button in the no-matching-requests state, that removes the status and category filters. Sort and search text are kept.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Filters"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar filtros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer les filtres"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter löschen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フィルタをクリア"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除筛选"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar filtros"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "필터 지우기"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella filtri"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح عوامل التصفية"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить фильтры"
+          }
+        }
+      }
+    },
+    "category.plural.featureRequest": {
+      "comment": "Display name for the SET of feature requests, used in the Category filter menu and the \"Filtered by\" row. Not a count-based plural.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feature Requests"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitudes de función"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demandes de fonctionnalité"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Funktionsanfragen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "機能リクエスト"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "功能请求"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitações de recurso"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기능 요청"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Richieste funzionalità"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طلبات الميزات"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запросы функций"
+          }
+        }
+      }
+    },
+    "category.plural.bugReport": {
+      "comment": "Display name for the SET of bug reports, used in the Category filter menu and the \"Filtered by\" row. Not a count-based plural.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bug Reports"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reportes de error"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rapports de bug"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehlerberichte"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バグ報告"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "错误报告"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relatórios de bug"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "버그 신고"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segnalazioni bug"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقارير الأخطاء"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отчёты об ошибках"
+          }
+        }
+      }
+    },
+    "category.plural.improvement": {
+      "comment": "Display name for the SET of improvements, used in the Category filter menu and the \"Filtered by\" row. Not a count-based plural.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Improvements"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejoras"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Améliorations"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbesserungen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改善"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改进"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melhorias"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "개선"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miglioramenti"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحسينات"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Улучшения"
+          }
+        }
+      }
+    },
+    "category.plural.other": {
+      "comment": "Display name for the SET of requests in the Other category, used in the Category filter menu and the \"Filtered by\" row. Not a count-based plural.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autres"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonstiges"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "その他"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outros"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기타"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Altro"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أخرى"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Другое"
+          }
+        }
+      }
+    },
+    "filter.summary.filteredBy": {
+      "comment": "Visible row above the list while a filter is active. %@ is the already-joined active filter names (see filter.summary.join), shown in bold.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtered by %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrado por %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtré par %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gefiltert nach %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "絞り込み：%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选条件：%@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrado por %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "필터: %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrato per %@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مُصفّى حسب %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фильтр: %@"
+          }
+        }
+      }
+    },
+    "filter.summary.join": {
+      "comment": "Joins the two active filter names in the visible \"Filtered by\" row. %1$@ is the plural category name, %2$@ the status name. Reorder or change the separator for your locale; keep both placeholders. The space before the separator is non-breaking so a wrapped line never starts with it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@・%2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@\u00A0· %2$@"
+          }
+        }
+      }
+    },
+    "filter.summary.clear": {
+      "comment": "Borderless button at the trailing edge of the \"Filtered by\" row that removes the filters.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリア"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지우기"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить"
+          }
+        }
+      }
+    },
+    "filter.empty.title": {
+      "comment": "Title of the state shown when the active filters match no request. Claims only \"no match\", never completeness.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Matching Requests"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay solicitudes coincidentes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune demande correspondante"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine passenden Anfragen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一致するリクエストはありません"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有匹配的请求"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma solicitação correspondente"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일치하는 요청 없음"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna richiesta corrispondente"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد طلبات مطابقة"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет подходящих запросов"
+          }
+        }
+      }
+    },
+    "filter.empty.description": {
+      "comment": "Description in the no-matching-requests state. Claims only \"no match\", never completeness.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No requests match the selected filters."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna solicitud coincide con los filtros seleccionados."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune demande ne correspond aux filtres sélectionnés."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Anfrage entspricht den ausgewählten Filtern."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選択したフィルタに一致するリクエストはありません。"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有与所选筛选条件匹配的请求。"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma solicitação corresponde aos filtros selecionados."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 필터와 일치하는 요청이 없습니다."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna richiesta corrisponde ai filtri selezionati."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد طلبات تطابق عوامل التصفية المحددة."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет запросов, соответствующих выбранным фильтрам."
+          }
+        }
+      }
+    },
+    "accessibility.filter.filteredBy": {
+      "comment": "VoiceOver value of the Sort & Filter menu and label of the filter row while filtered. %@ is the joined active filter names (see accessibility.filter.join).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtered by %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrado por %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtré par %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gefiltert nach %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "絞り込み：%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选条件：%@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrado por %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "필터: %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrato per %@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مُصفّى حسب %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фильтр: %@"
+          }
+        }
+      }
+    },
+    "accessibility.filter.join": {
+      "comment": "Spoken join of the two active filter names. %1$@ is the plural category name, %2$@ the status name. Use the separator a screen reader pauses on; keep both placeholders.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@、%2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@，%2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@، %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "accessibility.filter.clearAction": {
+      "comment": "VoiceOver action name on the filter row that removes the filters.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear filters"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar filtros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer les filtres"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter löschen"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フィルタをクリア"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除筛选"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar filtros"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "필터 지우기"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella filtri"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح عوامل التصفية"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить фильтры"
+          }
+        }
+      }
+    },
+    "accessibility.vote.lockedHint": {
+      "comment": "VoiceOver hint on a voted vote control when the host does not allow removing votes. The control is disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've voted. Votes can't be removed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya votaste. Los votos no se pueden quitar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous avez voté. Les votes ne peuvent pas être retirés"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast abgestimmt. Stimmen können nicht entfernt werden"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "投票済みです。投票は取り消せません"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你已投票。投票无法取消"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você votou. Votos não podem ser removidos"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "투표했습니다. 투표는 취소할 수 없습니다"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai votato. I voti non possono essere rimossi"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لقد صوّتّ. لا يمكن إزالة الأصوات"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы проголосовали. Голос нельзя отменить"
+          }
+        }
       }
     }
   },

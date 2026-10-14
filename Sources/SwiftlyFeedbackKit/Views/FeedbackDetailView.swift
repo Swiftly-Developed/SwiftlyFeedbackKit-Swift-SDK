@@ -6,15 +6,40 @@ public struct FeedbackDetailView: View {
     @State private var viewModel: FeedbackDetailViewModel
     @State private var translator = FeedbackTranslator()
     @SwiftUI.Environment(\.locale) private var locale
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    // This surface reads the reader's choice and never offers a control of its own:
+    // two controls for one preference is two places to disagree (TRANSLATION01 §14.2).
+    // The state is the control-owning surface's, unchanged, minus the persist arm.
+    @State private var supportedTargets: [Locale.Language] = []
+    @State private var chosenTarget: Locale.Language?     // nil == follow the device
+    private let targetStore = TranslationTargetStore()
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
+
+    /// Toolbar and controls use the system label color unless the host set a theme color.
+    private var controlTint: Color {
+        let theme = SwiftlyFeedback.appearance
+        if theme.primaryColor == .default {
+            return .primary
+        }
+        return theme.primaryColor.resolve(for: colorScheme)
+    }
+
+    /// What every derivation site on this surface reads. Held in view state rather than
+    /// re-read from the preference store on each evaluation, because SwiftUI has no
+    /// dependency on that store and would therefore never re-evaluate this surface for a
+    /// choice made by a control on another one.
+    private var resolvedTarget: Locale.Language {
+        chosenTarget ?? locale.language
+    }
 
     public init(feedback: Feedback, swiftlyFeedback: SwiftlyFeedback? = nil) {
         self.feedback = feedback
-        self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.shared
+        self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.current
         _viewModel = State(wrappedValue: FeedbackDetailViewModel(
             feedback: feedback,
-            swiftlyFeedback: swiftlyFeedback ?? SwiftlyFeedback.shared
+            swiftlyFeedback: swiftlyFeedback ?? SwiftlyFeedback.current
         ))
     }
 
@@ -33,15 +58,17 @@ public struct FeedbackDetailView: View {
                         isShowingOriginal: isShowingOriginalHeader,
                         onToggleTranslation: {
                             viewModel.toggleShowOriginal(viewModel.currentFeedback.id)
-                        }
+                        },
+                        translationTargetName: headerProjection.targetName,
+                        vote: FeedbackDetailVoteView(viewModel: viewModel)
                     )
 
-                    Section {
-                        FeedbackDetailVoteView(viewModel: viewModel)
-                    }
-
                     if config.showCommentSection {
-                        FeedbackDetailCommentsView(viewModel: viewModel, translator: translator)
+                        FeedbackDetailCommentsView(
+                            viewModel: viewModel,
+                            translator: translator,
+                            target: resolvedTarget
+                        )
                     }
                 }
                 #if os(macOS)
@@ -57,24 +84,25 @@ public struct FeedbackDetailView: View {
             }
         }
         .navigationTitle(displayedTitle)
+        .tint(controlTint)
         #if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: "\(viewModel.currentFeedback.title)\n\n\(viewModel.currentFeedback.description)") {
-                    Label(Strings.toolbarShare, systemImage: "square.and.arrow.up")
+                ShareLink(item: "\(displayedTitle)\n\n\(displayedDescription)") {
+                    Label(String(localized: .toolbarShare), systemImage: "square.and.arrow.up")
                 }
-                .help(Strings.toolbarShare)
+                .help(String(localized: .toolbarShare))
             }
             #if os(macOS)
             if config.showCommentSection {
                 ToolbarItem(placement: .automatic) {
-                    Button(Strings.toolbarRefresh, systemImage: "arrow.clockwise") {
+                    Button(String(localized: .toolbarRefresh), systemImage: "arrow.clockwise") {
                         Task { await viewModel.loadComments() }
                     }
                     .keyboardShortcut("r", modifiers: .command)
-                    .help(Strings.toolbarRefresh)
+                    .help(String(localized: .toolbarRefresh))
                 }
             }
             #endif
@@ -91,21 +119,35 @@ public struct FeedbackDetailView: View {
         .onChange(of: viewModel.comments) {
             enqueueTranslations()
         }
-        .onChange(of: locale) {
-            // A locale change invalidates every cached projection (the target
-            // moved), then re-detects and re-enqueues against the new target.
+        .task {
+            // A second task, deliberately not merged into the comment fetch above: the
+            // supported set is awaited from the translation framework and its latency is
+            // unbounded, so merging would serialise that fetch behind it.
+            //
+            // Seeding here is sufficient on this surface and no listener is needed. The
+            // SDK has exactly one control, in the list's toolbar; this screen is a
+            // navigation push, so the control cannot be operated while it is on screen,
+            // and a fresh push re-runs this task.
+            supportedTargets = await translator.supportedTargets()
+            chosenTarget = targetStore.storedTarget(in: supportedTargets)
+        }
+        .onChange(of: resolvedTarget) {
+            // The target moved, so every cached projection is stale: drop them all, then
+            // re-detect and re-enqueue against the new one. This is the device-locale arm
+            // it replaces, widened — the resolved target already depends on the
+            // environment locale.
             translator.invalidateAll()
             enqueueTranslations()
         }
         .onAppear {
-            if SwiftlyFeedback.config.enableAutomaticViewTracking {
+            if SwiftlyFeedback.configuration.enableAutomaticViewTracking {
                 SwiftlyFeedback.view(.feedbackDetail, properties: ["feedbackId": feedback.id.uuidString])
             }
         }
-        .alert(Strings.errorTitle, isPresented: $viewModel.showingError) {
-            Button(Strings.errorOK, role: .cancel) {}
+        .alert(String(localized: .errorTitle), isPresented: $viewModel.showingError) {
+            Button(String(localized: .errorOk), role: .cancel) {}
         } message: {
-            Text(viewModel.errorMessage ?? Strings.errorGeneric)
+            Text(viewModel.errorMessage ?? String(localized: .errorGeneric))
         }
         .sheet(isPresented: $viewModel.showingVoteDialog) {
             VoteDialogView(
@@ -133,15 +175,19 @@ public struct FeedbackDetailView: View {
         viewModel.showOriginalIDs.contains(viewModel.currentFeedback.id)
     }
 
-    /// The header's translation inputs: cached projections plus the localized
-    /// source-language name. All `nil` (affordance absent, original text stands)
+    /// The header's translation inputs: cached projections plus the localized source-
+    /// and target-language names. All `nil` (affordance absent, original text stands)
     /// until the cache fills, and when the source language has no localized display
     /// name — a raw code is never shown.
+    ///
+    /// `targetName` is `nil` whenever the target IS the device language, which selects
+    /// the existing one-argument affordance copy: naming the obvious target adds nothing.
     private var headerProjection: (
-        title: String?, description: String?, rejectionReason: String?, sourceName: String?
+        title: String?, description: String?, rejectionReason: String?,
+        sourceName: String?, targetName: String?
     ) {
         let item = viewModel.currentFeedback
-        let target = locale.language
+        let target = resolvedTarget
         let title = translator.translation(
             for: item.id, field: .title, target: target, sourceText: item.title
         )
@@ -152,14 +198,19 @@ public struct FeedbackDetailView: View {
             translator.translation(for: item.id, field: .rejectionReason, target: target, sourceText: $0)
         }
         guard title != nil || description != nil || rejectionReason != nil else {
-            return (nil, nil, nil, nil)
+            return (nil, nil, nil, nil, nil)
         }
         let source = SourceLanguageDetector.detect(item.description)
             ?? SourceLanguageDetector.detect(item.title)
         guard let sourceName = source?.localizedDisplayName(in: locale) else {
-            return (nil, nil, nil, nil)
+            return (nil, nil, nil, nil, nil)
         }
-        return (title, description, rejectionReason, sourceName)
+        // The same predicate the pipeline uses to decide "no translation needed", so
+        // "the target is the device language" means the same thing on both sides.
+        let targetName: String? = target.isSameLanguage(as: locale.language)
+            ? nil
+            : target.localizedTargetName(in: locale)
+        return (title, description, rejectionReason, sourceName, targetName)
     }
 
     /// The navigation title uses the same projection as the header's title text.
@@ -171,11 +222,20 @@ public struct FeedbackDetailView: View {
         return viewModel.currentFeedback.title
     }
 
+    /// The description currently on screen, matching the header toggle.
+    private var displayedDescription: String {
+        if !isShowingOriginalHeader, headerProjection.sourceName != nil,
+           let translated = headerProjection.description {
+            return translated
+        }
+        return viewModel.currentFeedback.description
+    }
+
     /// Detects source languages per field for the feedback and its comments and
-    /// queues the uncached remainder toward the current locale. Skipped entirely
-    /// when the target locale carries no language code.
+    /// queues the uncached remainder toward the reader's resolved target. Skipped
+    /// entirely when that target carries no language code.
     private func enqueueTranslations() {
-        let target = locale.language
+        let target = resolvedTarget
         guard target.languageCode != nil else { return }
         var units = SourceLanguageDetector.units(for: viewModel.currentFeedback, target: target)
         units += viewModel.comments.compactMap {
@@ -185,7 +245,7 @@ public struct FeedbackDetailView: View {
     }
 }
 
-struct FeedbackDetailHeaderView: View {
+struct FeedbackDetailHeaderView<Vote: View>: View {
     let feedback: Feedback
     /// Translated projections, `nil` when no translation is cached (defaults keep
     /// existing call sites source-compatible). One affordance below the description
@@ -197,8 +257,15 @@ struct FeedbackDetailHeaderView: View {
     var translationSourceName: String? = nil
     var isShowingOriginal: Bool = false
     var onToggleTranslation: (() -> Void)? = nil
+    /// Localized name of the reader's chosen target language; `nil` when that target IS
+    /// the device language, which keeps the existing one-argument copy.
+    var translationTargetName: String? = nil
+    /// The vote control, trailing in this card the way the Showcase footer places its capsule.
+    var vote: Vote
 
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
+    @ScaledMetric(relativeTo: .body) private var voteSpacing: CGFloat = 12
+
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
 
     private var displayedTitle: String {
         if !isShowingOriginal, let translatedTitle { return translatedTitle }
@@ -231,12 +298,13 @@ struct FeedbackDetailHeaderView: View {
 
             Text(displayedDescription)
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let translationSourceName, let onToggleTranslation {
                 TranslationAffordanceView(
                     sourceLanguageName: translationSourceName,
+                    targetLanguageName: translationTargetName,
                     isShowingOriginal: isShowingOriginal,
                     onToggle: onToggleTranslation
                 )
@@ -248,65 +316,68 @@ struct FeedbackDetailHeaderView: View {
                 FeedbackDetailRejectionReason(reason: displayedRejectionReason(reason))
             }
 
-            if let createdAt = feedback.createdAt {
-                Text(String(format: Strings.feedbackSubmitted, createdAt.formatted(date: .abbreviated, time: .shortened)))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // Date on the leading side, vote on the trailing side, one row of this card.
+            // A separate section was a nearly empty card of its own.
+            FeedbackShowcaseRowOrStackLayout(
+                horizontalSpacing: voteSpacing,
+                verticalSpacing: voteSpacing,
+                pinsLastToTrailingEdge: true
+            ) {
+                if let createdAt = feedback.createdAt {
+                    SystemLabel(
+                        text: String(localized: .feedbackDetailSubmitted(createdAt.formatted(date: .abbreviated, time: .shortened)))
+                    )
+                }
+                vote
             }
         }
     }
 }
 
-/// Status as a labeled row. The value uses a caption text style and the theme tint;
-/// the list row supplies the chrome.
 private struct FeedbackDetailStatusRow: View {
     let status: FeedbackStatus
 
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-
     var body: some View {
-        LabeledContent(Strings.toolbarStatus) {
+        LabeledContent(String(localized: .toolbarStatus)) {
             Text(status.localizedDisplayName)
-                .font(.caption)
-                .foregroundStyle(SwiftlyFeedback.theme.statusColors.color(for: status).resolve(for: colorScheme))
+                .font(.body)
+                .foregroundStyle(.primary)
         }
-        .accessibilityLabel(Strings.accessibilityStatus(status.localizedDisplayName))
     }
 }
 
-/// Category as a labeled row, matching the status row.
 private struct FeedbackDetailCategoryRow: View {
     let category: FeedbackCategory
 
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-
     var body: some View {
-        LabeledContent(Strings.formCategory) {
+        LabeledContent(String(localized: .feedbackFormCategory)) {
             Text(category.localizedDisplayName)
-                .font(.caption)
-                .foregroundStyle(SwiftlyFeedback.theme.categoryColors.color(for: category).resolve(for: colorScheme))
+                .font(.body)
+                .foregroundStyle(.primary)
         }
-        .accessibilityLabel(Strings.accessibilityCategory(category.localizedDisplayName))
     }
 }
 
-/// Rejection copy without a custom card. The symbol carries the meaning alongside the red tint.
 private struct FeedbackDetailRejectionReason: View {
     let reason: String
 
     var body: some View {
         VStack(alignment: .leading) {
-            Label(Strings.rejectionReasonTitle, systemImage: "xmark.circle.fill")
-                .font(.subheadline)
-                .bold()
-                .foregroundStyle(.red)
+            Label {
+                Text(String(localized: .rejectionReasonTitle))
+            } icon: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.red)
+                    .accessibilityHidden(true)
+            }
+            .font(.subheadline)
+            .bold()
+            .foregroundStyle(.primary)
             Text(reason)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(Strings.accessibilityRejectionReason(reason))
     }
 }
 
@@ -314,8 +385,8 @@ struct FeedbackDetailVoteView: View {
     @Bindable var viewModel: FeedbackDetailViewModel
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
-    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.config }
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     private var themeColor: Color {
         theme.primaryColor.resolve(for: colorScheme)
@@ -328,73 +399,91 @@ struct FeedbackDetailVoteView: View {
     }
 
     var body: some View {
-        HStack {
-            Button {
-                Task { await viewModel.toggleVote() }
-            } label: {
-                if config.showVoteCount {
-                    Label {
-                        Text(feedback.voteCount, format: .number)
-                    } icon: {
-                        Image(systemName: feedback.hasVoted ? "arrowtriangle.up.fill" : "arrowtriangle.up")
-                    }
-                } else {
-                    Text(feedback.hasVoted ? Strings.votedButton : Strings.voteButton)
+        // The parent row pins this to the trailing edge. The count is a system label
+        // so it scales. The Showcase capsule's button style does not, once that
+        // button is the audited row.
+        Group {
+            if config.showVoteCount {
+                VoteButton(
+                    voteCount: feedback.voteCount,
+                    hasVoted: feedback.hasVoted,
+                    status: feedback.status,
+                    action: { Task { await viewModel.toggleVote() } }
+                )
+            } else {
+                Button {
+                    Task { await viewModel.toggleVote() }
+                } label: {
+                    Text(feedback.hasVoted ? String(localized: .buttonVoted) : String(localized: .buttonVote))
                 }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(theme.primaryColor == .default ? .primary : themeColor)
+                .disabled(isDisabled)
+                .accessibilityLabel(visibleVoteLabel)
+                .accessibilityInputLabels([
+                    visibleVoteLabel,
+                    String(localized: feedback.hasVoted ? .buttonVoted : .buttonVote)
+                ])
+                .accessibilityValue(feedback.hasVoted ? String(localized: .accessibilityVoted) : String(localized: .accessibilityNotVoted))
+                .accessibilityHint(
+                    !feedback.status.canVote
+                        ? String(localized: .accessibilityVotingClosed)
+                        : VotePresentation.resolve(
+                            showVoteCount: true,
+                            isPlaceholder: false,
+                            canVote: true,
+                            hasVoted: feedback.hasVoted,
+                            allowUndoVote: config.allowUndoVote
+                        ).accessibilityHint?.localizedText ?? ""
+                )
             }
-            .buttonStyle(.bordered)
-            .modifier(VotedControlTint(isVoted: feedback.hasVoted, color: themeColor))
-            .disabled(isDisabled)
-            .accessibilityLabel(Strings.accessibilityVoteCount(feedback.voteCount))
-            .accessibilityValue(feedback.hasVoted ? Strings.accessibilityVoted : Strings.accessibilityNotVoted)
-            .accessibilityHint(
-                !feedback.status.canVote
-                    ? Strings.accessibilityVotingClosed
-                    : feedback.hasVoted
-                        ? Strings.accessibilityUnvoteHint
-                        : Strings.accessibilityVoteHint
-            )
-
-            Spacer(minLength: 0)
         }
     }
-}
 
-/// Tints the bordered vote control only after the person has voted.
-private struct VotedControlTint: ViewModifier {
-    let isVoted: Bool
-    let color: Color
-
-    func body(content: Content) -> some View {
-        if isVoted {
-            content.tint(color)
-        } else {
-            content
+    /// The string actually drawn on the button. Voice Control shows this name.
+    private var visibleVoteLabel: String {
+        if config.showVoteCount {
+            return feedback.voteCount.formatted(.number)
         }
+        return String(localized: feedback.hasVoted ? .buttonVoted : .buttonVote)
     }
 }
 
 struct FeedbackDetailCommentsView: View {
     @Bindable var viewModel: FeedbackDetailViewModel
     let translator: FeedbackTranslator
+    /// The reader's resolved target, handed down rather than re-derived: this view
+    /// enqueues nothing and only reads cached projections, so a seam of its own would
+    /// mean a second independently-timed answer and a render disagreeing with its parent.
+    let target: Locale.Language
     @SwiftUI.Environment(\.locale) private var locale
 
     /// A comment row's translation inputs: the cached projection plus the localized
-    /// source-language name. Both `nil` (affordance absent, original text stands)
-    /// until the cache fills, and when the source language has no localized display
-    /// name — a raw code is never shown.
-    private func translationProjection(for comment: Comment) -> (text: String?, sourceName: String?) {
-        let target = locale.language
+    /// source- and target-language names. All `nil` (affordance absent, original text
+    /// stands) until the cache fills, and when the source language has no localized
+    /// display name — a raw code is never shown.
+    ///
+    /// `targetName` is `nil` whenever the target IS the device language, which selects
+    /// the existing one-argument affordance copy: naming the obvious target adds nothing.
+    private func translationProjection(
+        for comment: Comment
+    ) -> (text: String?, sourceName: String?, targetName: String?) {
         guard let text = translator.translation(
             for: comment.id, field: .commentText, target: target, sourceText: comment.content
         ) else {
-            return (nil, nil)
+            return (nil, nil, nil)
         }
         guard let sourceName = SourceLanguageDetector.detect(comment.content)?
             .localizedDisplayName(in: locale) else {
-            return (nil, nil)
+            return (nil, nil, nil)
         }
-        return (text, sourceName)
+        // The same predicate the pipeline uses to decide "no translation needed", so
+        // "the target is the device language" means the same thing on both sides.
+        let targetName: String? = target.isSameLanguage(as: locale.language)
+            ? nil
+            : target.localizedTargetName(in: locale)
+        return (text, sourceName, targetName)
     }
 
     /// Placeholder comment for the loading skeleton: plausible metrics (a
@@ -411,18 +500,13 @@ struct FeedbackDetailCommentsView: View {
     var body: some View {
         Section {
             if viewModel.isLoadingComments && viewModel.comments.isEmpty {
-                // Ghost rows: the real `CommentRowView` fed placeholder values,
-                // so the transition to loaded content shifts nothing.
                 ForEach(0..<3, id: \.self) { _ in
                     CommentRowView(comment: Self.placeholder)
                 }
                 .redacted(reason: .placeholder)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Strings.accessibilityLoadingComments)
+                .accessibilityLabel(String(localized: .accessibilityLoadingComments))
             } else if viewModel.comments.isEmpty && viewModel.hasLoadedCommentsOnce {
-                // Gated on a fetch-completed fact, never `isEmpty` alone — a
-                // failed first load renders neither ghosts nor a false
-                // "no comments" claim (the error alert has already fired).
                 CommentsEmptyStateView()
                     .frame(maxWidth: .infinity, minHeight: 220)
                     .listRowSeparator(.hidden)
@@ -435,12 +519,22 @@ struct FeedbackDetailCommentsView: View {
                         translatedText: projection.text,
                         translationSourceName: projection.sourceName,
                         isShowingOriginal: viewModel.showOriginalIDs.contains(comment.id),
-                        onToggleTranslation: { viewModel.toggleShowOriginal(comment.id) }
+                        onToggleTranslation: { viewModel.toggleShowOriginal(comment.id) },
+                        translationTargetName: projection.targetName,
+                        currentUserId: UserIdentifier.getCurrentUserId()
                     )
                 }
             }
         } header: {
-            Text(Strings.commentsCount(viewModel.comments.count))
+            // Footnote secondary label, no fill. A SwiftUI `Text` header is flagged as
+            // only partly supporting Dynamic Type, and an opaque system background draws
+            // a white box on the grouped grey.
+            SystemLabel(
+                text: String(localized: .commentsCount(viewModel.comments.count)),
+                textStyle: .footnote,
+                showsBackground: false,
+                usesSecondaryLabel: true
+            )
         }
 
         Section {
@@ -449,13 +543,12 @@ struct FeedbackDetailCommentsView: View {
     }
 }
 
-/// Native multiline field plus a prominent send button. Return submits.
 private struct FeedbackDetailCommentComposer: View {
     @Bindable var viewModel: FeedbackDetailViewModel
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
 
     private var themeColor: Color {
-        SwiftlyFeedback.theme.primaryColor.resolve(for: colorScheme)
+        SwiftlyFeedback.appearance.primaryColor.resolve(for: colorScheme)
     }
 
     private var canSubmit: Bool {
@@ -463,13 +556,12 @@ private struct FeedbackDetailCommentComposer: View {
     }
 
     var body: some View {
-        TextField(Strings.addCommentPlaceholder, text: $viewModel.newCommentText, axis: .vertical)
+        TextField(String(localized: .feedbackDetailCommentsAdd), text: $viewModel.newCommentText, axis: .vertical)
             .lineLimit(1...5)
             #if os(macOS)
             .textFieldStyle(.roundedBorder)
             #endif
             .submitLabel(.send)
-            .accessibilityLabel(Strings.accessibilityAddComment)
             .onSubmit(submit)
             .onKeyPress(.return) {
                 guard canSubmit else { return .ignored }
@@ -477,16 +569,23 @@ private struct FeedbackDetailCommentComposer: View {
                 return .handled
             }
 
-        Button(Strings.sendButton, action: submit)
+        Button(action: submit) {
+            if viewModel.isSubmittingComment {
+                ProgressView()
+                    .controlSize(.small)
+            } else {
+                Text(String(localized: .accessibilityPostComment))
+            }
+        }
             .buttonStyle(.borderedProminent)
-            .tint(themeColor)
+            .controlSize(.large)
+            .tint(SwiftlyFeedback.appearance.primaryColor == .default ? Color.primary : themeColor)
             .disabled(!canSubmit)
-            .accessibilityLabel(Strings.accessibilityPostComment)
+            .accessibilityLabel(String(localized: .accessibilityPostComment))
     }
 
     private func submit() {
         guard canSubmit else { return }
-        // Set before the task so Return and the button cannot both post.
         viewModel.isSubmittingComment = true
         Task { await viewModel.submitComment() }
     }
@@ -501,45 +600,72 @@ struct CommentRowView: View {
     var translationSourceName: String? = nil
     var isShowingOriginal: Bool = false
     var onToggleTranslation: (() -> Void)? = nil
-
-    @SwiftUI.Environment(\.colorScheme) private var colorScheme
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    /// Localized name of the reader's chosen target language; `nil` when that target IS
+    /// the device language, which keeps the existing one-argument copy.
+    var translationTargetName: String? = nil
+    /// The signed-in SDK user. Matching `comment.userId` renders Me.
+    var currentUserId: String? = nil
 
     private var displayedContent: String {
         if !isShowingOriginal, let translatedText { return translatedText }
         return comment.content
     }
 
+    private var authorLabel: String {
+        switch CommentAuthorRole.resolve(
+            commentUserId: comment.userId,
+            isAdmin: comment.isAdmin,
+            currentUserId: currentUserId
+        ) {
+        case .me:
+            String(localized: .commentAuthorMe)
+        case .admin:
+            String(localized: .commentAuthorAdmin)
+        case .user:
+            String(localized: .commentAuthorUser)
+        }
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let row = VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(comment.isAdmin ? Strings.commentAuthorTeam : Strings.commentAuthorUser)
-                    .font(.caption)
-                    .bold()
-                    .foregroundStyle(comment.isAdmin ? theme.primaryColor.resolve(for: colorScheme) : .secondary)
+                SystemLabel(
+                    text: authorLabel,
+                    textStyle: .headline
+                )
 
                 if let createdAt = comment.createdAt {
-                    Text("·")
-                        .foregroundStyle(.tertiary)
-                    Text(createdAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    SystemLabel(text: "·")
+                    SystemLabel(text: createdAt.formatted(date: .abbreviated, time: .shortened))
                 }
             }
 
-            Text(displayedContent)
-                .font(.subheadline)
+            SystemLabel(text: displayedContent)
 
             if let translationSourceName, let onToggleTranslation {
                 TranslationAffordanceView(
                     sourceLanguageName: translationSourceName,
+                    targetLanguageName: translationTargetName,
                     isShowingOriginal: isShowingOriginal,
                     onToggle: onToggleTranslation
                 )
             }
         }
         .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
+
+        // `.combine` folds the affordance's button into the row, the same way
+        // the list's `.ignore` does. Re-expose the toggle only when it is mounted.
+        if let onToggleTranslation, translationSourceName != nil {
+            row.accessibilityAction(
+                named: isShowingOriginal
+                    ? String(localized: .translationShowTranslation)
+                    : String(localized: .translationShowOriginal)
+            ) {
+                onToggleTranslation()
+            }
+        } else {
+            row
+        }
     }
 }
 
@@ -566,7 +692,7 @@ final class FeedbackDetailViewModel {
     var showingVoteDialog = false
     var voteEmail = ""
     var voteNotifyStatusChange = false
-    var voteSubscribeToMailingList = SwiftlyFeedback.config.mailingListDefaultOptIn
+    var voteSubscribeToMailingList = SwiftlyFeedback.configuration.mailingListDefaultOptIn
     var voteOperationalEmails = true
     var voteMarketingEmails = true
 
@@ -575,7 +701,7 @@ final class FeedbackDetailViewModel {
     init(feedback: Feedback, swiftlyFeedback: SwiftlyFeedback?) {
         self.currentFeedback = feedback
         self.swiftlyFeedback = swiftlyFeedback
-        self.voteNotifyStatusChange = SwiftlyFeedback.config.voteNotificationDefaultOptIn
+        self.voteNotifyStatusChange = SwiftlyFeedback.configuration.voteNotificationDefaultOptIn
     }
 
     /// Flips one item (the feedback header as a whole, or one comment) between its
@@ -601,7 +727,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? Strings.errorFeedbackLimitMessage
+            errorMessage = message ?? String(localized: .errorFeedbackLimitMessage)
             showingError = true
         } catch {
             errorMessage = error.localizedDescription
@@ -613,7 +739,7 @@ final class FeedbackDetailViewModel {
         guard swiftlyFeedback != nil else { return }
         guard !hasInvalidApiKey else { return }
 
-        let config = SwiftlyFeedback.config
+        let config = SwiftlyFeedback.configuration
 
         if currentFeedback.hasVoted {
             // Unvoting - no dialog needed
@@ -689,7 +815,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? Strings.errorFeedbackLimitMessage
+            errorMessage = message ?? String(localized: .errorFeedbackLimitMessage)
             showingError = true
         } catch {
             errorMessage = error.localizedDescription
@@ -717,7 +843,7 @@ final class FeedbackDetailViewModel {
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
-            errorMessage = message ?? Strings.errorFeedbackLimitMessage
+            errorMessage = message ?? String(localized: .errorFeedbackLimitMessage)
             showingError = true
         } catch {
             errorMessage = error.localizedDescription

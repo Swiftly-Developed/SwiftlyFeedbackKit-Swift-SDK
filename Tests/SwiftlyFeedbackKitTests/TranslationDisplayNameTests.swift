@@ -37,4 +37,50 @@ import Testing
         let name = Locale.Language(identifier: "de").localizedDisplayName(in: Locale(identifier: "de_DE"))
         #expect(name == "Deutsch")
     }
+
+    // MARK: - localizedTargetName(in:) — TRANSLATION01 phase 03
+    //
+    // The picker's sibling of the helper above. It resolves the minimal identifier rather
+    // than the bare language code, which is the whole reason it exists.
+
+    @Test("Script and regional variants get distinct picker names where the older helper collapses them")
+    func targetNameSeparatesVariantsTheSourceHelperCollapses() {
+        let english = Locale(identifier: "en_US")
+        let simplified = Locale.Language(identifier: "zh-Hans")
+        let traditional = Locale.Language(identifier: "zh-Hant")
+
+        #expect(simplified.localizedTargetName(in: english) == "Chinese")
+        #expect(traditional.localizedTargetName(in: english) == "Chinese (Taiwan)")
+        #expect(simplified.localizedTargetName(in: english) != traditional.localizedTargetName(in: english))
+
+        // The falsification the whole helper rests on: the existing helper renders both
+        // as one word, so a picker reusing it would show two identical rows for two
+        // languages the pipeline now treats as genuinely different.
+        #expect(simplified.localizedDisplayName(in: english) == traditional.localizedDisplayName(in: english))
+    }
+
+    @Test("The picker name is localized into the display locale, not left in English")
+    func targetNameIsLocalizedIntoTheDisplayLocale() {
+        let british = Locale.Language(identifier: "en-GB")
+        let name = british.localizedTargetName(in: Locale(identifier: "de_DE"))
+        #expect(name != nil)
+        #expect(name != "English (United Kingdom)")
+        #expect(name == "Englisch (Vereinigtes Königreich)")
+    }
+
+    @Test("A language with no name yields nil rather than echoing the identifier back")
+    func targetNameIsNilForANamelessLanguage() {
+        let english = Locale(identifier: "en_US")
+        #expect(Locale.Language(identifier: "zzz").localizedTargetName(in: english) == nil)
+        #expect(Locale.Language(identifier: "art-lojban").localizedTargetName(in: english) == nil)
+        // Positive control, so a helper that returned nil for everything cannot pass.
+        #expect(Locale.Language(identifier: "de").localizedTargetName(in: english) == "German")
+    }
+
+    @Test("The empty identifier is stopped by the language-code guard")
+    func targetNameIsNilForTheEmptyIdentifier() {
+        let empty = Locale.Language(identifier: "")
+        #expect(empty.languageCode == nil)
+        #expect(empty.localizedTargetName(in: Locale(identifier: "en_US")) == nil)
+    }
 }

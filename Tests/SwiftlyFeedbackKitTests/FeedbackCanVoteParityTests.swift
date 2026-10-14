@@ -17,12 +17,12 @@ import Testing
 /// (`QA-UNIT12-VAPOR-SDK`, reserved). The alternative to reading the declarations is not a
 /// better test; it is no test, and six copies of a product rule with no link between them.
 ///
-/// **F1, measured and recorded, not specced around.** Exactly one of the six uses an inclusion
-/// list. Five negate the terminal set, which `AGENTS.md` forbids by name because *"a negation
-/// silently starts matching (or blocking) every token a future phase adds"*. On a seventh
-/// status the Swift SDK **fails to compile**; Vapor, Kotlin, Flutter, RN and the server all
-/// silently treat it as **votable** — the permissive direction, on a status the server may
-/// well intend to be terminal. The remediation is §20's, not this suite's.
+/// **F1, measured and recorded, not specced around.** The Swift SDK and the React Native
+/// vote button use an inclusion list. The other four negate the terminal set, which
+/// `AGENTS.md` forbids by name because *"a negation silently starts matching (or blocking)
+/// every token a future phase adds"*. On a seventh status the Swift SDK **fails to compile**
+/// and React Native stays disabled until `VOTABLE_STATUSES` names it. Vapor, Kotlin, Flutter,
+/// and the server still silently treat an unknown status as **votable**.
 @Suite struct FeedbackCanVoteParityTests {
 
     /// The canon: the two statuses on which voting is refused. Root `CLAUDE.md` states this
@@ -43,9 +43,9 @@ import Testing
         let startAnchor: String
         /// The first line *after* the predicate. The slice is exclusive of it.
         let endAnchor: String
-        /// `false` for the one site that uses an inclusion list — its slice names all six
-        /// cases by design, so its terminal set is derived from the `false`-returning arm
-        /// instead (`theSwiftSDKPredicateIsAnInclusionList`).
+        /// `false` for an inclusion list. The Swift SDK names all six cases, so its terminal
+        /// set comes from the `false`-returning arm. React Native names the four votable
+        /// statuses in `VOTABLE_STATUSES`.
         let isNegation: Bool
     }
 
@@ -82,9 +82,9 @@ import Testing
         PredicateSite(
             client: "React Native SDK",
             path: "SwiftlyFeedbackKit-RN/src/components/VoteButton.tsx",
-            startAnchor: "const canVote =",
+            startAnchor: "const VOTABLE_STATUSES",
             endAnchor: "const handlePress",
-            isNegation: true
+            isNegation: false
         ),
         PredicateSite(
             client: "Server (inline guard)",
@@ -191,6 +191,20 @@ import Testing
         #expect(Self.tokens(in: trueArm) == Self.allTokens.subtracting(Self.terminalTokens))
     }
 
+    /// `-11` — React Native's `VOTABLE_STATUSES` is the complement of `{completed, rejected}`.
+    ///
+    /// An unknown status is absent from the set, so the button stays disabled. That is the
+    /// same partition as the Swift SDK's inclusion list, spelled as the votable side.
+    @Test("-11 · React Native's votable set is the complement of the terminal pair")
+    func reactNativeInclusionListIsTheComplement() throws {
+        try WorkspaceSourceTree.requireWorkspace()
+        let site = try #require(Self.sites.first { $0.client == "React Native SDK" })
+        let slice = try Self.predicateSlice(for: site)
+
+        #expect(slice.contains("VOTABLE_STATUSES"))
+        #expect(Self.tokens(in: slice) == Self.allTokens.subtracting(Self.terminalTokens))
+    }
+
     /// `-11`, the runtime anchor — the one predicate this process **can call** partitions the
     /// way the five source-derived ones say they do.
     ///
@@ -207,19 +221,20 @@ import Testing
 
     // MARK: - F1 · the shapes, recorded
 
-    /// **F1** — five of the six sites negate, and exactly one uses an inclusion list.
+    /// **F1** — four of the six sites negate, and the Swift SDK plus React Native use an
+    /// inclusion list.
     ///
     /// The count itself is the finding. Asserting it means the day someone converts a
     /// negation to a `when` / `switch` (the §20 remediation) this file goes red and gets
     /// updated deliberately, rather than the census quietly going stale — which is how a
     /// documented finding becomes fiction.
-    @Test("-11 · Exactly one of the six can-vote declarations is an inclusion list")
-    func exactlyOneDeclarationUsesAnInclusionList() throws {
+    @Test("-11 · The Swift SDK and React Native are the inclusion lists")
+    func swiftAndReactNativeAreTheInclusionLists() throws {
         try WorkspaceSourceTree.requireWorkspace()
 
         #expect(Self.sites.count == 6)
-        #expect(Self.sites.filter { !$0.isNegation }.count == 1)
-        #expect(Self.sites.filter(\.isNegation).count == 5)
+        #expect(Self.sites.filter { !$0.isNegation }.map(\.client).sorted() == ["React Native SDK", "Swift SDK"])
+        #expect(Self.sites.filter(\.isNegation).count == 4)
 
         for site in Self.sites where site.isNegation {
             let slice = Self.normalize(try Self.predicateSlice(for: site))

@@ -2,6 +2,8 @@
 
 Swift SDK with SwiftUI views for integrating feedback into iOS/macOS/visionOS apps.
 
+SwiftUI and other Apple UI work in this package uses the vendored `swiftui-pro` and `apple-hig` skills in [`.agents/skills/`](../.agents/skills/). See [AGENTS.md](../AGENTS.md).
+
 ## Build & Test
 
 ```bash
@@ -15,17 +17,19 @@ swift test --filter TestClassName/testMethodName  # Single test
 - iOS 26+
 - macOS 26+
 - visionOS 26+
+- No watchOS target and no tvOS target
 
 ## Directory Structure
 
 ```
+Plugins/GenerateStringCatalogSymbols/   # Build-tool plugin. No public Strings type.
 Sources/SwiftlyFeedbackKit/
 ├── SwiftlyFeedback.swift        # Main entry point & configuration
-├── Strings.swift                # Localized strings (String Catalog access)
 ├── KeychainHelper.swift         # Secure Keychain storage
 ├── UserIdentifier.swift         # Persistent user identifiers
 ├── Configuration/
 │   ├── Config.swift             # SDK options
+│   ├── FeedbackListStyle.swift  # .showcase (default) / .classic
 │   ├── EnvironmentAPIKeys.swift # Multi-environment keys
 │   └── Theme.swift              # Theme configuration
 ├── Utilities/
@@ -35,6 +39,8 @@ Sources/SwiftlyFeedbackKit/
 │   ├── Feedback.swift           # Feedback model
 │   ├── Comment.swift            # Comment model
 │   ├── VoteResult.swift         # Vote result
+│   ├── FeedbackListFilter.swift # Session-only status + category filter (client-side)
+│   ├── FeedbackListBranch.swift # Which loaded state the list shows
 │   └── ViewEvent.swift          # Event tracking
 ├── Networking/
 │   ├── APIClient.swift          # HTTP client
@@ -54,7 +60,16 @@ Sources/SwiftlyFeedbackKit/
 │   └── PrivacyInfo.xcprivacy    # Privacy manifest
 └── Views/
     ├── FeedbackListView.swift
-    ├── FeedbackRowView.swift
+    ├── FeedbackListSortFilterMenu.swift   # Sort, Status, Category, translation, Clear Filters
+    ├── FeedbackListFilterSummaryRow.swift # "Filtered by … Clear"
+    ├── FeedbackFilterEmptyStateView.swift # "No Matching Requests"
+    ├── VotePresentation.swift             # One vote-control resolver for both list styles
+    ├── Showcase/                          # The default list style (FEEDBACK01)
+    │   ├── FeedbackShowcaseList.swift     # One inset-grouped section per request
+    │   ├── FeedbackShowcaseCard.swift     # Status eyebrow, title, description, footer
+    │   ├── FeedbackShowcaseVoteCapsule.swift  # Capsule, or a plain count when closed
+    │   └── …                              # Eyebrow, glyph, footer, capsule style, skeleton
+    ├── FeedbackRowView.swift              # Classic card
     ├── FeedbackDetailView.swift
     ├── SubmitFeedbackView.swift
     ├── VoteDialogView.swift
@@ -99,7 +114,7 @@ SwiftlyFeedback.configure(environment: .production, key: "your-prod-key")
 ```swift
 // May be unreliable in some cases (uses AppTransaction with timeout)
 SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
-    debug: "sf_local_...",        // Optional: dev server
+    debug: "sf_dev_...",          // Optional: development API. Nil uses the testflight key.
     testflight: "sf_staging_...",  // Required: staging server
     production: "sf_prod_..."      // Required: production server
 ))
@@ -111,36 +126,36 @@ SwiftlyFeedback.configureAuto(keys: EnvironmentAPIKeys(
 
 ```swift
 // Disable submission (e.g., for free users)
-SwiftlyFeedback.config.allowFeedbackSubmission = false
-SwiftlyFeedback.config.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
+SwiftlyFeedback.configuration.allowFeedbackSubmission = false
+SwiftlyFeedback.configuration.feedbackSubmissionDisabledMessage = "Upgrade to Pro!"
 
 // Disable logging
-SwiftlyFeedback.config.loggingEnabled = false
+SwiftlyFeedback.configuration.loggingEnabled = false
 
 // Disable reader-side on-device translation of feedback content (default on;
 // iOS/macOS only — the affordance is simply absent on visionOS and for
 // unsupported language pairs)
-SwiftlyFeedback.config.translationEnabled = false
+SwiftlyFeedback.configuration.translationEnabled = false
 
 // Event tracking
 SwiftlyFeedback.view("feature_details", properties: ["id": "123"])
-SwiftlyFeedback.config.enableAutomaticViewTracking = false
+SwiftlyFeedback.configuration.enableAutomaticViewTracking = false
 ```
 
 ### Vote Notification Options
 
 ```swift
 // Pre-set email (skips dialog when voting)
-SwiftlyFeedback.config.userEmail = "user@example.com"
+SwiftlyFeedback.configuration.userEmail = "user@example.com"
 
 // Show email dialog when voting (only if userEmail is nil)
-SwiftlyFeedback.config.showVoteEmailField = true
+SwiftlyFeedback.configuration.showVoteEmailField = true
 
 // Default state of "notify me" toggle
-SwiftlyFeedback.config.voteNotificationDefaultOptIn = false
+SwiftlyFeedback.configuration.voteNotificationDefaultOptIn = false
 
 // Callback when email is set via vote dialog
-SwiftlyFeedback.config.onUserEmailChanged = { email in
+SwiftlyFeedback.configuration.onUserEmailChanged = { email in
     UserDefaults.standard.set(email ?? "", forKey: "userEmail")
 }
 ```
@@ -159,9 +174,9 @@ FeedbackDetailView(feedback: someFeedback)
 ### Direct API Access
 
 ```swift
-let feedback = try await SwiftlyFeedback.shared?.getFeedback()
-try await SwiftlyFeedback.shared?.submitFeedback(title: "...", description: "...")
-try await SwiftlyFeedback.shared?.vote(for: feedbackId)
+let feedback = try await SwiftlyFeedback.current?.getFeedback()
+try await SwiftlyFeedback.current?.submitFeedback(title: "...", description: "...")
+try await SwiftlyFeedback.current?.vote(for: feedbackId)
 ```
 
 ### Event Tracking
@@ -217,6 +232,9 @@ Sort picker in toolbar menu. Sorting applied client-side with smooth animation.
 - `invalidApiKey` - Distinct from generic unauthorized
 - `notFound`, `conflict`, `serverError(statusCode:)`
 - `networkError(underlying:)`, `decodingError(underlying:)`
+- `feedbackLimitReached(message:)` — a 402 that is not the metrics custom-events code. The Free 10-item cap does not return 402.
+- `forbidden(message:)`, `rateLimited(message:)`
+- `tierUpgradeRequired(code:message:)`, `measureNotAvailable(measure:message:)`
 
 **Invalid API Key Handling:**
 - Views detect `.invalidApiKey` and show `InvalidApiKeyView`
@@ -253,20 +271,24 @@ Follows [Semantic Versioning](https://semver.org/):
 - **MINOR**: New features, backward-compatible additions
 - **PATCH**: Bug fixes, no API changes
 
+2.0.0 (tagged 14 October 2026 from `main`) and 3.0.0 are both major bumps: 2.0.0 removed and renamed theme, filter, and string API, and 3.0.0 moved to Swift 6 language mode and main-actor settings. `CHANGELOG.md` records the removed public `Strings` enum and the `GenerateStringCatalogSymbols` plugin under 3.0.0. Xcode asks a consumer to trust the plugin once. A non-interactive `xcodebuild` passes `-skipPackagePluginValidation`. A local package in this workspace is trusted automatically. The public repository's newest tag is 3.0.0. There is no 2.1.0 tag for this package.
+
 ### Release Checklist
 
 1. Update `CHANGELOG.md`
 2. Create git tag: `git tag X.Y.Z`
-3. Push: `git push feedbackkit-sdk X.Y.Z && git push origin X.Y.Z`
+3. Push the tag to the mirror **by URL** (`https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git`) and to `origin` — the remote name `feedbackkit-sdk` is **not configured** in this checkout; run `git remote -v` before assuming it resolves ([`CLAUDE.md`](../CLAUDE.md) → Git Remotes & Branching).
 4. Create GitHub Release with CHANGELOG content
 
 ### SPM Constraints
 
 ```swift
-.package(url: "...", from: "1.0.0")           // Recommended: 1.x.x
-.package(url: "...", .upToNextMinor(from: "1.0.0"))  // 1.0.x only
-.package(url: "...", exact: "1.0.0")          // Exact version
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "3.0.0")
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", .upToNextMinor(from: "3.0.0"))
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", exact: "3.0.0")
 ```
+
+`from: "3.0.0"` resolves the 3.0.0 tag. `from: "2.0.0"` stays on 2.x and never resolves 3.0.0.
 
 ## Adding New Features
 

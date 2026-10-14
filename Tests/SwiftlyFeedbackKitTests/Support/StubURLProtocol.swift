@@ -70,6 +70,7 @@ final class StubURLProtocol: URLProtocol {
         let url: URL?
         let headers: [String: String]
         let body: Data?
+        let timeoutInterval: TimeInterval
 
         /// HTTP header names are case-insensitive; look them up that way.
         func header(_ name: String) -> String? {
@@ -250,7 +251,8 @@ final class StubURLProtocol: URLProtocol {
             method: request.httpMethod ?? "GET",
             url: request.url,
             headers: request.allHTTPHeaderFields ?? [:],
-            body: Self.bodyData(from: request)
+            body: Self.bodyData(from: request),
+            timeoutInterval: request.timeoutInterval
         )
 
         guard let key = recorded.header(Self.sessionHeaderName) else {

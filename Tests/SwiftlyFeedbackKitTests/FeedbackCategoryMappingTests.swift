@@ -18,7 +18,7 @@ import Testing
     static let expected: [(category: FeedbackCategory, raw: String, english: String, glyph: String)] = [
         (.featureRequest, "feature_request", "Feature Request", "lightbulb"),
         (.bugReport, "bug_report", "Bug Report", "ladybug"),
-        (.improvement, "improvement", "Improvement", "arrow.up.circle"),
+        (.improvement, "improvement", "Improvement", "slider.horizontal.3"),
         (.other, "other", "Other", "ellipsis.circle"),
     ]
 
@@ -68,6 +68,14 @@ import Testing
         let glyphs = FeedbackCategory.allCases.map(\.iconName)
         #expect(Set(glyphs).count == 4)
         #expect(glyphs.allSatisfy { !$0.isEmpty })
+    }
+
+    /// `FEEDBACK01` §12.5 — a category glyph never competes with the upward-arrow vote control.
+    @Test("-07 · No category glyph contains an arrow")
+    func noCategoryGlyphIsAnArrow() {
+        for category in FeedbackCategory.allCases {
+            #expect(!category.iconName.contains("arrow"), "\(category) uses \(category.iconName)")
+        }
     }
 
     // MARK: - -04 · the wire enum

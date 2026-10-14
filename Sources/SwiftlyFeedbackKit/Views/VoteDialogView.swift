@@ -18,41 +18,36 @@ struct VoteDialogView: View {
     // find it in scope (the visionOS slice never built before 2026-08-15).
     #if os(iOS) || os(visionOS)
     @SwiftUI.Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @SwiftUI.Environment(\.verticalSizeClass) private var verticalSizeClass
     #endif
 
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
-
-    private var hasValidEmail: Bool {
-        !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     var body: some View {
-        #if os(macOS)
-        macOSContent
-        #else
-        iOSContent
-        #endif
-    }
-
-    // MARK: - iOS & iPadOS Content
-
-    #if !os(macOS)
-    private var iOSContent: some View {
         NavigationStack {
             Form {
-                emailSection
-                notificationSection
+                VoteDialogEmailSection(email: $email)
+                VoteDialogNotificationSection(
+                    email: $email,
+                    notifyStatusChange: $notifyStatusChange,
+                    subscribeToMailingList: $subscribeToMailingList,
+                    operationalEmails: $operationalEmails,
+                    marketingEmails: $marketingEmails
+                )
             }
-            .navigationTitle(Strings.voteDialogTitle)
+            .navigationTitle(String(localized: .voteDialogTitle))
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(Strings.voteDialogSkip) {
+                    Button(String(localized: .voteDialogSkip)) {
                         submitAndDismiss(email: nil, notify: false)
                     }
+                    .keyboardShortcut(.cancelAction)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(Strings.voteDialogSubmit) {
+                    Button(String(localized: .voteDialogSubmit)) {
                         submitAndDismiss(
                             email: email,
                             notify: notifyStatusChange,
@@ -60,186 +55,35 @@ struct VoteDialogView: View {
                             mailingListEmailTypes: selectedEmailTypes()
                         )
                     }
-                    .fontWeight(.semibold)
+                    .keyboardShortcut(.defaultAction)
                 }
             }
             .tint(theme.primaryColor.resolve(for: colorScheme))
         }
+        #if os(macOS)
+        .frame(minWidth: 380, minHeight: 300)
+        #else
         .presentationDetents(presentationDetentsForDevice)
         .presentationDragIndicator(.visible)
-        .presentationCornerRadius(20)
         .interactiveDismissDisabled(false)
         .presentationSizing(.form)
+        #endif
     }
 
+    #if !os(macOS)
     private var presentationDetentsForDevice: Set<PresentationDetent> {
-        // iPhone: Use height-based detent for compact content
-        // iPad: .form sizing handles it, but provide medium as fallback
+        // A fixed 320-pt detent overflows iPhone Duo's outer display in landscape
+        // (compact height). Size classes choose the detent; the sheet itself
+        // moves clear of the fold.
+        if verticalSizeClass == .compact {
+            return [.medium, .large]
+        }
         if horizontalSizeClass == .compact {
-            return [.height(320)]
-        } else {
-            return [.medium]
+            return [.height(320), .medium]
         }
+        return [.medium]
     }
     #endif
-
-    // MARK: - macOS Content
-
-    #if os(macOS)
-    private var macOSContent: some View {
-        VStack(spacing: 16) {
-            // Header
-            Text(Strings.voteDialogTitle)
-                .font(.headline)
-
-            // Email field
-            VStack(alignment: .leading, spacing: 6) {
-                Text(Strings.voteDialogEmailHeader)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                TextField(Strings.voteDialogEmailPlaceholder, text: $email)
-                    .textFieldStyle(.roundedBorder)
-                    .textContentType(.emailAddress)
-                    .autocorrectionDisabled()
-                    .accessibilityLabel(Strings.voteDialogEmailHeader)
-
-                Text(Strings.voteDialogEmailFooter)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-
-            // Notification toggle
-            VStack(alignment: .leading, spacing: 6) {
-                Toggle(isOn: $notifyStatusChange) {
-                    Text(Strings.voteDialogNotifyToggle)
-                }
-                .disabled(!hasValidEmail)
-                .accessibilityHint(Strings.accessibilityVoteDialogNotifyHint)
-                .onChange(of: email) { _, newValue in
-                    if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        notifyStatusChange = false
-                    }
-                }
-
-                Text(Strings.voteDialogNotifyDescription)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-
-            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
-                Toggle(isOn: $subscribeToMailingList) {
-                    Text(Strings.mailingListOptIn)
-                }
-
-                if subscribeToMailingList {
-                    Toggle(isOn: $operationalEmails) {
-                        Text(Strings.mailingListOperational)
-                    }
-                    .padding(.leading, 20)
-                    .accessibilityHint(Strings.accessibilityMailingListOperationalHint)
-
-                    Toggle(isOn: $marketingEmails) {
-                        Text(Strings.mailingListMarketing)
-                    }
-                    .padding(.leading, 20)
-                    .accessibilityHint(Strings.accessibilityMailingListMarketingHint)
-                }
-            }
-
-            Spacer()
-
-            Divider()
-
-            // Button bar (HIG: buttons at bottom, Cancel left, Primary right)
-            HStack {
-                Button(Strings.voteDialogSkip) {
-                    submitAndDismiss(email: nil, notify: false)
-                }
-                .keyboardShortcut(.cancelAction)
-
-                Spacer()
-
-                Button(Strings.voteDialogSubmit) {
-                    submitAndDismiss(
-                        email: email,
-                        notify: notifyStatusChange,
-                        subscribeToMailingList: subscribeToMailingList,
-                        mailingListEmailTypes: selectedEmailTypes()
-                    )
-                }
-                .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
-                .tint(theme.primaryColor.resolve(for: colorScheme))
-            }
-        }
-        .padding(20)
-        .frame(width: 380, height: 300)
-    }
-    #endif
-
-    // MARK: - Shared Sections
-
-    private var emailSection: some View {
-        Section {
-            TextField(Strings.voteDialogEmailPlaceholder, text: $email)
-                .textContentType(.emailAddress)
-                #if !os(macOS)
-                .keyboardType(.emailAddress)
-                .textInputAutocapitalization(.never)
-                #endif
-                .autocorrectionDisabled()
-                .accessibilityLabel(Strings.voteDialogEmailHeader)
-        } header: {
-            Text(Strings.voteDialogEmailHeader)
-        } footer: {
-            Text(Strings.voteDialogEmailFooter)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var notificationSection: some View {
-        Section {
-            Toggle(isOn: $notifyStatusChange) {
-                Text(Strings.voteDialogNotifyToggle)
-            }
-            .disabled(!hasValidEmail)
-            .accessibilityHint(Strings.accessibilityVoteDialogNotifyHint)
-            .onChange(of: email) { _, newValue in
-                // Auto-disable notification if email is cleared
-                if newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    notifyStatusChange = false
-                }
-            }
-
-            if SwiftlyFeedback.config.showMailingListOptIn && hasValidEmail {
-                Toggle(isOn: $subscribeToMailingList) {
-                    Text(Strings.mailingListOptIn)
-                }
-
-                if subscribeToMailingList {
-                    Toggle(isOn: $operationalEmails) {
-                        Text(Strings.mailingListOperational)
-                    }
-                    .padding(.leading, 20)
-                    .accessibilityHint(Strings.accessibilityMailingListOperationalHint)
-
-                    Toggle(isOn: $marketingEmails) {
-                        Text(Strings.mailingListMarketing)
-                    }
-                    .padding(.leading, 20)
-                    .accessibilityHint(Strings.accessibilityMailingListMarketingHint)
-                }
-            }
-        } footer: {
-            Text(Strings.voteDialogNotifyDescription)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    // MARK: - Actions
 
     /// Same derivation rule as the view models' `buildVoteEmailTypes()`,
     /// computed from the dialog's own bindings at submit time.
@@ -257,7 +101,7 @@ struct VoteDialogView: View {
         // Save the email to config for future votes (if a valid email was provided)
         let trimmedEmail = email?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let validEmail = trimmedEmail, !validEmail.isEmpty {
-            SwiftlyFeedback.config.userEmail = validEmail
+            SwiftlyFeedback.configuration.userEmail = validEmail
         }
 
         onCommit(email, notify, subscribeToMailingList, mailingListEmailTypes)

@@ -4,12 +4,12 @@
 
 | SDK | Version | Supported |
 |-----|---------|-----------|
-| Swift SDK | 2.0.0 | Yes |
-| Vapor SDK | 2.0.0 | Yes |
-| JavaScript SDK | 1.2.0 | Yes |
-| React Native SDK | 1.2.0 | Yes |
-| Flutter SDK | 1.2.0 | Yes |
-| Kotlin/Android SDK | 1.2.0 | Yes |
+| Swift SDK | 3.0.0 | Yes |
+| Vapor SDK | 3.0.0 | Yes |
+| JavaScript SDK | 2.1.0 | Yes |
+| React Native SDK | 2.1.0 | Yes |
+| Flutter SDK | 2.1.0 | Yes |
+| Kotlin/Android SDK | 2.1.0 | Yes |
 
 ## Reporting a Vulnerability
 

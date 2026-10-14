@@ -69,4 +69,35 @@ enum StringCatalogReader {
         }
         return value
     }
+
+    /// Every locale's values for `key`, plural variants flattened, keyed by locale code.
+    /// A missing key returns an empty dictionary.
+    static func allValues(for key: String) throws -> [String: [String]] {
+        let data = try Data(contentsOf: catalogURL)
+        guard
+            let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let strings = root["strings"] as? [String: Any]
+        else {
+            throw CatalogError.unreadable(catalogURL.path)
+        }
+        guard
+            let entry = strings[key] as? [String: Any],
+            let localizations = entry["localizations"] as? [String: Any]
+        else {
+            return [:]
+        }
+        var result: [String: [String]] = [:]
+        for (locale, node) in localizations {
+            result[locale] = stringValues(in: node)
+        }
+        return result
+    }
+
+    private static func stringValues(in node: Any) -> [String] {
+        guard let dictionary = node as? [String: Any] else { return [] }
+        if let unit = dictionary["stringUnit"] as? [String: Any], let value = unit["value"] as? String {
+            return [value]
+        }
+        return dictionary.values.flatMap(stringValues(in:))
+    }
 }

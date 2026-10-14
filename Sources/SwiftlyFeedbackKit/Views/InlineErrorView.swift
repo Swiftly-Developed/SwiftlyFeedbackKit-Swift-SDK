@@ -10,15 +10,15 @@ struct InlineErrorView: View {
     let onRetry: () -> Void
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
-    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.theme }
+    private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     var body: some View {
         ContentUnavailableView {
-            Label(Strings.errorLoadFailedTitle, systemImage: "exclamationmark.triangle")
+            Label(String(localized: .errorLoadFailedTitle), systemImage: "exclamationmark.triangle")
         } description: {
             Text(message)
         } actions: {
-            Button(Strings.errorRetryButton) {
+            Button(String(localized: .errorRetryButton)) {
                 onRetry()
             }
             .buttonStyle(.borderedProminent)

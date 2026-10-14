@@ -14,9 +14,9 @@ import Testing
 /// The canon all nine declarations must match is the root `CLAUDE.md` *Feedback Statuses*
 /// table: gray / blue / orange / cyan / green / red. The other eight sites are the Admin
 /// target's `FeedbackTintDeclarationDriftTests` (`-08`), which is where seven of them live.
-@Suite struct FeedbackStatusTintMapTests {
+@Suite @MainActor struct FeedbackStatusTintMapTests {
 
-    static let expectedStatusTints: [(status: FeedbackStatus, tint: ThemeColor)] = [
+    nonisolated static let expectedStatusTints: [(status: FeedbackStatus, tint: ThemeColor)] = [
         (.pending, .color(.gray)),
         (.approved, .color(.blue)),
         (.inProgress, .color(.orange)),
@@ -25,7 +25,7 @@ import Testing
         (.rejected, .color(.red)),
     ]
 
-    static let expectedCategoryTints: [(category: FeedbackCategory, tint: ThemeColor)] = [
+    nonisolated static let expectedCategoryTints: [(category: FeedbackCategory, tint: ThemeColor)] = [
         (.featureRequest, .color(.purple)),
         (.bugReport, .color(.red)),
         (.improvement, .color(.teal)),
@@ -36,7 +36,7 @@ import Testing
 
     /// `-06` — each status's **default** tint is the specific colour the product law names.
     ///
-    /// A fresh `StatusColors()` rather than `SwiftlyFeedback.theme.statusColors`: the shared
+    /// A fresh `StatusColors()` rather than `SwiftlyFeedback.appearance.statusColors`: the shared
     /// theme is a process-global that another case in this target mutates via
     /// `SwiftlyFeedback.configure`, and a default-value assertion read off a mutated global is
     /// a coin flip.
