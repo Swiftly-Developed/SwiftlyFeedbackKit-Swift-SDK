@@ -5,7 +5,7 @@ All notable changes to FeedbackKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-14
 
 Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this release removes and renames public API.
 
@@ -29,7 +29,12 @@ Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this
 - **Breaking:** `SegmentedControlConfiguration` is renamed `StatusFilterConfiguration`, and `config.buttons.segmentedControl` is renamed `config.buttons.statusFilter`. It gates the status Picker in the list's toolbar filter menu — there is no segmented control.
 - `ThemeColor` now conforms to `Equatable` and `Hashable`.
 - Feedback detail: the navigation bar now shows the feedback item's own title (instead of a generic "Details"), with a Share toolbar action and, on macOS, a comments Refresh button (⌘R). Comments support pull-to-refresh, load as redacted placeholder rows instead of a spinner, show a dedicated empty state once the first fetch completes, and the section header uses a localized plural comment count.
+- Feedback detail now uses native list controls: an inset list with labeled status and category rows, a compact bordered vote button, a `ContentUnavailableView` empty state for comments, and a system comment field — replacing the custom cards, capsule badges and full-width vote box.
 - Submit feedback: all form fields are disabled while a submission is in flight, and while the form is invalid a caption under the description field (iOS) / form grid (macOS) states which required field is missing — the same reason is read by VoiceOver on the Submit button's hint.
+
+### Fixed
+
+- The feedback list no longer redraws in a loop when it reads cached translations, which could keep the main thread busy and stop a feedback submission from being sent. View-path cache reads no longer publish an Observation change.
 
 ### Removed
 
@@ -133,6 +138,7 @@ Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this
 - `Comment` - Comment model with author and timestamp
 - `VoteResult` - Vote operation response with updated counts
 
+[2.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/2.0.0
 [1.1.1]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.1
 [1.1.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.0
 [1.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.0.0
