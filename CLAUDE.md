@@ -271,7 +271,9 @@ Follows [Semantic Versioning](https://semver.org/):
 - **MINOR**: New features, backward-compatible additions
 - **PATCH**: Bug fixes, no API changes
 
-2.0.0 (tagged 14 October 2026 from `main`) and 3.0.0 are both major bumps: 2.0.0 removed and renamed theme, filter, and string API, and 3.0.0 moved to Swift 6 language mode and main-actor settings. `CHANGELOG.md` records the removed public `Strings` enum and the `GenerateStringCatalogSymbols` plugin under 3.0.0. Xcode asks a consumer to trust the plugin once. A non-interactive `xcodebuild` passes `-skipPackagePluginValidation`. A local package in this workspace is trusted automatically. The public repository's newest tag is 3.0.0. There is no 2.1.0 tag for this package.
+1.2.0 and 1.3.0 (both tagged 14 October 2026 from `main`) are source-breaking: 1.2.0 removed and renamed theme, filter, and string API, and 1.3.0 moved to Swift 6 language mode and main-actor settings. `CHANGELOG.md` records the removed public `Strings` enum and the `GenerateStringCatalogSymbols` plugin under 1.3.0. Xcode asks a consumer to trust the plugin once. A non-interactive `xcodebuild` passes `-skipPackagePluginValidation`. A local package in this workspace is trusted automatically. The public repository's newest tag is 1.3.0.
+
+**Renumbered 17 October 2026.** 1.2.0 and 1.3.0 were first tagged 2.0.0 and 3.0.0. By the owner's decision they were renumbered 1.2.0 and 1.3.0, and the 2.0.0 and 3.0.0 tags were deleted, so both minor releases contain source-breaking changes (see `MIGRATION.md`). From now on, prefer deprecation shims over removals, so that minor versions stay source-compatible. **Never reuse 2.0.0 or 3.0.0. The next major release is 4.0.0.**
 
 ### Release Checklist
 
@@ -283,12 +285,12 @@ Follows [Semantic Versioning](https://semver.org/):
 ### SPM Constraints
 
 ```swift
-.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "3.0.0")
-.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", .upToNextMinor(from: "3.0.0"))
-.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", exact: "3.0.0")
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "1.3.0")
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", .upToNextMinor(from: "1.3.0"))
+.package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", exact: "1.3.0")
 ```
 
-`from: "3.0.0"` resolves the 3.0.0 tag. `from: "2.0.0"` stays on 2.x and never resolves 3.0.0.
+`from: "1.3.0"` resolves the 1.3.0 tag. `from: "1.0.0"` also resolves 1.3.0, which is source-breaking for code written against 1.1.1; pin `.upToNextMinor(from: "1.1.1")` to stay on 1.1.x.
 
 ## Adding New Features
 

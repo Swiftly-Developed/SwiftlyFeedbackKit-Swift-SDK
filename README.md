@@ -10,7 +10,7 @@ In-app feedback collection for iOS, macOS, and visionOS.
 
 FeedbackKit is a Swift SDK that lets you collect, manage, and respond to user feedback directly within your app. Users can submit feature requests, report bugs, vote on ideas, and see what's being worked on — all without leaving your app.
 
-Upgrading to 2.0.0: see [MIGRATION.md](MIGRATION.md).
+Upgrading from 1.1.1 to 1.2.0 or 1.3.0: see [MIGRATION.md](MIGRATION.md). Both releases contain source-breaking changes despite their minor version numbers.
 
 ## Multi-Platform SDKs
 
@@ -56,9 +56,9 @@ FeedbackKit is available for multiple platforms:
 
 The public Swift Package Manager repository is [SwiftlyFeedbackKit-Swift-SDK](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK). `https://github.com/Swiftly-Developed/SwiftlyFeedbackKit` redirects to that repository. There is no second public Swift package.
 
-Published tags are `1.0.0`, `1.1.0`, `1.1.1`, `2.0.0`, and `3.0.0`. There is no `1.0.1` tag and no `2.1.0` tag. `1.1.1` and `2.0.0` compile in Swift 5 language mode and store settings on `config`, `theme`, and `shared`.
+Published tags are `1.0.0`, `1.1.0`, `1.1.1`, `1.2.0`, and `1.3.0`. There is no `1.0.1` tag. `1.2.0` and `1.3.0` were first tagged `2.0.0` and `3.0.0` on 14 October 2026 and renumbered on 17 October 2026; the `2.0.0` and `3.0.0` tags no longer exist. `1.1.1` and `1.2.0` compile in Swift 5 language mode and store settings on `config`, `theme`, and `shared`.
 
-These docs describe **3.0.0**. A dependency written as `from: "3.0.0"` resolves that tag. Differences from 1.1.1 and 2.0.0 are in [MIGRATION.md](MIGRATION.md).
+These docs describe **1.3.0**. A dependency written as `from: "1.3.0"` resolves that tag. Differences from 1.1.1 and 1.2.0 are in [MIGRATION.md](MIGRATION.md).
 
 ## Installation
 
@@ -71,13 +71,13 @@ Add FeedbackKit to your project using Xcode:
    ```
    https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK
    ```
-3. Select version **3.0.0** (Up to Next Major) and add the **SwiftlyFeedbackKit** product
+3. Select version **1.3.0** (Up to Next Major) and add the **SwiftlyFeedbackKit** product
 
 Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "3.0.0")
+    .package(url: "https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK.git", from: "1.3.0")
 ]
 ```
 
@@ -312,7 +312,7 @@ SwiftlyFeedback.configuration.showEmailField = true         // Show email in sub
 // Comments
 SwiftlyFeedback.configuration.showCommentSection = true     // Show comments in detail view
 
-// List look: .showcase (default) or .classic (the 2.0 look)
+// List look: .showcase (default) or .classic (the 1.2 look)
 SwiftlyFeedback.configuration.listStyle = .showcase
 
 // Buttons
@@ -833,7 +833,7 @@ do {
 }
 ```
 
-`forbidden`, `rateLimited`, `tierUpgradeRequired` and `measureNotAvailable` are new in 2.0.0.
+`forbidden`, `rateLimited`, `tierUpgradeRequired` and `measureNotAvailable` are new in 1.3.0.
 Before them a 403 and a 429 both arrived as `serverError(statusCode:)`, so a host app could
 not tell "you may not do that" from "the server broke" and had no back-off signal at all.
 

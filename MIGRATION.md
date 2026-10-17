@@ -1,10 +1,12 @@
-# Migrating to SwiftlyFeedbackKit 3.0.0
+# Migrating to SwiftlyFeedbackKit 1.3.0
 
-This note is the source break list from 1.1.1 to 3.0.0. Two majors were tagged on 14 October 2026: `2.0.0` and `3.0.0`. Sections marked **(2.0.0)** already apply on the `2.0.0` tag. Every other section first applies in 3.0.0, so a host on `2.0.0` only needs the unmarked sections.
+This note is the source break list from 1.1.1 to 1.3.0. Two releases were tagged on 14 October 2026 as `2.0.0` and `3.0.0`. On 17 October 2026 they were renumbered `1.2.0` and `1.3.0`, and the `2.0.0` and `3.0.0` tags were deleted. Both contain source-breaking changes despite their minor version numbers. A `Package.resolved` that pins `2.0.0` or `3.0.0` must be re-resolved.
+
+Sections marked **(1.2.0)** already apply on the `1.2.0` tag. Every other section first applies in 1.3.0, so a host on `1.2.0` only needs the unmarked sections.
 
 ## Swift 6 language mode
 
-`Package.swift` sets `swiftLanguageModes: [.v6]`. The `1.1.1` and `2.0.0` tags set `[.v5]`.
+`Package.swift` sets `swiftLanguageModes: [.v6]`. The `1.1.1` and `1.2.0` tags set `[.v5]`.
 
 Deployment targets are unchanged: iOS 26, macOS 26, and visionOS 26. The package does not declare watchOS or tvOS.
 
@@ -12,9 +14,9 @@ A host that compiles in Swift 5 language mode can still import the package. The 
 
 ## Settings, theme, and the configured client
 
-3.0.0 replaces the three `nonisolated(unsafe)` stores from 1.1.1 and 2.0.0 with main-actor properties. Read and write them from your `App` initializer, a SwiftUI view, or any `@MainActor` type.
+1.3.0 replaces the three `nonisolated(unsafe)` stores from 1.1.1 and 1.2.0 with main-actor properties. Read and write them from your `App` initializer, a SwiftUI view, or any `@MainActor` type.
 
-| 1.1.1 and 2.0.0 | 3.0.0 |
+| 1.1.1 and 1.2.0 | 1.3.0 |
 | --- | --- |
 | `SwiftlyFeedback.config` | `SwiftlyFeedback.configuration` |
 | `SwiftlyFeedback.theme` | `SwiftlyFeedback.appearance` |
@@ -46,7 +48,7 @@ let feedback = try await SwiftlyFeedback.current?.getFeedback()
 
 `configureAuto(keys:)` sends DEBUG builds to the development API (`https://api.dev.getfeedbackkit.com/api/v1`). Localhost is only `configure(environment: .local, key:)`.
 
-## Theme colors (2.0.0)
+## Theme colors (1.2.0)
 
 `StatusColors` and `CategoryColors`, including `color(for:)`, now expose `ThemeColor` instead of `Color`. `primaryColor` was already `ThemeColor` in 1.1.1.
 
@@ -61,25 +63,25 @@ SwiftlyFeedback.appearance.statusColors.pending = .color(.gray)
 SwiftlyFeedback.appearance.primaryColor = .adaptive(light: .blue, dark: .cyan)
 ```
 
-A bare `.gray` assignment on a status or category color no longer type-checks. On the `2.0.0` tag, write the same values through `SwiftlyFeedback.theme`: `appearance` arrives in 3.0.0, where `theme` still compiles and forwards to it.
+A bare `.gray` assignment on a status or category color no longer type-checks. On the `1.2.0` tag, write the same values through `SwiftlyFeedback.theme`: `appearance` arrives in 1.3.0, where `theme` still compiles and forwards to it.
 
 There is no `accentColor` property. Buttons and highlights read `primaryColor`. `.default` resolves to the system accent color.
 
 ## String catalog symbols
 
-The public `Strings` enum is removed in 3.0.0. `2.0.0` already dropped `Strings.feedbackDetailTitle` and `Strings.commentsTitle`; 3.0.0 removes every other `Strings.*` member. Host apps override copy by adding the same keys to their own `Localizable.xcstrings`. They do not call a `Strings` type.
+The public `Strings` enum is removed in 1.3.0. `1.2.0` already dropped `Strings.feedbackDetailTitle` and `Strings.commentsTitle`; 1.3.0 removes every other `Strings.*` member. Host apps override copy by adding the same keys to their own `Localizable.xcstrings`. They do not call a `Strings` type.
 
 The package generates its own symbols with the `GenerateStringCatalogSymbols` build-tool plugin. Xcode asks you to trust that plugin once. A non-interactive `xcodebuild` passes `-skipPackagePluginValidation`.
 
 The detail screen titles itself with the feedback item's title. The comments header is a pluralized catalog string inside the package.
 
-## Other removed symbols (2.0.0)
+## Other removed symbols (1.2.0)
 
 - `appearance.secondaryColor` (was `theme.secondaryColor`)
 - `appearance.tertiaryColor` (was `theme.tertiaryColor`)
 - `AddButtonConfiguration.bottomPadding`
 
-## Status filter configuration (2.0.0)
+## Status filter configuration (1.2.0)
 
 `SegmentedControlConfiguration` is now `StatusFilterConfiguration`. `configuration.buttons.segmentedControl` is now `configuration.buttons.statusFilter`. The value gates the status picker in the list toolbar. There is no segmented control. The deprecated `config` shim forwards the same object, so `config.buttons.statusFilter` is the same property.
 
@@ -97,7 +99,7 @@ A 402 whose envelope code is `METRICS_CUSTOM_EVENTS_REQUIRE_PRO` is `tierUpgrade
 
 The decoder accepts both body shapes: the metrics envelope (`error` is an object with `code`, `message`, and `field`) and the middleware body (`error` is a boolean next to `reason`).
 
-## Feedback equality (2.0.0)
+## Feedback equality (1.2.0)
 
 `Feedback.==` and `hash(into:)` compare the full value (title, description, status, votes, and the rest), not only `id`. A re-fetched item whose content changed is no longer equal to the previous value.
 
@@ -116,9 +118,9 @@ Measure values are sparse. Read them with the optional subscript (`summary[.feed
 
 ## List filters
 
-`getFeedback(status:category:)` sends filters as query items. Tags before 3.0.0, including `2.0.0`, append the query to the path, so `URL.appendingPathComponent` escapes `?` and the server answers 404. Hosts that worked around that 404 can drop the workaround once they are on 3.0.0.
+`getFeedback(status:category:)` sends filters as query items. Tags before 1.3.0, including `1.2.0`, append the query to the path, so `URL.appendingPathComponent` escapes `?` and the server answers 404. Hosts that worked around that 404 can drop the workaround once they are on 1.3.0.
 
-## 3.0.0: the feedback list looks different
+## 1.3.0: the feedback list looks different
 
 `FeedbackListView` draws the Showcase list by default: one card per request with a status line, the whole description, and a vote capsule. To keep the previous look, set the list style to Classic before the list appears:
 

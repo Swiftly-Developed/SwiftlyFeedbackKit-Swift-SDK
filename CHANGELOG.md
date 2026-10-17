@@ -5,13 +5,17 @@ All notable changes to FeedbackKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2026-10-14
+## [1.3.0] - 2026-10-14
 
-The feedback list's Showcase look, from spec [`FEEDBACK01`](../docs/specs/FEEDBACK01.md). Major version: the changes listed under "Also first shipped in 3.0.0" below break source compatibility with the `2.0.0` tag — Swift 6 language mode, main-actor `config` / `theme` / `shared`, new `SwiftlyFeedbackError` cases, and the removal of the public `Strings` enum. [MIGRATION.md](MIGRATION.md) covers the upgrade. The Showcase list itself is additive, and the one deprecated property keeps compiling.
+This release was first tagged 3.0.0 on 14 October 2026 and was renumbered 1.3.0 on 17 October 2026.
+
+1.3.0 contains source-breaking changes despite the minor version number. See [MIGRATION.md](MIGRATION.md).
+
+The feedback list's Showcase look, from spec [`FEEDBACK01`](../docs/specs/FEEDBACK01.md). The changes listed under "Also first shipped in 1.3.0" below break source compatibility with the `1.2.0` tag — Swift 6 language mode, main-actor `config` / `theme` / `shared`, new `SwiftlyFeedbackError` cases, and the removal of the public `Strings` enum. [MIGRATION.md](MIGRATION.md) covers the upgrade. The Showcase list itself is additive, and the one deprecated property keeps compiling.
 
 ### Added
 
-- **`configuration.listStyle`** (`FeedbackListStyle`): `.showcase`, the default, draws each request as its own card with a status eyebrow, the whole description, a category and comment footer, and a vote capsule. `.classic` keeps the 2.0 list.
+- **`configuration.listStyle`** (`FeedbackListStyle`): `.showcase`, the default, draws each request as its own card with a status eyebrow, the whole description, a category and comment footer, and a vote capsule. `.classic` keeps the 1.2 list.
 - **Sort & Filter menu.** The toolbar menu now holds Sort By, a Filter section with Status and Category pickers, the translation-target picker, and Clear Filters while filtered. While a filter is active the icon fills, the button takes the prominent style, and its accessibility value reads "Filtered by …".
 - **"Filtered by … Clear" row** at the top of a filtered list, in both styles, and a "No Matching Requests" state with Clear Filters when the filters leave nothing.
 - **`configuration.buttons.categoryFilter.display`** (default `true`) gates the Category picker, as `statusFilter` gates Status.
@@ -31,7 +35,7 @@ The feedback list's Showcase look, from spec [`FEEDBACK01`](../docs/specs/FEEDBA
 
 - `configuration.expandDescriptionInList`. It has no effect: both list styles show the whole description. Removed in the next major release.
 
-Also first shipped in 3.0.0 (drafted earlier under the untagged 1.1.2 and 2.0.0-unreleased headings, never tagged):
+Also first shipped in 1.3.0 (drafted earlier under the untagged 1.1.2 and 2.0.0-unreleased draft headings, never tagged):
 
 > The metrics endpoints are not on every server yet. Measured 2026-10-14: the development and testflight APIs serve `/api/v1/metrics/summary`, and the production API answers `404` while its `/health` answers `200`. Metrics calls against production fail until that server deploy lands.
 
@@ -61,9 +65,11 @@ Also first shipped in 3.0.0 (drafted earlier under the untagged 1.1.2 and 2.0.0-
 
 - **Breaking:** the public `Strings` enum. Every `Strings.*` member from 1.1.1 is gone, including `Strings.feedbackDetailTitle` and `Strings.commentsTitle`. Hosts override copy through string catalog keys. The detail screen titles itself with the feedback item's title. The comments header is a pluralized catalog string inside the package.
 
-## [2.0.0] - 2026-10-14
+## [1.2.0] - 2026-10-14
 
-Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this release removes and renames public API.
+This release was first tagged 2.0.0 on 14 October 2026 and was renumbered 1.2.0 on 17 October 2026.
+
+1.2.0 contains source-breaking changes from 1.1.1 despite the minor version number: it removes and renames public API. See [MIGRATION.md](MIGRATION.md).
 
 ### Added
 
@@ -194,8 +200,8 @@ Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this
 - `Comment` - Comment model with author and timestamp
 - `VoteResult` - Vote operation response with updated counts
 
-[3.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/3.0.0
-[2.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/2.0.0
+[1.3.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.3.0
+[1.2.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.2.0
 [1.1.1]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.1
 [1.1.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.0
 [1.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.0.0

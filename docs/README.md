@@ -1,6 +1,6 @@
 # SwiftlyFeedbackKit docs
 
-The current guide for integrators is the package [README](../README.md). Breaking changes for 2.0.0 are in [MIGRATION.md](../MIGRATION.md). Release notes are in [CHANGELOG.md](../CHANGELOG.md).
+The current guide for integrators is the package [README](../README.md). Breaking changes in 1.2.0 and 1.3.0 are in [MIGRATION.md](../MIGRATION.md). Release notes are in [CHANGELOG.md](../CHANGELOG.md).
 
 The same guide is rendered on the website at `/docs/swift` (`SwiftlyFeedbackServer/Resources/Views/docs/swift.leaf`).
 

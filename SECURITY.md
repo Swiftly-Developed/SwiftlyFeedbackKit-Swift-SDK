@@ -4,7 +4,7 @@
 
 | SDK | Version | Supported |
 |-----|---------|-----------|
-| Swift SDK | 3.0.0 | Yes |
+| Swift SDK | 1.3.0 | Yes |
 | Vapor SDK | 3.0.0 | Yes |
 | JavaScript SDK | 2.1.0 | Yes |
 | React Native SDK | 2.1.0 | Yes |
