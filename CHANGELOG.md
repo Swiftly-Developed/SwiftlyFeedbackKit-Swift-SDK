@@ -5,9 +5,11 @@ All notable changes to FeedbackKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-10-14
+## [1.2.0] - 2026-10-14
 
-Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this release removes and renames public API.
+This release was first tagged 2.0.0 on 14 October 2026 and was renumbered 1.2.0 on 17 October 2026.
+
+1.2.0 contains source-breaking changes from 1.1.1 despite the minor version number: it removes and renames public API. See [MIGRATION.md](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit-Swift-SDK/blob/1.3.0/MIGRATION.md).
 
 ### Added
 
@@ -138,7 +140,7 @@ Major version bump per the SemVer policy in `SwiftlyFeedbackKit/CLAUDE.md`: this
 - `Comment` - Comment model with author and timestamp
 - `VoteResult` - Vote operation response with updated counts
 
-[2.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/2.0.0
+[1.2.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.2.0
 [1.1.1]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.1
 [1.1.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.1.0
 [1.0.0]: https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/releases/tag/1.0.0
