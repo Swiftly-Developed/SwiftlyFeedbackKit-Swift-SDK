@@ -46,6 +46,10 @@ struct VoteDialogNotificationSection: View {
             Text(String(localized: .voteDialogNotifyDescription))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                #if os(macOS)
+                .font(.caption)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                #endif
         }
     }
 }

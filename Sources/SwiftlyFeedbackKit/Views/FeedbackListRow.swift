@@ -13,6 +13,15 @@ struct FeedbackListRow: View {
     let style: FeedbackListStyle
 
     @SwiftUI.Environment(\.locale) private var locale
+    @SwiftUI.Environment(\.colorScheme) private var colorScheme
+
+    /// macOS draws the vote control beside the link, never in its label: a button inside a
+    /// macOS list's navigation-link label never receives the click.
+    #if os(macOS)
+    static let drawsVoteOutsideLink = true
+    #else
+    static let drawsVoteOutsideLink = false
+    #endif
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
 
@@ -30,7 +39,8 @@ struct FeedbackListRow: View {
                     translationSourceName: projection.sourceName,
                     isShowingOriginal: isShowingOriginal,
                     onToggleTranslation: { viewModel.toggleShowOriginal(feedback.id) },
-                    translationTargetName: projection.targetName
+                    translationTargetName: projection.targetName,
+                    showsVoteControl: !Self.drawsVoteOutsideLink
                 )
             case .classic:
                 FeedbackCardView(
@@ -41,7 +51,8 @@ struct FeedbackListRow: View {
                     translationSourceName: projection.sourceName,
                     isShowingOriginal: isShowingOriginal,
                     onToggleTranslation: { viewModel.toggleShowOriginal(feedback.id) },
-                    translationTargetName: projection.targetName
+                    translationTargetName: projection.targetName,
+                    showsVoteControl: !Self.drawsVoteOutsideLink
                 )
             }
         }
@@ -66,26 +77,86 @@ struct FeedbackListRow: View {
             ? String(localized: presentation.isProminent ? .buttonVoted : .buttonVote)
             : nil
 
-        switch (translationActionName, voteActionName) {
-        case let (translation?, vote?):
-            link
-                .accessibilityAction(named: translation) {
-                    viewModel.toggleShowOriginal(feedback.id)
-                }
-                .accessibilityAction(named: vote) {
-                    Task { await viewModel.toggleVote(for: feedback) }
-                }
-        case let (translation?, nil):
-            link.accessibilityAction(named: translation) {
-                viewModel.toggleShowOriginal(feedback.id)
+        HStack(alignment: .center, spacing: 0) {
+            #if os(macOS)
+            if style == .classic, config.showVoteCount {
+                // The Classic card's leading column, drawn here so the click reaches it.
+                VoteButton(
+                    voteCount: feedback.voteCount,
+                    hasVoted: feedback.hasVoted,
+                    status: feedback.status,
+                    action: { Task { await viewModel.toggleVote(for: feedback) } }
+                )
+                .accessibilityIdentifier("fbk-feedback-vote-button-\(feedback.id.uuidString)")
+                .padding(.trailing, 8)
             }
-        case let (nil, vote?):
-            link.accessibilityAction(named: vote) {
-                Task { await viewModel.toggleVote(for: feedback) }
+            #endif
+            Group {
+                switch (translationActionName, voteActionName) {
+                case let (translation?, vote?):
+                    link
+                        .accessibilityAction(named: translation) {
+                            viewModel.toggleShowOriginal(feedback.id)
+                        }
+                        .accessibilityAction(named: vote) {
+                            Task { await viewModel.toggleVote(for: feedback) }
+                        }
+                case let (translation?, nil):
+                    link.accessibilityAction(named: translation) {
+                        viewModel.toggleShowOriginal(feedback.id)
+                    }
+                case let (nil, vote?):
+                    link.accessibilityAction(named: vote) {
+                        Task { await viewModel.toggleVote(for: feedback) }
+                    }
+                case (nil, nil):
+                    link
+                }
             }
-        case (nil, nil):
-            link
+            .frame(maxWidth: .infinity, alignment: .leading)
+            #if os(macOS)
+            // One trailing column: the actions glyph sits top-trailing inside the card,
+            // on the same trailing edge as the vote capsule below it.
+            .overlay(alignment: .topTrailing) { moderationMenu }
+            .overlay(alignment: .bottomTrailing) {
+                if style == .showcase {
+                    // Outside the link, like the Classic column above.
+                    FeedbackShowcaseVoteCapsule(
+                        feedbackID: feedback.id,
+                        voteCount: feedback.voteCount,
+                        presentation: presentation,
+                        tint: SwiftlyFeedback.appearance.primaryColor.resolve(for: colorScheme),
+                        action: { Task { await viewModel.toggleVote(for: feedback) } }
+                    )
+                    .padding(.bottom, 6)
+                }
+            }
+            #endif
+
+            #if !os(macOS)
+            moderationMenu
+            #endif
         }
+    }
+
+    @ViewBuilder
+    private var moderationMenu: some View {
+            if ModerationMenuVisibility.isVisible(
+                authorUserId: feedback.userId,
+                currentUserId: UserIdentifier.getCurrentUserId()
+            ) {
+                ContentModerationMenu(
+                    onReport: { reason in
+                        Task { await viewModel.report(feedback, reason: reason) }
+                    },
+                    onBlock: {
+                        Task { await viewModel.blockAuthor(of: feedback) }
+                    }
+                )
+                #if os(macOS)
+                .padding(.top, 4)
+                #endif
+            }
     }
 
     /// Cached projections plus the localized source- and target-language names.

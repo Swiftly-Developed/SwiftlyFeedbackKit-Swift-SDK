@@ -1,6 +1,6 @@
 // GenerateStringCatalogSymbolsPlugin.swift
 // SwiftlyFeedbackKit - Swift SDK for FeedbackKit
-// Copyright (c) 2025 Swiftly Developed - MIT License
+// Copyright (c) 2025 Swiftly Workspace BV - MIT License
 //
 // Generates typed Swift symbols for every entry in the target's String Catalogs,
 // so a call site reads `Text(.feedbackListTitle)` instead of

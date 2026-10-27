@@ -15,6 +15,9 @@ struct FeedbackCardView: View {
     /// Localized name of the reader's chosen target language; `nil` when that target IS
     /// the device language, which keeps the existing one-argument copy.
     var translationTargetName: String? = nil
+    /// `false` when the caller draws the vote button itself, outside a navigation link
+    /// whose label would swallow the click (macOS lists).
+    var showsVoteControl: Bool = true
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
 
@@ -33,7 +36,7 @@ struct FeedbackCardView: View {
 
     var body: some View {
         HStack(alignment: .center) {
-            if config.showVoteCount {
+            if config.showVoteCount, showsVoteControl {
                 VoteButton(
                     voteCount: feedback.voteCount,
                     hasVoted: feedback.hasVoted,

@@ -41,7 +41,8 @@ public enum SwiftlyFeedbackError: Error, LocalizedError, Equatable {
         case .invalidResponse:
             return String(localized: .errorInvalidResponseMessage)
         case .badRequest(let message):
-            return message ?? String(localized: .errorBadRequestMessage)
+            return SwiftlyFeedback.localizeModeration(message)
+                ?? String(localized: .errorBadRequestMessage)
         case .unauthorized:
             return String(localized: .errorUnauthorizedMessage)
         case .invalidApiKey:

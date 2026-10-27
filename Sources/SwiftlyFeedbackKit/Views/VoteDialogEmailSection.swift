@@ -6,6 +6,24 @@ struct VoteDialogEmailSection: View {
     @Binding var email: String
 
     var body: some View {
+        #if os(macOS)
+        // macOS: the label sits in the form's label column and the placeholder is the
+        // field's prompt, instead of a header above and a stray label beside it.
+        Section {
+            TextField(
+                String(localized: .voteDialogEmailHeader),
+                text: $email,
+                prompt: Text(String(localized: .voteDialogEmailPlaceholder))
+            )
+            .textContentType(.emailAddress)
+            .autocorrectionDisabled()
+        } footer: {
+            Text(String(localized: .voteDialogEmailFooter))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        #else
         Section {
             TextField(String(localized: .voteDialogEmailPlaceholder), text: $email)
                 .textContentType(.emailAddress)
@@ -22,5 +40,6 @@ struct VoteDialogEmailSection: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
+        #endif
     }
 }

@@ -2344,6 +2344,23 @@
         "ru": { "stringUnit": { "state": "translated", "value": "Администратор" } }
       }
     },
+    "comment.copy": {
+      "comment": "Context-menu and VoiceOver action that copies a comment's text to the clipboard.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Copy" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Copiar" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Copier" } },
+        "de": { "stringUnit": { "state": "translated", "value": "Kopieren" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "コピー" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "拷贝" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Copiar" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "복사" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Copia" } },
+        "ar": { "stringUnit": { "state": "translated", "value": "نسخ" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Скопировать" } }
+      }
+    },
     "comment.author.me": {
       "comment": "Byline on a comment written by the current person. Contrasts with Admin and User.",
       "extractionState": "manual",
@@ -7149,6 +7166,227 @@
             "value": "Вы проголосовали. Голос нельзя отменить"
           }
         }
+      }
+    },
+    "moderation.actions": {
+      "comment": "Accessible name of the report and block menu (icon-only).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Content actions" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Acciones de contenido" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Actions sur le contenu" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Inhaltsaktionen" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "コンテンツの操作" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "内容操作" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Ações de conteúdo" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "콘텐츠 작업" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Azioni sul contenuto" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "إجراءات المحتوى" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Действия с содержимым" } }
+      }
+    },
+    "moderation.blockThanks": {
+      "comment": "Acknowledgement after the reader blocks another user. Their content is hidden only for this reader.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This person is blocked. Their posts and comments are hidden for you." } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Esta persona está bloqueada. Sus publicaciones y comentarios se ocultan para ti." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Cette personne est bloquée. Ses publications et commentaires sont masqués pour vous." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Diese Person ist blockiert. Ihre Beiträge und Kommentare sind für dich ausgeblendet." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "このユーザーをブロックしました。投稿とコメントは表示されません。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "已屏蔽此人。其帖子和评论将对你隐藏。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Esta pessoa foi bloqueada. As publicações e os comentários dela ficam ocultos para você." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 사용자를 차단했습니다. 게시물과 댓글이 숨겨집니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questa persona è bloccata. I suoi post e commenti sono nascosti per te." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "تم حظر هذا الشخص. تُخفى منشوراته وتعليقاته عنك." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Этот пользователь заблокирован. Его записи и комментарии скрыты для вас." } }
+      }
+    },
+    "moderation.blockUser": {
+      "comment": "Menu action that hides another person's posts and comments from this reader.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Block User" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Bloquear usuario" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Bloquer l'utilisateur" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Nutzer blockieren" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "ユーザーをブロック" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "屏蔽用户" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Bloquear usuário" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "사용자 차단" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Blocca utente" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "حظر المستخدم" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Заблокировать пользователя" } }
+      }
+    },
+    "moderation.contactPrompt": {
+      "comment": "Footer on the feedback board, followed by the contact email for reporting objectionable content.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "To report objectionable content, contact" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Para denunciar contenido inapropiado, contacta con" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Pour signaler un contenu inapproprié, contactez" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Um anstößige Inhalte zu melden, kontaktiere" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "不適切なコンテンツを報告するには、次へ連絡してください" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "如需举报不当内容，请联系" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Para denunciar conteúdo impróprio, contate" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "부적절한 콘텐츠를 신고하려면 다음으로 연락하세요" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Per segnalare contenuti inappropriati, contatta" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "للإبلاغ عن محتوى غير لائق، تواصل مع" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Чтобы сообщить о недопустимом содержимом, напишите" } }
+      }
+    },
+    "moderation.objectionable": {
+      "comment": "Shown when the server refuses a post or comment that contains objectionable language.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This content isn't allowed. Remove the objectionable language and try again." } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Este contenido no está permitido. Quita el lenguaje inapropiado e inténtalo de nuevo." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Ce contenu n'est pas autorisé. Retirez le langage inapproprié et réessayez." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Dieser Inhalt ist nicht erlaubt. Entferne die anstößige Sprache und versuche es erneut." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "この内容は許可されていません。不適切な表現を削除して、もう一度お試しください。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "不允许此内容。请删除不当用语后重试。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Este conteúdo não é permitido. Remova a linguagem imprópria e tente novamente." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "이 콘텐츠는 허용되지 않습니다. 부적절한 표현을 삭제한 뒤 다시 시도하세요." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Questo contenuto non è consentito. Rimuovi il linguaggio inappropriato e riprova." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "هذا المحتوى غير مسموح به. أزل اللغة غير اللائقة ثم حاول مرة أخرى." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Это содержимое недопустимо. Уберите недопустимые выражения и попробуйте снова." } }
+      }
+    },
+    "moderation.reason.harassment": {
+      "comment": "Report reason: harassment.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Harassment" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Acoso" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Harcèlement" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Belästigung" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "嫌がらせ" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "骚扰" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Assédio" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "괴롭힘" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Molestie" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "تحرش" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Домогательство" } }
+      }
+    },
+    "moderation.reason.hate": {
+      "comment": "Report reason: hate.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Hate" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Odio" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Haine" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Hass" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "ヘイト" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "仇恨" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Ódio" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "혐오" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Odio" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "كراهية" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Ненависть" } }
+      }
+    },
+    "moderation.reason.other": {
+      "comment": "Report reason: other.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Other" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Otro" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Autre" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Sonstiges" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "その他" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "其他" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Outro" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "기타" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Altro" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "أخرى" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Другое" } }
+      }
+    },
+    "moderation.reason.sexualContent": {
+      "comment": "Report reason: sexual content.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sexual content" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Contenido sexual" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Contenu sexuel" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Sexuelle Inhalte" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "性的なコンテンツ" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "色情内容" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Conteúdo sexual" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "성적 콘텐츠" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Contenuti sessuali" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "محتوى جنسي" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Сексуальный контент" } }
+      }
+    },
+    "moderation.reason.spam": {
+      "comment": "Report reason: spam.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Spam" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Spam" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Spam" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Spam" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "スパム" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "垃圾信息" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Spam" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "스팸" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Spam" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "بريد عشوائي" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Спам" } }
+      }
+    },
+    "moderation.reason.violence": {
+      "comment": "Report reason: violence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Violence" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Violencia" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Violence" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Gewalt" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "暴力" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "暴力" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Violência" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "폭력" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Violenza" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "عنف" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Насилие" } }
+      }
+    },
+    "moderation.report": {
+      "comment": "Menu action that reports a feedback post or comment.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Report" } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Denunciar" } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Signaler" } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Melden" } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "報告" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "举报" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Denunciar" } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "신고" } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Segnala" } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "إبلاغ" } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Пожаловаться" } }
+      }
+    },
+    "moderation.reportThanks": {
+      "comment": "Acknowledgement after a content report is stored.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Thanks. We'll review this report." } },
+        "es": { "stringUnit": { "state": "needs_review", "value": "Gracias. Revisaremos esta denuncia." } },
+        "fr": { "stringUnit": { "state": "needs_review", "value": "Merci. Nous examinerons ce signalement." } },
+        "de": { "stringUnit": { "state": "needs_review", "value": "Danke. Wir prüfen diese Meldung." } },
+        "ja": { "stringUnit": { "state": "needs_review", "value": "ありがとうございます。この報告を確認します。" } },
+        "zh-Hans": { "stringUnit": { "state": "needs_review", "value": "谢谢。我们会审核这条举报。" } },
+        "pt-BR": { "stringUnit": { "state": "needs_review", "value": "Obrigado. Vamos analisar esta denúncia." } },
+        "ko": { "stringUnit": { "state": "needs_review", "value": "감사합니다. 이 신고를 검토하겠습니다." } },
+        "it": { "stringUnit": { "state": "needs_review", "value": "Grazie. Esamineremo questa segnalazione." } },
+        "ar": { "stringUnit": { "state": "needs_review", "value": "شكرًا. سنراجع هذا البلاغ." } },
+        "ru": { "stringUnit": { "state": "needs_review", "value": "Спасибо. Мы рассмотрим эту жалобу." } }
       }
     }
   },

@@ -24,6 +24,74 @@ struct VoteDialogView: View {
     private var theme: SwiftlyFeedbackTheme { SwiftlyFeedback.appearance }
 
     var body: some View {
+        #if os(macOS)
+        macOSBody
+        #else
+        sheetBody
+        #endif
+    }
+
+    #if os(macOS)
+    /// A native macOS sheet: a header, a grouped form, and Skip / Vote bottom-right.
+    private var macOSBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(String(localized: .voteDialogTitle))
+                .font(.title3.weight(.semibold))
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .accessibilityAddTraits(.isHeader)
+
+            Form {
+                VoteDialogEmailSection(email: $email)
+                VoteDialogNotificationSection(
+                    email: $email,
+                    notifyStatusChange: $notifyStatusChange,
+                    subscribeToMailingList: $subscribeToMailingList,
+                    operationalEmails: $operationalEmails,
+                    marketingEmails: $marketingEmails
+                )
+            }
+            .formStyle(.grouped)
+            .scrollDisabled(true)
+            .fixedSize(horizontal: false, vertical: true)
+            .tint(theme.primaryColor.resolve(for: colorScheme))
+
+            HStack(spacing: 8) {
+                Spacer()
+                // A standard push button. The host tint stays off it: a tinted `.bordered`
+                // button draws as a pale tinted pill beside the prominent Vote.
+                Button(String(localized: .voteDialogSkip)) {
+                    submitAndDismiss(email: nil, notify: false)
+                }
+                .keyboardShortcut(.cancelAction)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                Button(String(localized: .voteDialogSubmit)) {
+                    submitAndDismiss(
+                        email: email,
+                        notify: notifyStatusChange,
+                        subscribeToMailingList: subscribeToMailingList,
+                        mailingListEmailTypes: selectedEmailTypes()
+                    )
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(theme.primaryColor.resolve(for: colorScheme))
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 18)
+        }
+        .frame(width: 440)
+        // Escape is Skip. The sheet otherwise closes itself on Escape before Skip's
+        // `.cancelAction` shortcut runs, and no vote is cast.
+        .onExitCommand {
+            submitAndDismiss(email: nil, notify: false)
+        }
+    }
+    #endif
+
+    private var sheetBody: some View {
         NavigationStack {
             Form {
                 VoteDialogEmailSection(email: $email)
@@ -60,9 +128,7 @@ struct VoteDialogView: View {
             }
             .tint(theme.primaryColor.resolve(for: colorScheme))
         }
-        #if os(macOS)
-        .frame(minWidth: 380, minHeight: 300)
-        #else
+        #if !os(macOS)
         .presentationDetents(presentationDetentsForDevice)
         .presentationDragIndicator(.visible)
         .interactiveDismissDisabled(false)

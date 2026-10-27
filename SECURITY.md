@@ -17,7 +17,7 @@ If you discover a security vulnerability in any FeedbackKit SDK, please report i
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email us at **info@swiftly-developed.com** with:
+Instead, please email us at **security@getfeedbackkit.com** with:
 
 - A description of the vulnerability
 - Steps to reproduce the issue

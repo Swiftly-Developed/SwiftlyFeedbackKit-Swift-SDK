@@ -3,10 +3,12 @@ import SwiftUI
 public struct FeedbackDetailView: View {
     let feedback: Feedback
     let swiftlyFeedback: SwiftlyFeedback?
+    let onModerationChange: (ModerationBoardEvent) -> Void
     @State private var viewModel: FeedbackDetailViewModel
     @State private var translator = FeedbackTranslator()
     @SwiftUI.Environment(\.locale) private var locale
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
+    @SwiftUI.Environment(\.dismiss) private var dismiss
 
     // This surface reads the reader's choice and never offers a control of its own:
     // two controls for one preference is two places to disagree (TRANSLATION01 §14.2).
@@ -14,6 +16,10 @@ public struct FeedbackDetailView: View {
     @State private var supportedTargets: [Locale.Language] = []
     @State private var chosenTarget: Locale.Language?     // nil == follow the device
     private let targetStore = TranslationTargetStore()
+    #if os(macOS)
+    /// Comments live in a trailing inspector as a group chat, like the Admin app.
+    @State private var showingComments = true
+    #endif
 
     private var config: SwiftlyFeedbackConfiguration { SwiftlyFeedback.configuration }
 
@@ -34,9 +40,14 @@ public struct FeedbackDetailView: View {
         chosenTarget ?? locale.language
     }
 
-    public init(feedback: Feedback, swiftlyFeedback: SwiftlyFeedback? = nil) {
+    public init(
+        feedback: Feedback,
+        swiftlyFeedback: SwiftlyFeedback? = nil,
+        onModerationChange: @escaping (ModerationBoardEvent) -> Void = { _ in }
+    ) {
         self.feedback = feedback
         self.swiftlyFeedback = swiftlyFeedback ?? SwiftlyFeedback.current
+        self.onModerationChange = onModerationChange
         _viewModel = State(wrappedValue: FeedbackDetailViewModel(
             feedback: feedback,
             swiftlyFeedback: swiftlyFeedback ?? SwiftlyFeedback.current
@@ -48,6 +59,9 @@ public struct FeedbackDetailView: View {
             if viewModel.hasInvalidApiKey {
                 InvalidApiKeyView()
             } else {
+                #if os(macOS)
+                macOSBody
+                #else
                 List {
                     FeedbackDetailHeaderView(
                         feedback: feedback,
@@ -67,7 +81,8 @@ public struct FeedbackDetailView: View {
                         FeedbackDetailCommentsView(
                             viewModel: viewModel,
                             translator: translator,
-                            target: resolvedTarget
+                            target: resolvedTarget,
+                            onCommenterBlocked: { onModerationChange(.blockedCommenter) }
                         )
                     }
                 }
@@ -81,6 +96,7 @@ public struct FeedbackDetailView: View {
                         await viewModel.loadComments()
                     }
                 }
+                #endif
             }
         }
         .navigationTitle(displayedTitle)
@@ -95,8 +111,39 @@ public struct FeedbackDetailView: View {
                 }
                 .help(String(localized: .toolbarShare))
             }
+            if ModerationMenuVisibility.isVisible(
+                authorUserId: feedback.userId,
+                currentUserId: UserIdentifier.getCurrentUserId()
+            ) {
+                ToolbarItem(placement: .primaryAction) {
+                    ContentModerationMenu(
+                        onReport: { reason in
+                            Task { await viewModel.reportCurrent(reason: reason) }
+                        },
+                        onBlock: {
+                            Task {
+                                let blocked = await viewModel.blockAuthor()
+                                guard blocked else { return }
+                                onModerationChange(.blockedAuthor)
+                                dismiss()
+                            }
+                        }
+                    )
+                }
+            }
             #if os(macOS)
             if config.showCommentSection {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingComments.toggle()
+                    } label: {
+                        Label(
+                            String(localized: .commentsCount(viewModel.comments.count)),
+                            systemImage: "bubble.left.and.bubble.right"
+                        )
+                    }
+                    .help(String(localized: .commentsCount(viewModel.comments.count)))
+                }
                 ToolbarItem(placement: .automatic) {
                     Button(String(localized: .toolbarRefresh), systemImage: "arrow.clockwise") {
                         Task { await viewModel.loadComments() }
@@ -149,6 +196,12 @@ public struct FeedbackDetailView: View {
         } message: {
             Text(viewModel.errorMessage ?? String(localized: .errorGeneric))
         }
+        .alert(
+            viewModel.moderationNotice ?? "",
+            isPresented: $viewModel.showingModerationNotice
+        ) {
+            Button(String(localized: .errorOk), role: .cancel) {}
+        }
         .sheet(isPresented: $viewModel.showingVoteDialog) {
             VoteDialogView(
                 email: $viewModel.voteEmail,
@@ -168,6 +221,44 @@ public struct FeedbackDetailView: View {
             }
         }
     }
+
+    #if os(macOS)
+    /// macOS: the request reads as a document on the leading side and the conversation
+    /// sits in a trailing inspector, the same layout as the Admin app's detail.
+    private var macOSBody: some View {
+        ScrollView {
+            FeedbackDetailHeaderView(
+                feedback: viewModel.currentFeedback,
+                translatedTitle: headerProjection.title,
+                translatedDescription: headerProjection.description,
+                translatedRejectionReason: headerProjection.rejectionReason,
+                translationSourceName: headerProjection.sourceName,
+                isShowingOriginal: isShowingOriginalHeader,
+                onToggleTranslation: {
+                    viewModel.toggleShowOriginal(viewModel.currentFeedback.id)
+                },
+                translationTargetName: headerProjection.targetName,
+                vote: FeedbackDetailVoteView(viewModel: viewModel)
+            )
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: 760, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .inspector(isPresented: Binding(
+            get: { config.showCommentSection && showingComments },
+            set: { showingComments = $0 }
+        )) {
+            FeedbackDetailChatView(
+                viewModel: viewModel,
+                translator: translator,
+                target: resolvedTarget,
+                onCommenterBlocked: { onModerationChange(.blockedCommenter) }
+            )
+            .inspectorColumnWidth(min: 300, ideal: 380, max: 560)
+        }
+    }
+    #endif
 
     /// Whether the header (title + description + rejection reason together — one
     /// toggle governs all three) is showing its original-language text.
@@ -283,6 +374,73 @@ struct FeedbackDetailHeaderView<Vote: View>: View {
     }
 
     var body: some View {
+        #if os(macOS)
+        macOSHeader
+        #else
+        listHeader
+        #endif
+    }
+
+    #if os(macOS)
+    /// Title first, the vote on its trailing edge; status, category and date as one
+    /// line of facts under it, then the description.
+    private var macOSHeader: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: voteSpacing) {
+                Text(displayedTitle)
+                    .font(.title2)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+                vote
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 14) {
+                if config.showStatusBadge {
+                    FeedbackStatusEyebrowView(status: feedback.status)
+                }
+                if config.showCategoryBadge {
+                    Label(feedback.category.localizedDisplayName, systemImage: feedback.category.iconName)
+                        .labelStyle(FeedbackShowcaseBaselineLabelStyle())
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                if let createdAt = feedback.createdAt {
+                    Text(String(localized: .feedbackDetailSubmitted(createdAt.formatted(date: .abbreviated, time: .shortened))))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+
+            Divider()
+                .padding(.vertical, 2)
+
+            Text(displayedDescription)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let translationSourceName, let onToggleTranslation {
+                TranslationAffordanceView(
+                    sourceLanguageName: translationSourceName,
+                    targetLanguageName: translationTargetName,
+                    isShowingOriginal: isShowingOriginal,
+                    onToggle: onToggleTranslation
+                )
+            }
+
+            if feedback.status == .rejected,
+               let reason = feedback.rejectionReason,
+               !reason.isEmpty {
+                FeedbackDetailRejectionReason(reason: displayedRejectionReason(reason))
+            }
+        }
+    }
+    #endif
+
+    private var listHeader: some View {
         Section {
             if config.showStatusBadge {
                 FeedbackDetailStatusRow(status: feedback.status)
@@ -403,6 +561,17 @@ struct FeedbackDetailVoteView: View {
         // so it scales. The Showcase capsule's button style does not, once that
         // button is the audited row.
         Group {
+            #if os(macOS)
+            // The same capsule as the list rows, so a request's vote looks the same
+            // in both places.
+            FeedbackShowcaseVoteCapsule(
+                feedbackID: feedback.id,
+                voteCount: feedback.voteCount,
+                presentation: VotePresentation.resolve(for: feedback, isPlaceholder: false, configuration: config),
+                tint: themeColor,
+                action: { Task { await viewModel.toggleVote() } }
+            )
+            #else
             if config.showVoteCount {
                 VoteButton(
                     voteCount: feedback.voteCount,
@@ -438,6 +607,7 @@ struct FeedbackDetailVoteView: View {
                         ).accessibilityHint?.localizedText ?? ""
                 )
             }
+            #endif
         }
     }
 
@@ -457,6 +627,8 @@ struct FeedbackDetailCommentsView: View {
     /// enqueues nothing and only reads cached projections, so a seam of its own would
     /// mean a second independently-timed answer and a render disagreeing with its parent.
     let target: Locale.Language
+    /// The list reloads so the blocked person's posts leave the board.
+    var onCommenterBlocked: () -> Void = {}
     @SwiftUI.Environment(\.locale) private var locale
 
     /// A comment row's translation inputs: the cached projection plus the localized
@@ -514,15 +686,34 @@ struct FeedbackDetailCommentsView: View {
             } else if !viewModel.comments.isEmpty {
                 ForEach(viewModel.comments) { comment in
                     let projection = translationProjection(for: comment)
-                    CommentRowView(
-                        comment: comment,
-                        translatedText: projection.text,
-                        translationSourceName: projection.sourceName,
-                        isShowingOriginal: viewModel.showOriginalIDs.contains(comment.id),
-                        onToggleTranslation: { viewModel.toggleShowOriginal(comment.id) },
-                        translationTargetName: projection.targetName,
-                        currentUserId: UserIdentifier.getCurrentUserId()
-                    )
+                    HStack(alignment: .top, spacing: 8) {
+                        CommentRowView(
+                            comment: comment,
+                            translatedText: projection.text,
+                            translationSourceName: projection.sourceName,
+                            isShowingOriginal: viewModel.showOriginalIDs.contains(comment.id),
+                            onToggleTranslation: { viewModel.toggleShowOriginal(comment.id) },
+                            translationTargetName: projection.targetName,
+                            currentUserId: UserIdentifier.getCurrentUserId()
+                        )
+                        if ModerationMenuVisibility.isVisible(
+                            authorUserId: comment.userId,
+                            currentUserId: UserIdentifier.getCurrentUserId()
+                        ) {
+                            ContentModerationMenu(
+                                onReport: { reason in
+                                    Task { await viewModel.report(comment, reason: reason) }
+                                },
+                                onBlock: {
+                                    Task {
+                                        let blocked = await viewModel.block(commenterUserId: comment.userId)
+                                        guard blocked else { return }
+                                        onCommenterBlocked()
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         } header: {
@@ -682,6 +873,8 @@ final class FeedbackDetailViewModel {
     var isSubmittingComment = false
     var showingError = false
     var errorMessage: String?
+    var showingModerationNotice = false
+    var moderationNotice: String?
     var hasInvalidApiKey = false
     /// Items (the feedback id governs title + description + rejection reason
     /// together; each comment id its own row) toggled back to original-language
@@ -794,24 +987,7 @@ final class FeedbackDetailViewModel {
                 )
             }
 
-            currentFeedback = Feedback(
-                id: currentFeedback.id,
-                title: currentFeedback.title,
-                description: currentFeedback.description,
-                status: currentFeedback.status,
-                category: currentFeedback.category,
-                userId: currentFeedback.userId,
-                userEmail: currentFeedback.userEmail,
-                voteCount: result.voteCount,
-                hasVoted: result.hasVoted,
-                commentCount: currentFeedback.commentCount,
-                createdAt: currentFeedback.createdAt,
-                updatedAt: currentFeedback.updatedAt,
-                mergedIntoId: currentFeedback.mergedIntoId,
-                mergedAt: currentFeedback.mergedAt,
-                mergedFeedbackIds: currentFeedback.mergedFeedbackIds,
-                rejectionReason: currentFeedback.rejectionReason
-            )
+            currentFeedback = currentFeedback.applying(result)
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
@@ -821,6 +997,72 @@ final class FeedbackDetailViewModel {
             errorMessage = error.localizedDescription
             showingError = true
         }
+    }
+
+    func reportCurrent(reason: ContentReportReason) async {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return
+        }
+        do {
+            _ = try await sf.reportFeedback(id: currentFeedback.id, reason: reason)
+            moderationNotice = String(localized: .moderationReportThanks)
+            showingModerationNotice = true
+        } catch {
+            present(error)
+        }
+    }
+
+    /// Returns whether the block was stored. The detail screen dismisses only then.
+    func blockAuthor() async -> Bool {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return false
+        }
+        do {
+            _ = try await sf.blockUser(id: currentFeedback.userId)
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
+    func report(_ comment: Comment, reason: ContentReportReason) async {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return
+        }
+        do {
+            _ = try await sf.reportComment(id: comment.id, on: currentFeedback.id, reason: reason)
+            moderationNotice = String(localized: .moderationReportThanks)
+            showingModerationNotice = true
+        } catch {
+            present(error)
+        }
+    }
+
+    /// Returns whether the block was stored. The caller reloads the list only then.
+    func block(commenterUserId: String) async -> Bool {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return false
+        }
+        do {
+            _ = try await sf.blockUser(id: commenterUserId)
+            comments.removeAll { $0.userId == commenterUserId }
+            moderationNotice = String(localized: .moderationBlockThanks)
+            showingModerationNotice = true
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
+    private func present(_ error: any Error) {
+        errorMessage = error.localizedDescription
+        showingError = true
     }
 
     func submitComment() async {

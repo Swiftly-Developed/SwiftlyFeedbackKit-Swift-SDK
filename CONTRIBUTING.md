@@ -44,7 +44,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ## Contact
 
-For general questions about contributing, reach out to us at info@swiftly-developed.com.
+For general questions about contributing, reach out to us at developers@getfeedbackkit.com.
 
 ## License
 

@@ -563,6 +563,64 @@ public final class SwiftlyFeedback: @unchecked Sendable {
         }
     }
 
+    // MARK: - Moderation
+
+    /// Report a feedback post.
+    ///
+    /// Sending the same report again is success. The server keeps one row.
+    ///
+    /// - Parameters:
+    ///   - id: The feedback post.
+    ///   - reason: Why the reader is reporting it.
+    public func reportFeedback(
+        id: UUID,
+        reason: ContentReportReason
+    ) async throws -> ModerationAcknowledgement {
+        try await client.postUsingUserId(path: "feedbacks/\(id)/reports") { userId in
+            CreateContentReportRequest(reason: reason.rawValue, userId: userId)
+        }
+    }
+
+    /// Report a comment on a feedback post.
+    ///
+    /// - Parameters:
+    ///   - id: The comment.
+    ///   - feedbackId: The post the comment belongs to.
+    ///   - reason: Why the reader is reporting it.
+    public func reportComment(
+        id: UUID,
+        on feedbackId: UUID,
+        reason: ContentReportReason
+    ) async throws -> ModerationAcknowledgement {
+        try await client.postUsingUserId(path: "feedbacks/\(feedbackId)/comments/\(id)/reports") { userId in
+            CreateContentReportRequest(reason: reason.rawValue, userId: userId)
+        }
+    }
+
+    /// Hide one user's posts and comments from this reader.
+    ///
+    /// Other readers still see that user's content. Blocking the same user
+    /// again is success.
+    ///
+    /// - Parameter id: The user id stamped on the posts and comments to hide.
+    public func blockUser(id: String) async throws -> ModerationAcknowledgement {
+        try await client.postUsingUserId(path: "blocks") { userId in
+            CreateUserBlockRequest(blockedUserId: id, userId: userId)
+        }
+    }
+
+    /// Rewrites the server's objectionable-content token into the catalog sentence.
+    ///
+    /// Any other message is returned unchanged. A missing message stays missing
+    /// so the caller can use its own fallback. `SwiftlyFeedbackError.errorDescription`
+    /// calls this for every bad request, which is what the submit and comment
+    /// screens already display.
+    public static func localizeModeration(_ message: String?) -> String? {
+        guard let message else { return nil }
+        guard message == ModerationWireToken.objectionableContent else { return message }
+        return String(localized: .moderationObjectionable)
+    }
+
     // MARK: - View Tracking
 
     /// Track a custom view or event.
@@ -927,4 +985,14 @@ private struct TrackViewEventRequest: Encodable, Sendable {
     let eventName: String
     let userId: String
     let properties: [String: String]?
+}
+
+private struct CreateContentReportRequest: Encodable, Sendable {
+    let reason: String
+    let userId: String
+}
+
+private struct CreateUserBlockRequest: Encodable, Sendable {
+    let blockedUserId: String
+    let userId: String
 }

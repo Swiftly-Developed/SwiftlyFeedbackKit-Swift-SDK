@@ -105,6 +105,16 @@ private struct SystemLabelBox: NSViewRepresentable {
         configure(field)
     }
 
+    /// The text's own size, as the UIKit label reports. Without it a list row hands the field
+    /// its whole proposed width and the text draws from the leading edge, so a count in the
+    /// vote column sat left of the chevron above it.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView field: NSTextField, context: Context) -> CGSize? {
+        let width = proposal.width ?? .greatestFiniteMagnitude
+        let bounds = NSRect(x: 0, y: 0, width: width, height: .greatestFiniteMagnitude)
+        let fitted = field.cell?.cellSize(forBounds: bounds) ?? field.intrinsicContentSize
+        return CGSize(width: min(ceil(fitted.width), width), height: ceil(fitted.height))
+    }
+
     private func configure(_ field: NSTextField) {
         field.font = NSFont.preferredFont(forTextStyle: textStyle)
         if inverted {

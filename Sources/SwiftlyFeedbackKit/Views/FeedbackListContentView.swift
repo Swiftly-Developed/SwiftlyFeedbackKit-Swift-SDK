@@ -40,7 +40,21 @@ struct FeedbackListContentView: View {
         .animation(motion.animation(.smooth), value: viewModel.displayedItems)
         .animation(motion.animation(.smooth), value: viewModel.filter)
         .navigationDestination(for: Feedback.self) { feedback in
-            FeedbackDetailView(feedback: feedback, swiftlyFeedback: viewModel.swiftlyFeedback)
+            FeedbackDetailView(
+                feedback: feedback,
+                swiftlyFeedback: viewModel.swiftlyFeedback,
+                onModerationChange: { event in
+                    switch event {
+                    case .blockedAuthor:
+                        viewModel.noteAuthorBlocked()
+                        Task { await viewModel.loadFeedback() }
+                    case .blockedCommenter:
+                        Task { await viewModel.loadFeedback() }
+                    case .reported:
+                        break
+                    }
+                }
+            )
         }
     }
 }

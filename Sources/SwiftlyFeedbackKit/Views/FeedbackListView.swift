@@ -37,9 +37,23 @@ public struct FeedbackListView: View {
         TranslationTargetOrdering.ordered(supported: supportedTargets, displayLocale: locale)
     }
 
-    /// When false, compact width does not add its own navigation stack.
-    /// The host already wrapped this view in the one stack the rows push onto.
+    /// When false, the list adds no navigation container of its own at any width: the host
+    /// already wrapped it in the one stack the rows push onto.
     private let embedsNavigationStack: Bool
+
+    /// What the list wraps itself in on iOS and visionOS.
+    enum Container: Equatable {
+        case stack
+        case split
+        case none
+    }
+
+    /// A hosted list gets no container. A split of its own inside the host's stack hid the
+    /// list behind a second Show Sidebar button on iPad.
+    static func container(embedsNavigationStack: Bool, isCompact: Bool) -> Container {
+        guard embedsNavigationStack else { return .none }
+        return isCompact ? .stack : .split
+    }
 
     public init(swiftlyFeedback: SwiftlyFeedback? = nil, embedsNavigationStack: Bool = true) {
         self.embedsNavigationStack = embedsNavigationStack
@@ -52,17 +66,14 @@ public struct FeedbackListView: View {
             listColumn
         }
         #else
-        // Compact is one stack. A split here, under the Admin tab, draws a second
-        // navigation bar. Regular width keeps the list beside an empty detail.
-        if horizontalSizeClass == .compact {
-            if embedsNavigationStack {
-                NavigationStack {
-                    listColumn
-                }
-            } else {
+        // Compact is one stack. Regular width keeps the list beside an empty detail. A host
+        // that owns navigation gets the bare list.
+        switch Self.container(embedsNavigationStack: embedsNavigationStack, isCompact: horizontalSizeClass == .compact) {
+        case .stack:
+            NavigationStack {
                 listColumn
             }
-        } else {
+        case .split:
             NavigationSplitView {
                 listColumn
             } detail: {
@@ -71,6 +82,8 @@ public struct FeedbackListView: View {
                     systemImage: "bubble.left.and.bubble.right"
                 )
             }
+        case .none:
+            listColumn
         }
         #endif
     }
@@ -243,10 +256,19 @@ public struct FeedbackListView: View {
                     SwiftlyFeedback.view(.feedbackList)
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                BoardContactFooter(address: config.moderationContactEmail)
+            }
             .alert(String(localized: .errorTitle), isPresented: $viewModel.showingError) {
                 Button(String(localized: .errorOk), role: .cancel) {}
             } message: {
                 Text(viewModel.errorMessage ?? String(localized: .errorGeneric))
+            }
+            .alert(
+                viewModel.moderationNotice ?? "",
+                isPresented: $viewModel.showingModerationNotice
+            ) {
+                Button(String(localized: .errorOk), role: .cancel) {}
             }
             .sheet(isPresented: $viewModel.showingVoteDialog) {
                 VoteDialogView(

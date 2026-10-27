@@ -1,7 +1,7 @@
 // swift-tools-version: 6.2
 // SwiftlyFeedbackKit - Swift SDK for FeedbackKit
 // https://github.com/Swiftly-Developed/SwiftlyFeedbackKit
-// Copyright (c) 2025 Swiftly Developed - MIT License
+// Copyright (c) 2025 Swiftly Workspace BV - MIT License
 
 import PackageDescription
 

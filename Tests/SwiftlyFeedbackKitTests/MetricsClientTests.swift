@@ -1214,8 +1214,9 @@ struct MetricsStringCatalogTests {
     @Test("G9b · the catalog stays reconcile-clean: no empty en, no harvested row")
     func catalogRemainsClean() throws {
         let strings = try Self.catalog()
-        // 117 at the metrics branch point, plus the 19 `FEEDBACK01` list keys.
-        #expect(strings.count == 136, "the catalog holds \(strings.count) keys")
+        // 117 at the metrics branch point, plus the 19 `FEEDBACK01` list keys,
+        // plus the 13 Guideline 1.2 moderation keys, plus `comment.copy`.
+        #expect(strings.count == 150, "the catalog holds \(strings.count) keys")
 
         let emptyEnglish = strings.filter { Self.value($0.value, locale: "en") == nil }
         let harvested = strings.filter { ($0.value["extractionState"] as? String) != "manual" }

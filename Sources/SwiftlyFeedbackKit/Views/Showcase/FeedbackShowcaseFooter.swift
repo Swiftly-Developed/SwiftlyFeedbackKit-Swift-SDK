@@ -30,7 +30,8 @@ struct FeedbackShowcaseFooter: View {
         FeedbackShowcaseRowOrStackLayout(
             horizontalSpacing: spacing,
             verticalSpacing: spacing,
-            pinsLastToTrailingEdge: true
+            // With no capsule the facts are the last child; pinning would push them trailing.
+            pinsLastToTrailingEdge: presentation != .hidden
         ) {
             if hasFacts { facts }
             capsule

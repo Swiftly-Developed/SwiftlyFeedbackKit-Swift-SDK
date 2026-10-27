@@ -16,6 +16,6 @@ Found a bug or have a feature request? Open an issue on GitHub:
 
 For general questions or support inquiries:
 
-**Email:** info@swiftly-developed.com
+**Email:** support@getfeedbackkit.com
 
 We typically respond within 1-2 business days.

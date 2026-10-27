@@ -281,7 +281,7 @@ FeedbackDetailView(feedback: selectedFeedback)
 
 Voting with no preset email presents a dialog. The type is internal. You do not embed it. The list and the detail screen present the same dialog.
 
-The dialog collects an optional email, a status-change notification toggle, and a mailing-list opt-in with operational and marketing sub-toggles. Skip votes without an email. Submit sends the address the user typed.
+The dialog collects an optional email, a status-change notification toggle, and a mailing-list opt-in with operational and marketing sub-toggles. Skip votes without an email; on macOS, Escape is Skip. Submit sends the address the user typed.
 
 The dialog stays closed when `configuration.userEmail` is already set, and when `configuration.showVoteEmailField` is `false`.
 
@@ -962,7 +962,7 @@ Manage your feedback from the [FeedbackKit Admin app](https://www.getfeedbackkit
 
 - **Website:** [getfeedbackkit.com](https://www.getfeedbackkit.com)
 - **Issues:** [GitHub Issues](https://github.com/Swiftly-Developed/SwiftlyFeedbackKit/issues)
-- **Email:** info@swiftly-workspace.com
+- **Email:** support@getfeedbackkit.com
 
 ## License
 

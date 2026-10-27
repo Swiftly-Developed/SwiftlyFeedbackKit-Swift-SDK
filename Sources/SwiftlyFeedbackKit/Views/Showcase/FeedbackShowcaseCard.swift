@@ -17,6 +17,9 @@ struct FeedbackShowcaseCard: View {
     var onToggleTranslation: (() -> Void)? = nil
     /// Localized name of the reader's chosen target; `nil` when it is the device language.
     var translationTargetName: String? = nil
+    /// `false` when the caller draws the vote capsule itself, outside a navigation link
+    /// whose label would swallow the click (macOS lists).
+    var showsVoteControl: Bool = true
 
     @SwiftUI.Environment(\.colorScheme) private var colorScheme
     @SwiftUI.Environment(\.redactionReasons) private var redactionReasons
@@ -38,11 +41,12 @@ struct FeedbackShowcaseCard: View {
     }
 
     var body: some View {
-        let presentation = VotePresentation.resolve(
+        let resolved = VotePresentation.resolve(
             for: feedback,
             isPlaceholder: redactionReasons.contains(.placeholder),
             configuration: config
         )
+        let presentation = showsVoteControl ? resolved : .hidden
         let category = config.showCategoryBadge ? feedback.category : nil
         let commentCount = config.showCommentSection && feedback.commentCount > 0 ? feedback.commentCount : nil
         let hasFooter = category != nil || commentCount != nil || presentation != .hidden
@@ -88,6 +92,9 @@ struct FeedbackShowcaseCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // The caller's capsule sits bottom-trailing; keep a footer's worth of room for it
+        // when there are no facts to share the line with.
+        .padding(.bottom, !showsVoteControl && resolved != .hidden && category == nil && commentCount == nil ? footerGap + 24 : 0)
         .padding(.vertical, verticalPadding)
     }
 }

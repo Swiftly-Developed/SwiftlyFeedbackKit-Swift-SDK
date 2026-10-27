@@ -48,7 +48,7 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of unacceptable behavior may be reported to the community leaders
-responsible for enforcement at **info@swiftly-developed.com**.
+responsible for enforcement at **hello@getfeedbackkit.com**.
 
 All reports will be reviewed and investigated promptly and fairly.
 

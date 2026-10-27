@@ -74,6 +74,9 @@ struct VoteButton: View {
                             .strokeBorder(controlTint, lineWidth: 1)
                     }
                 }
+                // The whole bordered shape takes the click, not only the glyph and count:
+                // an unvoted control's fill is clear.
+                .contentShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .buttonStyle(.borderless)

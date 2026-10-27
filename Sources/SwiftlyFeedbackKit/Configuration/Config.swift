@@ -184,6 +184,14 @@ public final class SwiftlyFeedbackConfiguration {
     /// ```
     public var translationEnabled: Bool = true
 
+    // MARK: - Moderation
+
+    /// Email address shown on the feedback board for reporting objectionable content.
+    ///
+    /// Guideline 1.2 asks the surface that displays user content to publish a
+    /// contact method. The default is ``BoardModerationContact/defaultAddress``.
+    public var moderationContactEmail: String = BoardModerationContact.defaultAddress
+
     // MARK: - Buttons Configuration
 
     /// Button configuration options

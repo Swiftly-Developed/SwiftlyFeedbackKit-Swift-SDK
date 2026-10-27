@@ -16,6 +16,8 @@ final class FeedbackListViewModel {
     var showingError = false
     var errorMessage: String?
     var showingSubmissionDisabledAlert = false
+    var showingModerationNotice = false
+    var moderationNotice: String?
     var hasInvalidApiKey = false
     /// Items the user toggled back to their original-language text. Session-scoped
     /// per-item choice: lives exactly as long as this view model, never persisted.
@@ -230,6 +232,14 @@ final class FeedbackListViewModel {
         }
     }
 
+    /// Writes the server's answer onto the voted row, as the detail screen does. No reload:
+    /// a list read that lags the vote would put the old count back.
+    private func applyVote(_ result: VoteResult) {
+        guard case .loaded(let items) = state else { return }
+        let updated = items.map { $0.id == result.feedbackId ? $0.applying(result) : $0 }
+        state = .loaded(Self.sorted(updated, by: selectedSort))
+    }
+
     private func sortFeedback() {
         guard case .loaded(let items) = state else { return }
         // No withAnimation here: the view's `.animation(value:)` observes the
@@ -295,13 +305,14 @@ final class FeedbackListViewModel {
         guard !hasInvalidApiKey else { return }
 
         do {
+            let result: VoteResult
             // Check if this is an unvote by finding the feedback
             if let feedback = feedbackItems.first(where: { $0.id == feedbackId }), feedback.hasVoted {
-                _ = try await sf.unvote(for: feedbackId)
+                result = try await sf.unvote(for: feedbackId)
             } else {
                 let trimmedEmail = email?.trimmingCharacters(in: .whitespacesAndNewlines)
                 let validEmail = (trimmedEmail?.isEmpty == false) ? trimmedEmail : nil
-                _ = try await sf.vote(
+                result = try await sf.vote(
                     for: feedbackId,
                     email: validEmail,
                     notifyStatusChange: notify && validEmail != nil,
@@ -309,7 +320,7 @@ final class FeedbackListViewModel {
                     mailingListEmailTypes: validEmail != nil && subscribeToMailingList == true ? mailingListEmailTypes : nil
                 )
             }
-            await loadFeedback()
+            applyVote(result)
         } catch let error as SwiftlyFeedbackError where error == .invalidApiKey {
             hasInvalidApiKey = true
         } catch SwiftlyFeedbackError.feedbackLimitReached(let message) {
@@ -319,5 +330,46 @@ final class FeedbackListViewModel {
             errorMessage = error.localizedDescription
             showingError = true
         }
+    }
+
+    /// Stores a report and shows the acknowledgement on this board.
+    func report(_ feedback: Feedback, reason: ContentReportReason) async {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return
+        }
+        do {
+            _ = try await sf.reportFeedback(id: feedback.id, reason: reason)
+            moderationNotice = String(localized: .moderationReportThanks)
+            showingModerationNotice = true
+        } catch {
+            present(error)
+        }
+    }
+
+    /// Hides this author's posts and comments, then reloads the board.
+    func blockAuthor(of feedback: Feedback) async {
+        guard let sf = swiftlyFeedback else {
+            present(SwiftlyFeedbackError.invalidResponse)
+            return
+        }
+        do {
+            _ = try await sf.blockUser(id: feedback.userId)
+            noteAuthorBlocked()
+            await loadFeedback()
+        } catch {
+            present(error)
+        }
+    }
+
+    private func present(_ error: any Error) {
+        errorMessage = error.localizedDescription
+        showingError = true
+    }
+
+    /// The detail screen dismissed after its post's author was blocked.
+    func noteAuthorBlocked() {
+        moderationNotice = String(localized: .moderationBlockThanks)
+        showingModerationNotice = true
     }
 }

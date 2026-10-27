@@ -5,6 +5,36 @@ All notable changes to FeedbackKit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [2.2.0] - 2026-10-27
+
+All FeedbackKit SDKs (Swift, JS, React Native, Kotlin, Flutter) now share one version number. The Vapor SDK keeps its own versioning. This release jumps from 1.3.0 to 2.2.0 to align; the public API change is additive, but update SwiftPM requirements pinned to `from: "1.x"`. Includes the comment chat accessibility changes from #997.
+
+### Added
+
+- **`ChatBubbleRow(…, showsOutgoingSenderName:)`** (default `false`): names outgoing runs too. The SDK's comment chat sets it for staff replies; existing callers are unchanged.
+
+- **Content moderation on the feedback board.** `reportFeedback(id:reason:)`, `reportComment(id:on:reason:)`, and `blockUser(id:)` on `SwiftlyFeedback`, plus `ContentReportReason`, `ModerationAcknowledgement`, `ModerationBoardEvent`, and `BoardModerationContact`. Each post and comment offers Report (with a reason) and Block user. A block hides that person's posts and comments for the reader who blocked them. The board shows a contact address (`SwiftlyFeedbackConfiguration.moderationContactEmail`, default `moderation@getfeedbackkit.com`). The server refuses objectionable text before it is stored; `SwiftlyFeedback.localizeModeration` turns that token into a localized sentence. Existing `FeedbackListView` and `FeedbackDetailView` initializers stay source-compatible.
+
+### Changed
+
+- **The board's default moderation contact is now `moderation@getfeedbackkit.com`** (was `info@swiftly-developed.com`). `BoardModerationContact.defaultAddress` and the default `SwiftlyFeedbackConfiguration.moderationContactEmail` both change, so a board that never set `moderationContactEmail` shows the new address. Set `moderationContactEmail` to keep a different one.
+- The contact addresses in the repository docs are now getfeedbackkit.com aliases: security@ in `SECURITY.md`, support@ in `SUPPORT.md`, hello@ in `CODE_OF_CONDUCT.md` and developers@ in `CONTRIBUTING.md`.
+- **On macOS, Escape in the vote sheet is Skip**: it closes the sheet and votes without an email. Before, Escape closed the sheet and cast no vote, although Skip carries the cancel shortcut.
+- **On macOS, the comment chat names staff replies "Admin"**, above the first bubble of each run, as it names users "User". VoiceOver now reads the sender name on the first bubble of each run; it read neither before.
+- **`ChatBubbleRow.accessibilityText` reads "sender, text, time"** (was "sender, time, text"), the order a sighted reader takes the bubble in. The property's name and type are unchanged. A host that combines the bubble's children now hears the time too: it was hidden from VoiceOver before.
+
+### Fixed
+
+- **A chat bubble's sender address no longer hyphenates inside its domain.** `ChatBubbleRow` drew "sam.okafor@northwind.app" as "sam.okafor@north- / wind.app" when it did not fit. It now stays on one line when it fits and otherwise breaks after the `@`, at every Dynamic Type size, without truncating.
+- **On macOS, each comment in the chat offers Copy**, in its context menu and as a VoiceOver action. It copies the text the bubble shows, translated or original.
+- **Voting from the list updates the row.** The list now writes the server's vote answer onto the row, as the detail screen does, instead of discarding it and reloading. A list read that lagged the vote put the old count back.
+- **Voting from a Classic row works on macOS.** The vote button now sits beside the row's link instead of inside its label, where the list took the click and VoiceOver never reached the button. Showcase rows already did this.
+- **The macOS vote sheet's Skip button is a standard push button.** It was drawn as a pale pill in the host tint beside the prominent Vote button.
+- **`FeedbackListView(embedsNavigationStack: false)` adds no navigation container at regular width either.** It dropped its own stack only at compact width and still built a split view on iPad, which inside the host's split and stack hid the list behind a second Show Sidebar button. A host that passes `false` now gets the bare list at every width; the default (`true`) is unchanged.
+- **On macOS, the Classic vote count sits centered under its chevron.** The count took the whole 44-point column in a list row and drew from the leading edge, so "128" ran out of the box.
+
 ## [1.3.0] - 2026-10-14
 
 This release was first tagged 3.0.0 on 14 October 2026 and was renumbered 1.3.0 on 17 October 2026.
