@@ -60,7 +60,7 @@ struct ConfigurationAccessTests {
         #expect(SwiftlyFeedback.theme.primaryColor == .default)
     }
 
-    @Test("deprecated shared forwards to current")
+    @Test("deprecated shared forwards to current", .isolatedSharedClient)
     func deprecatedSharedForwards() {
         let saved = SwiftlyFeedback.current
         defer { SwiftlyFeedback.current = saved }

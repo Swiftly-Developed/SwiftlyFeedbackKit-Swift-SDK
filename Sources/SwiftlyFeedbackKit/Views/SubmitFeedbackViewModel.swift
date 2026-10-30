@@ -15,6 +15,8 @@ final class SubmitFeedbackViewModel {
     var showingError = false
     var errorMessage: String?
     var hasInvalidApiKey = false
+    /// How long a submit waits for `configure` before it reports a failure.
+    var configurationPatience = SwiftlyFeedback.configurationPatience
 
     var isValid: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -43,11 +45,26 @@ final class SubmitFeedbackViewModel {
     }
 
     func submit(using swiftlyFeedback: SwiftlyFeedback?) async {
-        guard let sf = swiftlyFeedback, isValid else { return }
+        guard isValid else { return }
         guard !hasInvalidApiKey else { return }
 
         isSubmitting = true
         defer { isSubmitting = false }
+
+        // The form can be older than the client. The wait ends, because a send must not fire
+        // long after the user was told it failed.
+        let client: SwiftlyFeedback?
+        if let swiftlyFeedback {
+            client = swiftlyFeedback
+        } else {
+            client = await SwiftlyFeedback.waitForCurrent(timeout: configurationPatience)
+        }
+        guard let sf = client else {
+            SDKLogger.error("No client after \(configurationPatience). Call SwiftlyFeedback.configure, or pass a client to the view.")
+            errorMessage = String(localized: .errorGeneric)
+            showingError = true
+            return
+        }
 
         do {
             _ = try await sf.submitFeedback(

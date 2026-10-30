@@ -173,7 +173,7 @@ struct UserIDLifecycleTests {
         #expect(ContinuousClock().now - started < .milliseconds(500))
     }
 
-    @Test("updateUser(customID:) is what the next request sends")
+    @Test("updateUser(customID:) is what the next request sends", .isolatedSharedClient)
     func customIDIsSentOnTheNextRequest() async throws {
         let store = MemoryStore()
         let previous = UserIdentifier.swapStoreForTesting(store)
@@ -207,7 +207,7 @@ struct UserIDLifecycleTests {
         #expect(!String(decoding: body, as: UTF8.self).contains("anon-1"))
     }
 
-    @Test("A custom id set before configure is waiting when the client is published")
+    @Test("A custom id set before configure is waiting when the client is published", .isolatedSharedClient)
     func customIDSetBeforeConfigureIsPending() async throws {
         let store = MemoryStore()
         let previous = UserIdentifier.swapStoreForTesting(store)
@@ -225,7 +225,7 @@ struct UserIDLifecycleTests {
         #expect(PendingUserID.take() == "app-user-42")
     }
 
-    @Test("A blank custom id does not change the live client")
+    @Test("A blank custom id does not change the live client", .isolatedSharedClient)
     func blankCustomIDDoesNotRegister() async throws {
         let store = MemoryStore()
         let previous = UserIdentifier.swapStoreForTesting(store)

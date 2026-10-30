@@ -63,10 +63,63 @@ public final class SwiftlyFeedback: @unchecked Sendable {
 
     /// The configured client, once ``configure(with:baseURL:)`` has resolved a user id.
     ///
-    /// `nil` until configuration finishes. Views read this when they are created without
-    /// an explicit client.
+    /// `nil` until configuration finishes. A view created without an explicit client uses this
+    /// value, and if it is still `nil` the view waits for it.
     @MainActor
-    public static var current: SwiftlyFeedback?
+    public static var current: SwiftlyFeedback? {
+        didSet {
+            guard let current else { return }
+            let waiting = currentWaiters
+            currentWaiters = [:]
+            for continuation in waiting.values {
+                continuation.resume(returning: current)
+            }
+        }
+    }
+
+    /// How long a view waits for ``current`` before it tells the user something is wrong. A
+    /// slow launch stays inside this: the iCloud lookup that `configure` awaits gives up after
+    /// three seconds.
+    static let configurationPatience: Duration = .seconds(10)
+
+    @MainActor
+    private static var currentWaiters: [UUID: CheckedContinuation<SwiftlyFeedback?, Never>] = [:]
+
+    /// ``current``, suspending until it is published. Returns `nil` only when the calling task
+    /// is cancelled, so a caller that can outlive its screen must be cancellable.
+    @MainActor
+    static func waitForCurrent() async -> SwiftlyFeedback? {
+        if let current { return current }
+        let id = UUID()
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                if Task.isCancelled {
+                    continuation.resume(returning: nil)
+                } else {
+                    currentWaiters[id] = continuation
+                }
+            }
+        } onCancel: {
+            Task { @MainActor in
+                currentWaiters.removeValue(forKey: id)?.resume(returning: nil)
+            }
+        }
+    }
+
+    /// ``current``, or `nil` if it is not published within `timeout`.
+    @MainActor
+    static func waitForCurrent(timeout: Duration) async -> SwiftlyFeedback? {
+        await withTaskGroup(of: SwiftlyFeedback?.self) { group in
+            group.addTask { await waitForCurrent() }
+            group.addTask {
+                try? await Task.sleep(for: timeout)
+                return nil
+            }
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first
+        }
+    }
 
     /// Behavior options. Forwards to ``configuration``.
     @available(*, deprecated, message: "Use SwiftlyFeedback.configuration instead")

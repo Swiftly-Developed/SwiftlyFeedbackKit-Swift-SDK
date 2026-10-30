@@ -93,7 +93,7 @@ public struct FeedbackDetailView: View {
                 #endif
                 .refreshable {
                     if config.showCommentSection {
-                        await viewModel.loadComments()
+                        await viewModel.refreshComments()
                     }
                 }
                 #endif
@@ -146,7 +146,7 @@ public struct FeedbackDetailView: View {
                 }
                 ToolbarItem(placement: .automatic) {
                     Button(String(localized: .toolbarRefresh), systemImage: "arrow.clockwise") {
-                        Task { await viewModel.loadComments() }
+                        Task { await viewModel.refreshComments() }
                     }
                     .keyboardShortcut("r", modifiers: .command)
                     .help(String(localized: .toolbarRefresh))
@@ -889,7 +889,10 @@ final class FeedbackDetailViewModel {
     var voteOperationalEmails = true
     var voteMarketingEmails = true
 
-    private let swiftlyFeedback: SwiftlyFeedback?
+    /// The explicit client, or `current` once there is one. It does not change after that.
+    private var swiftlyFeedback: SwiftlyFeedback?
+    /// How long the comment placeholders wait for `configure` before the screen reports it.
+    var configurationPatience = SwiftlyFeedback.configurationPatience
 
     init(feedback: Feedback, swiftlyFeedback: SwiftlyFeedback?) {
         self.currentFeedback = feedback
@@ -907,8 +910,39 @@ final class FeedbackDetailViewModel {
         }
     }
 
+    /// The client, if there is one yet. The screen can be older than the client.
+    private func resolvedClient() -> SwiftlyFeedback? {
+        if swiftlyFeedback == nil { swiftlyFeedback = SwiftlyFeedback.current }
+        return swiftlyFeedback
+    }
+
+    /// The first load, from the view's `.task`. If `configure` has not finished, this waits for
+    /// as long as the screen is up, so a late `configure` still fills the comments. After
+    /// `configurationPatience` the placeholders stop and the screen reports the failure.
     func loadComments() async {
-        guard let sf = swiftlyFeedback else { return }
+        guard !hasInvalidApiKey else { return }
+        if resolvedClient() == nil {
+            isLoadingComments = true
+            let patience = configurationPatience
+            let deadline = Task {
+                try? await Task.sleep(for: patience)
+                guard !Task.isCancelled else { return }
+                SDKLogger.error("No client after \(patience). Call SwiftlyFeedback.configure, or pass a client to the view.")
+                isLoadingComments = false
+                errorMessage = String(localized: .errorGeneric)
+                showingError = true
+            }
+            let client = await SwiftlyFeedback.waitForCurrent()
+            deadline.cancel()
+            isLoadingComments = false
+            guard client != nil else { return }
+        }
+        await refreshComments()
+    }
+
+    /// A reload the user asked for. It does not wait: a pull's spinner must end.
+    func refreshComments() async {
+        guard let sf = resolvedClient() else { return }
         guard !hasInvalidApiKey else { return }
 
         isLoadingComments = true
@@ -929,7 +963,7 @@ final class FeedbackDetailViewModel {
     }
 
     func toggleVote() async {
-        guard swiftlyFeedback != nil else { return }
+        guard resolvedClient() != nil else { return }
         guard !hasInvalidApiKey else { return }
 
         let config = SwiftlyFeedback.configuration
@@ -968,7 +1002,7 @@ final class FeedbackDetailViewModel {
     }
 
     func submitVote(email: String?, notify: Bool, subscribeToMailingList: Bool? = nil, mailingListEmailTypes: [String]? = nil) async {
-        guard let sf = swiftlyFeedback else { return }
+        guard let sf = resolvedClient() else { return }
         guard !hasInvalidApiKey else { return }
 
         do {
@@ -1000,7 +1034,7 @@ final class FeedbackDetailViewModel {
     }
 
     func reportCurrent(reason: ContentReportReason) async {
-        guard let sf = swiftlyFeedback else {
+        guard let sf = resolvedClient() else {
             present(SwiftlyFeedbackError.invalidResponse)
             return
         }
@@ -1015,7 +1049,7 @@ final class FeedbackDetailViewModel {
 
     /// Returns whether the block was stored. The detail screen dismisses only then.
     func blockAuthor() async -> Bool {
-        guard let sf = swiftlyFeedback else {
+        guard let sf = resolvedClient() else {
             present(SwiftlyFeedbackError.invalidResponse)
             return false
         }
@@ -1029,7 +1063,7 @@ final class FeedbackDetailViewModel {
     }
 
     func report(_ comment: Comment, reason: ContentReportReason) async {
-        guard let sf = swiftlyFeedback else {
+        guard let sf = resolvedClient() else {
             present(SwiftlyFeedbackError.invalidResponse)
             return
         }
@@ -1044,7 +1078,7 @@ final class FeedbackDetailViewModel {
 
     /// Returns whether the block was stored. The caller reloads the list only then.
     func block(commenterUserId: String) async -> Bool {
-        guard let sf = swiftlyFeedback else {
+        guard let sf = resolvedClient() else {
             present(SwiftlyFeedbackError.invalidResponse)
             return false
         }
@@ -1066,7 +1100,7 @@ final class FeedbackDetailViewModel {
     }
 
     func submitComment() async {
-        guard let sf = swiftlyFeedback, !newCommentText.isEmpty else {
+        guard let sf = resolvedClient(), !newCommentText.isEmpty else {
             isSubmittingComment = false
             return
         }

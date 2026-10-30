@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-10-30
+
+### Fixed
+
+- **A view created before `configure` finishes now works.** `FeedbackListView`, `FeedbackDetailView` and `SubmitFeedbackView` read `SwiftlyFeedback.current` once, at creation, and kept the `nil`, so a list built at launch, as a `TabView` builds its tabs, stayed blank for the life of the app with no request and no error. The list and the comments now load by themselves when configuration finishes, showing the skeleton meanwhile, and a submit waits for the client. If nothing configures the SDK within 10 seconds, the list shows Retry and the detail and submit screens show an error, and the SDK logs the cause. An explicitly passed client still wins.
+
 ## [2.2.0] - 2026-10-27
 
 All FeedbackKit SDKs (Swift, JS, React Native, Kotlin, Flutter) now share one version number. The Vapor SDK keeps its own versioning. This release jumps from 1.3.0 to 2.2.0 to align; the public API change is additive, but update SwiftPM requirements pinned to `from: "1.x"`. Includes the comment chat accessibility changes from #997.

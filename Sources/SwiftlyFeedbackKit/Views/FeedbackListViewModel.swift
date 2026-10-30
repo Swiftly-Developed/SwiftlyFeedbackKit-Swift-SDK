@@ -40,12 +40,16 @@ final class FeedbackListViewModel {
     var voteMarketingEmails = true
     var pendingVoteFeedbackId: UUID?
 
-    let swiftlyFeedback: SwiftlyFeedback?
+    /// The explicit client, or `current` once there is one. It does not change after that.
+    private(set) var swiftlyFeedback: SwiftlyFeedback?
+    /// How long the skeleton waits for `configure` before the list shows Retry.
+    var configurationPatience = SwiftlyFeedback.configurationPatience
 
     private static let sortOptionDefaultsKey = "com.swiftlyfeedback.sdk.sortOption"
 
     private var loadTask: Task<Void, Never>?
     private var graceTask: Task<Void, Never>?
+    private var configurationWait: Task<SwiftlyFeedback?, Never>?
     /// Monotonic token: only the most recent load may write shared state on the
     /// way out (a superseded load's cancellation must not clobber its successor).
     private var loadGeneration = 0
@@ -150,9 +154,58 @@ final class FeedbackListViewModel {
         Task { await loadFeedback() }
     }
 
+    /// The client, waiting for `configure` if it has not published one yet.
+    ///
+    /// The wait has no end of its own, so a late `configure` still fills the list. After
+    /// `configurationPatience` the screen moves from the skeleton to Retry while the wait goes
+    /// on. Returns `nil` when this wait was superseded or the view went away.
+    private func waitForClient() async -> SwiftlyFeedback? {
+        if swiftlyFeedback == nil { swiftlyFeedback = SwiftlyFeedback.current }
+        if let swiftlyFeedback { return swiftlyFeedback }
+
+        configurationWait?.cancel()
+        graceTask?.cancel()
+        loadGeneration += 1
+        let generation = loadGeneration
+
+        state = .loading
+        let patience = configurationPatience
+        graceTask = Task {
+            try? await Task.sleep(for: .milliseconds(150))
+            guard !Task.isCancelled, generation == loadGeneration else { return }
+            showSkeleton = true
+            try? await Task.sleep(for: patience)
+            guard !Task.isCancelled, generation == loadGeneration else { return }
+            SDKLogger.error("No client after \(patience). Call SwiftlyFeedback.configure, or pass a client to the view.")
+            showSkeleton = false
+            state = .failed(message: String(localized: .errorGeneric))
+        }
+
+        // In its own task so that Retry can cancel the wait it replaces, and the view's
+        // `.task` can cancel it by leaving the screen.
+        let wait = Task { await SwiftlyFeedback.waitForCurrent() }
+        configurationWait = wait
+        let client = await withTaskCancellationHandler {
+            await wait.value
+        } onCancel: {
+            wait.cancel()
+        }
+
+        guard generation == loadGeneration else { return nil }
+        guard let client else {
+            // As with a cancelled load: back to .idle, so the next `.task` starts over.
+            graceTask?.cancel()
+            showSkeleton = false
+            state = .idle
+            return nil
+        }
+        swiftlyFeedback = client
+        return client
+    }
+
     func loadFeedback(isUserPull: Bool = false) async {
-        guard let sf = swiftlyFeedback else { return }
         guard !hasInvalidApiKey else { return }
+        guard let sf = await waitForClient() else { return }
 
         // Cancel any in-flight request
         loadTask?.cancel()
@@ -169,8 +222,8 @@ final class FeedbackListViewModel {
 
         if isInitialLoad {
             state = .loading
-            showSkeleton = false
-            // 150 ms no-flash grace: loads faster than this never paint a skeleton.
+            // 150 ms no-flash grace: loads faster than this never paint a skeleton. A skeleton
+            // already up from waiting for `configure` stays up.
             graceTask = Task {
                 try? await Task.sleep(for: .milliseconds(150))
                 guard !Task.isCancelled, generation == loadGeneration else { return }

@@ -44,16 +44,12 @@ import Foundation
 // `CommentDecodeTests` (here) plus `MergeOriginPrefixTests` and `CommentWireContractTests`
 // on the server target.
 
-@Test func testSwiftlyFeedbackConfiguration() async throws {
+@Test(.isolatedSharedClient) func testSwiftlyFeedbackConfiguration() async throws {
     let baseURL = URL(string: "https://api.example.com")!
     SwiftlyFeedback.configure(with: "test_key", baseURL: baseURL)
 
-    // Give the async Task time to complete - may take longer in test environment
-    // where UserIdentifier needs to create/fetch a user ID
-    try await Task.sleep(for: .milliseconds(500))
-
-    // Note: This test may fail in sandboxed test environments where
-    // CloudKit/Keychain access is restricted. The configuration itself
-    // doesn't throw, but the async user registration may fail silently.
-    // In production, SwiftlyFeedback.shared will be set after user ID resolution.
+    // Waits for the publish rather than for a fixed time, so that it cannot land after this
+    // test has given up `current` and inside another test that holds it.
+    let published = await SwiftlyFeedback.waitForCurrent(timeout: .seconds(10))
+    #expect(published != nil)
 }
